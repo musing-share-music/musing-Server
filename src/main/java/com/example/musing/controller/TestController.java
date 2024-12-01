@@ -1,4 +1,4 @@
-package com.example.musing.Controller;
+package com.example.musing.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

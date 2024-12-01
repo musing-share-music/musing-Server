@@ -1,6 +1,6 @@
 
-package com.example.musing.Repository;
-import com.example.musing.Entity.Reply;
+package com.example.musing.repository.Board;
+import com.example.musing.entity.Board.Reply;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ReplyRepository extends JpaRepository<Reply, Long> {

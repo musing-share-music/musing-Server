@@ -1,7 +1,6 @@
 
-package com.example.musing.Repository;
-import com.example.musing.Entity.Board;
-import com.example.musing.Entity.HashTag;
+package com.example.musing.repository.music;
+import com.example.musing.entity.music.HashTag;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -9,5 +8,5 @@ import java.util.List;
 public interface HashTagRepository extends JpaRepository<HashTag, Long> {
 
 
-    List<HashTag> findById(int id);
+
 }
