@@ -1,4 +1,4 @@
-package com.example.musing.auth;
+package com.example.musing.auth.JWT;
 
 import com.example.musing.auth.exception.ErrorCode;
 import com.example.musing.auth.exception.TokenException;

@@ -1,4 +1,4 @@
-package com.example.musing.auth;
+package com.example.musing.auth.JWT;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
