@@ -11,6 +11,8 @@ public record Oauth2Google (
     String email,
     String profile){ //프로필 사진 링크
 
+    //나중에 유튜브 계정 id랑 구글 sub일치하는지 확인해보고 빌더해서 값 저장할듯함, GeneratedValue 대신
+    
     public static Oauth2Google google(Map<String,Object> attributes){
         return Oauth2Google.builder()
                 .name((String) attributes.get("name"))

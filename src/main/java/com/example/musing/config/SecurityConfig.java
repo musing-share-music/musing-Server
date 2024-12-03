@@ -1,5 +1,7 @@
 package com.example.musing.config;
 
+import com.example.musing.auth.Oauth2.CustomOauth2UserService;
+import com.example.musing.auth.Oauth2SuccessHandler;
 import com.example.musing.auth.filter.TokenAuthenticationFilter;
 import com.example.musing.auth.filter.TokenExceptionFilter;
 import jakarta.servlet.DispatcherType;
@@ -21,6 +23,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
     public final TokenAuthenticationFilter tokenAuthenticationFilter;
+    public final CustomOauth2UserService userService;
+    private final Oauth2SuccessHandler oauth2SuccessHandler;
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer(){
         //해당 부분은 필터를 거치지 않게 설정
@@ -54,8 +58,11 @@ public class SecurityConfig {
                         //나머지 도메인 허용 필요(회원,관리자)
                         .anyRequest().authenticated())
 
-                //oauth2 인증 관련 코드 추가하기
-
+                //oauth2 인증 관련 코드
+                .oauth2Login(oauth ->
+                                oauth.userInfoEndpoint(c -> c.userService(userService))
+                                        .successHandler(oauth2SuccessHandler)
+                        )
                 //JWT 관련 설정, 하단 필터 실행
                 .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(new TokenExceptionFilter(), tokenAuthenticationFilter.getClass());

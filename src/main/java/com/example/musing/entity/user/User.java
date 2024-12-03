@@ -16,7 +16,7 @@ import java.util.List;
 @NoArgsConstructor // Lombok 어노테이션 : 기본 생성자 자동 추가
 @Entity
 @Table(name = "user")
-public class User {
+public class User { //https://developers.google.com/identity/openid-connect/openid-connect?hl=ko#an-id-tokens-payload
     @Id
     @GeneratedValue
     @Column(name="userid")// AUTO_INCREMENT
@@ -32,7 +32,7 @@ public class User {
     private String password; //삭제예정
     
     @Column(nullable = false)
-    private String profile; //구글 프로필사진 url저장소 (로그인테스트로 넣은 컬럼,사용 여부 미확정)
+    private String profile; //구글 프로필 url저장소 (로그인테스트로 넣은 컬럼,사용 여부 미확정), 사진만 url가져오는걸로 바꿔야겠다
     
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
