@@ -1,4 +1,4 @@
-package com.example.musing.auth;
+package com.example.musing.auth.handler;
 
 import com.example.musing.auth.JWT.TokenProvider;
 import jakarta.servlet.ServletException;

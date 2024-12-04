@@ -44,7 +44,7 @@ public class TokenProvider {
     //리프래쉬 토큰 생성
     public void generateRefreshToken(Authentication authentication, String accessToken) {
         String refreshToken = generateToken(authentication, REFRESH_TOKEN_EXPIRE_TIME);
-        //토큰을 Db에 저장하는 부분 넣기
+        tokenService.saveOrUpdate(authentication.getName(),refreshToken,accessToken); //토큰 db에 저장하려는 부분 수정하기
     }
     private String generateToken(Authentication authentication, long expireTime) {
         Date now = new Date();
