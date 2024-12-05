@@ -3,11 +3,9 @@ package com.example.musing.auth.JWT;
 import com.example.musing.auth.exception.TokenException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import static com.example.musing.auth.exception.ErrorCode.TOKEN_EXPIRED;
+import static com.example.musing.exception.ErrorCode.TOKEN_EXPIRED;
 
 @RequiredArgsConstructor
 @Service

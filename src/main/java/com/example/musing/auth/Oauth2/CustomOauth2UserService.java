@@ -13,6 +13,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -32,9 +33,19 @@ public class CustomOauth2UserService extends DefaultOAuth2UserService {
         //OAuth2User 반환
         return new PrincipalDetails(user,userAttributes);
     }
+    @Transactional
     private User saveUser(Oauth2Google oauth2Google){
-        User user = userRepository.findByEmail(oauth2Google.email()). //유저 정보를 조회하고 없으면 저장
-                orElseGet(oauth2Google::toEntity);
-        return userRepository.save(user);
+        Optional<User> user;
+        user = userRepository.findByEmail(oauth2Google.email());
+        //최초 로그인 이후 구글 계정의 정보 수정 시 갱신을 위해 저장과 같이 둠
+        if(user.isPresent()){
+            user = Optional.of(oauth2Google.toEntity()); //유저 정보가 있으면 Optional타입에서 User로 변환, 다시 빌드하여 변경된 부분을 수정하고 저장
+
+            return userRepository.save(user.get());
+        }else{
+            User userObject = oauth2Google.toEntity(); //유저 정보가 없다면 새로운 계정 저장
+
+            return userRepository.save(userObject);
+        }
     }
 }

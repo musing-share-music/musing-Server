@@ -8,6 +8,7 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicUpdate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,10 +17,10 @@ import java.util.List;
 @NoArgsConstructor // Lombok 어노테이션 : 기본 생성자 자동 추가
 @Entity
 @Table(name = "user")
+@DynamicUpdate  //update 될때 바뀐 컬럼만 변경하도록 함, 기존에는 모든 컬럼을 가져와서 바꿈
 public class User { //https://developers.google.com/identity/openid-connect/openid-connect?hl=ko#an-id-tokens-payload
     @Id
-    @GeneratedValue
-    @Column(name="userid")// AUTO_INCREMENT
+    @Column(name="userid")// AUTO_INCREMENT 제거(구글 전용 아이디 키)
     private Long id;
 
     @Column(nullable = false, length = 50)
@@ -57,8 +58,8 @@ public class User { //https://developers.google.com/identity/openid-connect/open
     private List<Reply> replyList = new ArrayList<>();
 
     @Builder
-    public User(String username, String email, String profile){
-        //프로필 컬럼 임시로 쓴거고 사용 미확정
+    public User(Long id,String username, String email, String profile){
+        this.id = id;
         this.username = username;
         this.email=email;
         this.profile=profile;
