@@ -29,17 +29,23 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         String accessToken = resolveToken(request);
 
         //엑세스 토큰 검증
-        if (tokenProvider.validateToken(accessToken)) {
-            setAuthentication(accessToken);
+        if (tokenProvider.validateToken(accessToken)) { //유효기간이 남았다면 통과
+            setAuthentication(accessToken);//시큐리티 콘텍스트 추가
         } else {
             // 만료되었을 경우 accessToken 재발급
             String reissueAccessToken = tokenProvider.reissueAccessToken(accessToken);
-
-            if (StringUtils.hasText(reissueAccessToken)) {
-                setAuthentication(reissueAccessToken);
+            if (StringUtils.hasText(reissueAccessToken)) {//재발급이 성공했다면
+                setAuthentication(reissueAccessToken);//시큐리티 콘텍스트 추가
 
                 // 재발급된 accessToken 다시 전달
                 response.setHeader(AUTHORIZATION, "Bearer " + reissueAccessToken);
+            }else{//리프래시 토큰이 만료되어 재발급 실패, null값을 받음
+                //tokenProvider.validateToken를 사용해서 리프래시토큰의 유효기간을 확인할 수 있지만,
+                //tokenProvider.reissueAccessToken안에 이미 포함된 로직이라 생략
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                String newAccessToken = tokenProvider.generateAccessToken(authentication);//엑세스 토큰 생성
+                tokenProvider.generateRefreshToken(authentication,newAccessToken);
+                //실패했으니 예외처리 이후 리프래시 토큰 재발급 받고 다시 로그인 시켜야함
             }
         }
 

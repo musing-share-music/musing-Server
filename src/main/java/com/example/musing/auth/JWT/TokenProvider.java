@@ -41,7 +41,7 @@ public class TokenProvider {
         return generateToken(authentication, ACCESS_TOKEN_EXPIRE_TIME);
     }
 
-    //리프래쉬 토큰 생성
+    //리프래쉬 토큰 생성 및 수정
     public void generateRefreshToken(Authentication authentication, String accessToken) {
         String refreshToken = generateToken(authentication, REFRESH_TOKEN_EXPIRE_TIME);
         tokenService.saveOrUpdate(authentication.getName(),refreshToken,accessToken); //토큰 db에 저장하려는 부분 수정하기
@@ -55,7 +55,7 @@ public class TokenProvider {
                 .collect(Collectors.joining());
 
         return Jwts.builder()
-                .setSubject(authentication.getName())//토큰 주체 설정 (유저이름)
+                .setSubject(authentication.getName())//토큰 주체 설정 (유저고유 id)
                 .claim(KEY_ROLE, authorities)//권한 정보를 토큰에 저장
                 .setIssuedAt(now)//생성기간을 토큰에 저장
                 .setExpiration(expiredDate)//유효기간을 토큰에 저장
@@ -66,7 +66,7 @@ public class TokenProvider {
     //엑세스 토큰 재발급
     public String reissueAccessToken(String accessToken){
         if(StringUtils.hasText(accessToken)){
-            //서비스단으로 엑세스 토큰 조회하기
+            //엑세스 토큰값으로 리프래시토큰 조회
             Token token =  tokenService.issueAccessToken(accessToken);
             String refreshToken = token.getRefreshtoken();
 
@@ -79,13 +79,14 @@ public class TokenProvider {
         }
         return null;
     }
-    //토큰 유효성 검사, 유효기간 다시 연장
+
+    //토큰 유효성 검사
     public boolean validateToken(String token){
         if(!StringUtils.hasText(token)){
             return false;
         }
         Claims claims = parseClaims(token);
-        return claims.getExpiration().after(new Date());
+        return claims.getExpiration().after(new Date()); //유효기간이 남으면 true
     }
 
     private Claims parseClaims(String token){
