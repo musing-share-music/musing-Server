@@ -2,10 +2,12 @@
 FROM amazoncorretto:19
 
 # 작업 디렉토리를 설정
-WORKDIR /app
+# 2. 애플리케이션 JAR 복사
+ARG JAR_FILE=build/libs/musing-0.0.1-SNAPSHOT.jar
+COPY ${JAR_FILE} app.jar
 
-# 파일 복사
-COPY musing-0.0.1-SNAPSHOT.jar musing.jar
+# 3. 포트 노출 (스프링 부트 기본 포트)
+EXPOSE 8080
 
-# 커맨드 실행
-CMD ["java", "-jar", "musing.jar"]
+# 4. 애플리케이션 실행 명령
+ENTRYPOINT ["java", "-jar", "app.jar"]
