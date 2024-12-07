@@ -26,7 +26,7 @@ public class TokenService {
         tokenRepository.save(token.get());
     }
     public Token issueAccessToken(String accessToken){
-        return tokenRepository.findByAccessToken(accessToken).orElseThrow(() -> new TokenException(TOKEN_EXPIRED));
+        return tokenRepository.findByAccesstoken(accessToken).orElseThrow(() -> new TokenException(TOKEN_EXPIRED));
     }
     @Transactional
     public void updateToken(String accessToken, Token token) {
