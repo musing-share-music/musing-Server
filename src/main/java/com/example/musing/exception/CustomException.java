@@ -1,6 +1,5 @@
 package com.example.musing.exception;
 
-import com.example.musing.auth.exception.ErrorCode;
 import lombok.Getter;
 
 @Getter

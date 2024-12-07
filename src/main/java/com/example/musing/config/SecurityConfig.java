@@ -1,5 +1,10 @@
 package com.example.musing.config;
 
+import com.example.musing.auth.Oauth2.CustomOauth2UserService;
+import com.example.musing.auth.handler.CustomAccessDeniedHandler;
+import com.example.musing.auth.handler.CustomAuthenticationEntryPoint;
+import com.example.musing.auth.handler.OAuth2FailureHandler;
+import com.example.musing.auth.handler.Oauth2SuccessHandler;
 import com.example.musing.auth.filter.TokenAuthenticationFilter;
 import com.example.musing.auth.filter.TokenExceptionFilter;
 import jakarta.servlet.DispatcherType;
@@ -21,6 +26,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
     public final TokenAuthenticationFilter tokenAuthenticationFilter;
+    public final CustomOauth2UserService userService;
+    private final Oauth2SuccessHandler oauth2SuccessHandler;
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer(){
         //해당 부분은 필터를 거치지 않게 설정
@@ -35,7 +42,7 @@ public class SecurityConfig {
                 // oauth2 사용으로 기존 시큐리티 로그인 페이지 차단
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
-                .logout(AbstractHttpConfigurer::disable)
+                .logout(AbstractHttpConfigurer::disable) //로그아웃할때 쿠키 삭제하는거 해야할듯
                 //JWT 사용으로 세션 사용하지않음
                 .sessionManagement(c ->
                         c.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용하지 않음
@@ -54,14 +61,20 @@ public class SecurityConfig {
                         //나머지 도메인 허용 필요(회원,관리자)
                         .anyRequest().authenticated())
 
-                //oauth2 인증 관련 코드 추가하기
-
+                //oauth2 인증 관련 코드
+                .oauth2Login(oauth ->
+                                oauth.userInfoEndpoint(c -> c.userService(userService))
+                                        .successHandler(oauth2SuccessHandler)
+                                        .failureHandler(new OAuth2FailureHandler())
+                        )
                 //JWT 관련 설정, 하단 필터 실행
                 .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(new TokenExceptionFilter(), tokenAuthenticationFilter.getClass());
+                .addFilterBefore(new TokenExceptionFilter(), tokenAuthenticationFilter.getClass())
 
                 //인증 관련 커스텀 예외처리 추가하기
-
+                 .exceptionHandling((exceptions) -> exceptions
+                    .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
+                    .accessDeniedHandler(new CustomAccessDeniedHandler()));
         return http.build();
     }
 
