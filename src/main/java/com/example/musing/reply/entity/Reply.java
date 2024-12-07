@@ -33,15 +33,15 @@ public class Reply {
     //관계설정 유저에 관한 외래키 보유 주인테이블
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="user_id", nullable = false)
-    private User user;
+    private User user_id;
 
     //관계설정 게시판에 관한 외래키 보유 주인테이블
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="board_id", nullable = false)
-    private Board board;
+    private Board board_id;
 
     //일대다 관계로 신고테이블과 메핑
-    @OneToMany(mappedBy = "reply", cascade = CascadeType.ALL, orphanRemoval = true )
+    @OneToMany(mappedBy = "reply_id", cascade = CascadeType.ALL, orphanRemoval = true )
     private List<Report> reportList = new ArrayList<Report>();
 
 

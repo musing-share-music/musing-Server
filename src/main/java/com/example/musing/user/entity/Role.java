@@ -1,4 +1,4 @@
-package com.example.musing.entity.user;
+package com.example.musing.user.entity;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

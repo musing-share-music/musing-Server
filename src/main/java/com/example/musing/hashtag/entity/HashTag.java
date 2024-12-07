@@ -1,5 +1,7 @@
 package com.example.musing.hashtag.entity;
 
+import com.example.musing.music.entity.Music;
+import com.example.musing.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,7 +19,10 @@ public class HashTag {
 
     @Column(nullable = false)
     private String hashtag;
-
+    //해쉬태그에 관한 외래키 보유 주인테이블
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "music_id", nullable = false)
+    private Music music_id; // 작성자
 
 
 

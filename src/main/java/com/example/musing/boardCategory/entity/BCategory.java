@@ -20,7 +20,7 @@ public class BCategory {
     @Column(nullable = true)
     private String categoryname;
 
-    @OneToMany(mappedBy = "bcategory" ,cascade = CascadeType.ALL, orphanRemoval = true )
+    @OneToMany(mappedBy = "category" ,cascade = CascadeType.ALL, orphanRemoval = true )
     private List<Board> boards = new ArrayList<Board>();
 
 }

@@ -2,8 +2,10 @@ package com.example.musing.auth.Oauth2;
 
 import com.example.musing.auth.JWT.DTO.Oauth2Google;
 import com.example.musing.auth.JWT.DTO.PrincipalDetails;
-import com.example.musing.entity.user.User;
-import com.example.musing.repository.user.UserRepository;
+
+
+import com.example.musing.user.entity.User;
+import com.example.musing.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;

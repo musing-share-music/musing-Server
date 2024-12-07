@@ -1,4 +1,4 @@
-package com.example.musing.prefer_music.playlist.entity;
+package com.example.musing.prefer_music.entity;
 
 import com.example.musing.music.entity.Music;
 import com.example.musing.prefer.entity.Prefer;
@@ -18,9 +18,9 @@ public class Prefer_Music {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "prefer_id")
-    private Prefer prefername;
+    private Prefer prefer_id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "music_id")
-    private Music musicname;
+    private Music music_id;
 }

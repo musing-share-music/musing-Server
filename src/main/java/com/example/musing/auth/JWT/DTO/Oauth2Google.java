@@ -1,6 +1,8 @@
 package com.example.musing.auth.JWT.DTO;
 
-import com.example.musing.entity.user.User;
+
+
+import com.example.musing.user.entity.User;
 import lombok.Builder;
 
 import java.util.Map;

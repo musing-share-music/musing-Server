@@ -3,6 +3,7 @@ package com.example.musing.music.entity;
 import com.example.musing.board.entity.Board;
 import com.example.musing.hashtag.entity.HashTag;
 import com.example.musing.prefer.entity.Prefer;
+import com.example.musing.prefer_music.entity.Prefer_Music;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,13 +37,16 @@ public class Music {
     private String album;
 
     // 음악과 게시판 일대다 관계 매핑
-    @OneToMany(mappedBy = "music" , cascade = CascadeType.ALL, orphanRemoval = true )
+    @OneToMany(mappedBy = "music_id" , cascade = CascadeType.ALL, orphanRemoval = true )
     private List<Board> boardList = new ArrayList<Board>();
     // 음악과 선호도 일대다 관계 매핑
-    @OneToMany(mappedBy = "music" , cascade = CascadeType.ALL, orphanRemoval = true )
+    @OneToMany(mappedBy = "music_id" , cascade = CascadeType.ALL, orphanRemoval = true )
     private List<Prefer> PreferList = new ArrayList<Prefer>();
     // 음악과 해쉬태그 일대다 관계 매핑
-    @OneToMany(mappedBy = "music" , cascade = CascadeType.ALL, orphanRemoval = true )
+    @OneToMany(mappedBy = "music_id" , cascade = CascadeType.ALL, orphanRemoval = true )
     private List<HashTag> HashTagList = new ArrayList<HashTag>();
+
+    @OneToMany(mappedBy = "music_id", cascade = CascadeType.ALL, orphanRemoval = true )
+    private List<Prefer_Music> preferMusics = new ArrayList<Prefer_Music>();
 
 }
