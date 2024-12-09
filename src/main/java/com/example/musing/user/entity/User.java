@@ -8,7 +8,9 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicUpdate;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,16 +23,13 @@ import java.util.List;
 public class User { //https://developers.google.com/identity/openid-connect/openid-connect?hl=ko#an-id-tokens-payload
     @Id
     @Column(name="userid")// AUTO_INCREMENT 제거(구글 전용 아이디 키)
-    private Long id;
+    private String id;
 
     @Column(nullable = false, length = 50)
     private String username; // 사용자 이름
 
     @Column(nullable = false, unique = true, length = 100)
     private String email; // 이메일 (유니크)
-
-    @Column(nullable = false)
-    private String password; //삭제예정
     
     @Column(nullable = false)
     private String profile; //구글 프로필 url저장소 (로그인테스트로 넣은 컬럼,사용 여부 미확정), 사진만 url가져오는걸로 바꿔야겠다
@@ -58,7 +57,7 @@ public class User { //https://developers.google.com/identity/openid-connect/open
     private List<Reply> replyList = new ArrayList<>();
 
     @Builder
-    public User(Long id,String username, String email, String profile){
+    public User(String id,String username, String email, String profile){
         this.id = id;
         this.username = username;
         this.email=email;
