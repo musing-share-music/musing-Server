@@ -33,22 +33,18 @@ public class Oauth2SuccessHandler implements AuthenticationSuccessHandler {
     private final TokenService tokenService;
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+/*
         String accessToken = tokenProvider.generateAccessToken(authentication);
         tokenProvider.generateRefreshToken(authentication, accessToken);
-        /*        // 디버깅용: 요청의 모든 헤더 출력
-        Enumeration<String> headerNames = request.getHeaderNames();
-        while (headerNames.hasMoreElements()) {
-            String headerName = headerNames.nextElement();
-            log.info("Header: {} = {}", headerName, request.getHeader(headerName));
-        }
-        String authorization = request.getHeader(AUTHORIZATION);
-
-        log.info(authorization);
+*/
+        String authorization = response.getHeader(AUTHORIZATION);
 
         if(authorization == null){//엑세스 토큰이 없는 상황일때, 해당 부분 쿠키로 나중에 변경예정
             //엑세스 토큰 및 리프래시 토큰 생성
-            String accessToken = tokenProvider.generateAccessToken(x    );
+            String accessToken = tokenProvider.generateAccessToken(authentication);
+
             response.setHeader(AUTHORIZATION, "Bearer " + accessToken);//헤더에 엑세스 토큰 추가
+
             Optional<Token> token = tokenService.findById(accessToken);
             if(token.isPresent()){//자신의 아이디의 리프래시토큰이 있나 검사
                 //자신의 id값의 객체의 유효기간 체크를 해야함
@@ -58,7 +54,7 @@ public class Oauth2SuccessHandler implements AuthenticationSuccessHandler {
             }else {//아예 없으면 새로만들기
                 tokenProvider.generateRefreshToken(authentication, accessToken);
             }
-        }*/
+        }
         //이후 시큐리티 필터로 엑세스 토큰의 유효성을 검사함
 
         //관리자일때랑 아닐때 구분해서 리다이렉트 하게하는게 좋을듯?
@@ -67,11 +63,11 @@ public class Oauth2SuccessHandler implements AuthenticationSuccessHandler {
             System.out.println("Authority: " + authority.getAuthority()); // 권한을 출력
         }
         if(oAuth2User.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"))) {
-            System.out.println("관리자");
+            System.out.println("register");
 /*            response.sendRedirect("/admin");*/
         }else if(oAuth2User.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_USER"))) {
-/*            response.sendRedirect("/main");*/
-            System.out.println("사용자");
+/*            response.sendRedirect("/musing/main22");*/
+            System.out.println("user");
         }else{
             throw new AuthorityException(ErrorCode.INVALID_AUTHORITY);
         }

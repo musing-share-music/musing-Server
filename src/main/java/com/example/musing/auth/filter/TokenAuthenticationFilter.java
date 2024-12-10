@@ -26,8 +26,9 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
+        //이 필터는 애초에 토큰이 있다는 가정하에 아래단이 시작됨
         String accessToken = resolveToken(request);
-        logger.info(accessToken);
+        logger.info("AccessToken: "+ accessToken);
 
         //엑세스 토큰 검증
         if (tokenProvider.validateToken(accessToken)) { //유효기간이 남았다면 통과
@@ -36,7 +37,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         } else {
             // 만료되었을 경우 accessToken 재발급
             String reissueAccessToken = tokenProvider.reissueAccessToken(accessToken);
-
+            logger.info(reissueAccessToken);
             if (StringUtils.hasText(reissueAccessToken)) {//재발급이 성공했다면
                 setAuthentication(reissueAccessToken);//시큐리티 콘텍스트 추가
 
@@ -59,6 +60,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     private void setAuthentication(String accessToken) {
         //시큐리티 context에 등록할 Authentication 생성 및 등록
         Authentication authentication = tokenProvider.getAuthentication(accessToken);
+        System.out.println(authentication.getClass());
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 

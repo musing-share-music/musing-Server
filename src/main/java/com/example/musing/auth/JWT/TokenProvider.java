@@ -6,6 +6,7 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Component
+@Slf4j
 public class TokenProvider {
     @Value("${key}")
     private String key;
@@ -44,7 +46,7 @@ public class TokenProvider {
     //리프래쉬 토큰 생성 및 수정
     public void generateRefreshToken(Authentication authentication, String accessToken) {
         String refreshToken = generateToken(authentication, REFRESH_TOKEN_EXPIRE_TIME);
-        tokenService.saveOrUpdate(authentication.getName(),refreshToken,accessToken); //토큰 db에 저장하려는 부분 수정하기
+        tokenService.saveOrUpdate(authentication.getName(),accessToken, refreshToken); //토큰 db에 저장하려는 부분 수정하기
     }
     private String generateToken(Authentication authentication, long expireTime) {
         Date now = new Date();
@@ -65,11 +67,11 @@ public class TokenProvider {
 
     //엑세스 토큰 재발급
     public String reissueAccessToken(String accessToken){
+        log.info("엑세스 토큰 검사");
         if(StringUtils.hasText(accessToken)){
             //엑세스 토큰값으로 리프래시토큰 조회
             Token token =  tokenService.issueAccessToken(accessToken);
             String refreshToken = token.getRefreshtoken();
-
             //리프래시 토큰 유효성 체크 후 엑세스 토큰 발급
             if (validateToken(refreshToken)) {
                 String reissueAccessToken = generateAccessToken(getAuthentication(refreshToken));
