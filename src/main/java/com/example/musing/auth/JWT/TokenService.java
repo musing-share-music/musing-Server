@@ -36,4 +36,8 @@ public class TokenService {
     public Optional<Token> findById(String TokenId){
         return tokenRepository.findById(TokenId);
     }
+
+    public void deleteRefreshToken(String accessToken){
+        tokenRepository.deleteByAccesstoken(accessToken);
+    }
 }

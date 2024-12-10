@@ -46,11 +46,15 @@ public class Oauth2SuccessHandler implements AuthenticationSuccessHandler {
             response.setHeader(AUTHORIZATION, "Bearer " + accessToken);//헤더에 엑세스 토큰 추가
 
             Optional<Token> token = tokenService.findById(accessToken);
-            if(token.isPresent()){//자신의 아이디의 리프래시토큰이 있나 검사
+            if(token.isPresent()){//자신의 아이디의 리프래시토큰이 있나 검사, 임의로 쿠키또는 헤더값을 지웠을 경우로 작성
                 //자신의 id값의 객체의 유효기간 체크를 해야함
                 if(tokenProvider.validateToken(token.get().getRefreshtoken())){//유효기간이 남으면, 새로 생성한 엑세스 토큰만 갱신
                     tokenService.updateToken(accessToken,token.get());
-                }//유효기간 지났으면 아래코드로 검증까지 포함
+                }
+                else{ //유효기간 지났으면, 레디스 적용할 경우 만료 시 삭제처리 할거기때문에 지울수 있는 부분
+                    tokenService.deleteRefreshToken(accessToken);
+                    tokenProvider.generateRefreshToken(authentication, accessToken);
+                }
             }else {//아예 없으면 새로만들기
                 tokenProvider.generateRefreshToken(authentication, accessToken);
             }
@@ -66,7 +70,8 @@ public class Oauth2SuccessHandler implements AuthenticationSuccessHandler {
             System.out.println("register");
 /*            response.sendRedirect("/admin");*/
         }else if(oAuth2User.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_USER"))) {
-/*            response.sendRedirect("/musing/main22");*/
+
+            /*response.sendRedirect("/musing/main22");*/
             System.out.println("user");
         }else{
             throw new AuthorityException(ErrorCode.INVALID_AUTHORITY);
