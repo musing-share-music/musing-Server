@@ -9,7 +9,7 @@ import java.util.Map;
 
 @Builder
 public record Oauth2Google (
-    long id,
+    String id,
     String name,
     String email,
     String profile){ //프로필 사진 링크
@@ -18,7 +18,7 @@ public record Oauth2Google (
     
     public static Oauth2Google google(Map<String,Object> attributes){
         return Oauth2Google.builder()
-                .id((long) attributes.get("sub"))
+                .id((String) attributes.get("sub"))
                 .name((String) attributes.get("name"))
                 .email((String) attributes.get("email"))
                 .profile((String) attributes.get("picture")).build();

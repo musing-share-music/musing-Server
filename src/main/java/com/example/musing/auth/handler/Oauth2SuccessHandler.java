@@ -10,37 +10,51 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.Enumeration;
 import java.util.Optional;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @RequiredArgsConstructor
 @Component
+@Slf4j
 public class Oauth2SuccessHandler implements AuthenticationSuccessHandler {
     private final TokenProvider tokenProvider;
     private final TokenService tokenService;
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+/*
+        String accessToken = tokenProvider.generateAccessToken(authentication);
+        tokenProvider.generateRefreshToken(authentication, accessToken);
+*/
         String authorization = response.getHeader(AUTHORIZATION);
-        
+
         if(authorization == null){//엑세스 토큰이 없는 상황일때, 해당 부분 쿠키로 나중에 변경예정
             //엑세스 토큰 및 리프래시 토큰 생성
             String accessToken = tokenProvider.generateAccessToken(authentication);
+
             response.setHeader(AUTHORIZATION, "Bearer " + accessToken);//헤더에 엑세스 토큰 추가
-            Optional<Token> token = tokenService.findById(authentication.getName());
-            if(token.isPresent()){//자신의 아이디의 리프래시토큰이 있나 검사
+
+            Optional<Token> token = tokenService.findById(accessToken);
+            if(token.isPresent()){//자신의 아이디의 리프래시토큰이 있나 검사, 임의로 쿠키또는 헤더값을 지웠을 경우로 작성
                 //자신의 id값의 객체의 유효기간 체크를 해야함
                 if(tokenProvider.validateToken(token.get().getRefreshtoken())){//유효기간이 남으면, 새로 생성한 엑세스 토큰만 갱신
                     tokenService.updateToken(accessToken,token.get());
-                }//유효기간 지났으면 아래코드로 검증까지 포함
+                }
+                else{ //유효기간 지났으면, 레디스 적용할 경우 만료 시 삭제처리 할거기때문에 지울수 있는 부분
+                    tokenService.deleteRefreshToken(accessToken);
+                    tokenProvider.generateRefreshToken(authentication, accessToken);
+                }
             }else {//아예 없으면 새로만들기
                 tokenProvider.generateRefreshToken(authentication, accessToken);
             }
@@ -49,10 +63,16 @@ public class Oauth2SuccessHandler implements AuthenticationSuccessHandler {
 
         //관리자일때랑 아닐때 구분해서 리다이렉트 하게하는게 좋을듯?
         OAuth2User oAuth2User = (OAuth2User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if(oAuth2User.getAuthorities().contains("ROLE_ADMIN")){
-            response.sendRedirect("/");
-        }else if(oAuth2User.getAuthorities().contains("ROLE_USER")){
-            response.sendRedirect("/");
+        for (GrantedAuthority authority : oAuth2User.getAuthorities()) {
+            System.out.println("Authority: " + authority.getAuthority()); // 권한을 출력
+        }
+        if(oAuth2User.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"))) {
+            System.out.println("register");
+/*            response.sendRedirect("/admin");*/
+        }else if(oAuth2User.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_USER"))) {
+
+            /*response.sendRedirect("/musing/main22");*/
+            System.out.println("user");
         }else{
             throw new AuthorityException(ErrorCode.INVALID_AUTHORITY);
         }
