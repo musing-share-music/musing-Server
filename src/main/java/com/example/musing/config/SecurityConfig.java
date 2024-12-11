@@ -32,8 +32,8 @@ public class SecurityConfig {
     public WebSecurityCustomizer webSecurityCustomizer(){
         //해당 부분은 필터를 거치지 않게 설정
         return web -> web.ignoring().dispatcherTypeMatchers(DispatcherType.ERROR)
-                .requestMatchers("/error","/favicon.ico")
-                .requestMatchers("swagger-UI");
+                .requestMatchers("/error","/favicon.ico") //에러페이지는 필터 안거치게 설정
+                .requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**", "/v3/api-docs/**");
     }
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
@@ -51,7 +51,7 @@ public class SecurityConfig {
                 .headers(c -> c.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable).disable())
                 .authorizeHttpRequests((authorize) -> authorize
                         //스웨거 UI 접속 전체 허용(배포할때 주석처리 해야함)
-                        .requestMatchers("/swagger-ui").permitAll()//스웨거
+                        .requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**", "/v3/api-docs/**").permitAll()
                         //사용자 전체 허용
                         .requestMatchers("/musing/main").permitAll()
                         .requestMatchers("/musing/signup").permitAll() //회원가입 도메인 1단계가 필요없이 구글 로그인 부분으로 되면 이렇게 적용

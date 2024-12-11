@@ -18,7 +18,7 @@ public class SwaggerConfig {
     private Info apiInfo() {
         return new Info()
                 .title("musing")
-                .description(" Swagger UI")
+                .description("Swagger UI")
                 .version("1.0.0");
     }
 }
