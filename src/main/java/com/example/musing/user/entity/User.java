@@ -40,8 +40,16 @@ public class User { //https://developers.google.com/identity/openid-connect/open
 
     // true면 사용가능 false면 정지상태, null일 경우 장르 및 분위기 선택 안한 상태
     @Column(nullable = true)
-    private boolean Activated;
-    
+    private Boolean activated; //null허용을 위해 웨퍼클래스 타입 적용
+
+    @Column
+    private String likeGenre; //자신이 좋아하는 장르
+
+    @Column
+    private String likeMood; //자신이 좋아하는 분위기
+
+    @Column
+    private String likeArtists; //자신이 좋아하는 아티스트들
 
     //게시판 일대다 매핑
     @OneToMany(mappedBy = "user_id", cascade = CascadeType.ALL, orphanRemoval = true)
