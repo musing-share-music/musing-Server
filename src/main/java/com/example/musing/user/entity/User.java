@@ -6,16 +6,14 @@ import com.example.musing.playlist.entity.PlayList;
 import com.example.musing.prefer.entity.Prefer;
 import jakarta.persistence.*;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicUpdate;
-import org.springframework.boot.context.properties.bind.DefaultValue;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Getter // Lombok 어노테이션 : 클래스 내 모든 필드의 Getter 메소드 자동 생성
+@Data // Lombok 어노테이션 : 클래스 내 모든 필드의 Getter 메소드 자동 생성
 @NoArgsConstructor // Lombok 어노테이션 : 기본 생성자 자동 추가
 @Entity
 @Table(name = "user")
@@ -43,13 +41,13 @@ public class User { //https://developers.google.com/identity/openid-connect/open
     private Boolean activated; //null허용을 위해 웨퍼클래스 타입 적용
 
     @Column
-    private String likeGenre; //자신이 좋아하는 장르
+    private String likegenre; //자신이 좋아하는 장르
 
     @Column
-    private String likeMood; //자신이 좋아하는 분위기
+    private String likemood; //자신이 좋아하는 분위기
 
     @Column
-    private String likeArtists; //자신이 좋아하는 아티스트들
+    private String likeartists; //자신이 좋아하는 아티스트들
 
     //게시판 일대다 매핑
     @OneToMany(mappedBy = "user_id", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -71,6 +69,15 @@ public class User { //https://developers.google.com/identity/openid-connect/open
         this.email=email;
         this.profile=profile;
         this.role = Role.USER;
+    }
+    public void updateGenre(String genre){
+        this.likegenre = genre;
+    }
+    public void updateMood(String mood){
+        this.likemood = mood;
+    }
+    public void updateArtists(String artists){
+        this.likeartists = artists;
     }
 
 }
