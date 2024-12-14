@@ -3,7 +3,7 @@ package com.example.musing.music.entity;
 import com.example.musing.board.entity.Board;
 import com.example.musing.hashtag.entity.HashTag;
 import com.example.musing.prefer.entity.Prefer;
-import com.example.musing.prefer_music.entity.Prefer_Music;
+import com.example.musing.like_music.entity.Like_Music;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -47,6 +47,6 @@ public class Music {
     private List<HashTag> HashTagList = new ArrayList<HashTag>();
 
     @OneToMany(mappedBy = "music_id", cascade = CascadeType.ALL, orphanRemoval = true )
-    private List<Prefer_Music> preferMusics = new ArrayList<Prefer_Music>();
+    private List<Like_Music> preferMusics = new ArrayList<Like_Music>();
 
 }
