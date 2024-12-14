@@ -31,7 +31,8 @@ public class SecurityConfig {
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer(){
         //해당 부분은 필터를 거치지 않게 설정
-        return web -> web.ignoring().dispatcherTypeMatchers(DispatcherType.ERROR).requestMatchers("/error")
+        return web -> web.ignoring().dispatcherTypeMatchers(DispatcherType.ERROR)
+                .requestMatchers("/error","/favicon.ico")
                 .requestMatchers("swagger-UI");
     }
     @Bean
@@ -67,7 +68,7 @@ public class SecurityConfig {
                                         .successHandler(oauth2SuccessHandler)
                                         .failureHandler(new OAuth2FailureHandler())
                         )
-                //JWT 관련 설정, 하단 필터 실행
+                   //JWT 관련 설정, 하단 필터 실행
                 .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(new TokenExceptionFilter(), tokenAuthenticationFilter.getClass())
 

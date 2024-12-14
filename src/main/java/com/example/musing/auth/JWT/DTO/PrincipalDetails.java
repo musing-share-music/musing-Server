@@ -5,6 +5,7 @@ package com.example.musing.auth.JWT.DTO;
 import com.example.musing.user.entity.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.util.Collection;
@@ -27,8 +28,12 @@ public record PrincipalDetails(
                 new SimpleGrantedAuthority(user.getRole().getKey()));
     }
 
+    public String getUser_username(){
+        return user.getUsername();
+    }
     @Override
     public String getName() {
         return attributes.get("sub").toString(); //구글은 필드값 이름이 sub
     }
+
 }
