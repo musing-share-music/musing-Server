@@ -31,10 +31,9 @@ public class Prefer {
     @JoinColumn(name = "user_id",nullable = false)
     private User user_id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "music_id",nullable = false)
-    private Music music_id;
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "music_id",nullable = false)
+//    private Music music_id;
 
-    @OneToMany(mappedBy = "prefer_id", cascade = CascadeType.ALL, orphanRemoval = true )
-    private List<Like_Music> preferMusics = new ArrayList<Like_Music>();
+
 }
