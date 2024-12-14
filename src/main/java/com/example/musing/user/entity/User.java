@@ -1,6 +1,7 @@
 package com.example.musing.user.entity;
 
 import com.example.musing.board.entity.Board;
+import com.example.musing.like_music.entity.Like_Music;
 import com.example.musing.reply.entity.Reply;
 import com.example.musing.playlist.entity.PlayList;
 import com.example.musing.prefer.entity.Prefer;
@@ -55,6 +56,9 @@ public class User { //https://developers.google.com/identity/openid-connect/open
     //답글 리스트와 일대다 매핑
     @OneToMany(mappedBy = "user_id", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Reply> replyList = new ArrayList<>();
+    //유저가 음악에 좋아요를 눌렀을때의 관계
+    @OneToMany(mappedBy = "user_id", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Like_Music> likes = new ArrayList<>();
 
     @Builder
     public User(String id,String username, String email, String profile){
