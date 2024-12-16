@@ -18,7 +18,6 @@ import java.util.List;
 @Entity
 @Table(name="board")
 public class Board {
-
     //글번호(자동증가)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

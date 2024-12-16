@@ -17,8 +17,8 @@ public class SwaggerConfig {
 
     private Info apiInfo() {
         return new Info()
-                .title("musing")
-                .description(" Swagger UI")
+                .title("musing 스웨거 문서")
+                .description("최종 작성일자: 24.12.13")
                 .version("1.0.0");
     }
 }
