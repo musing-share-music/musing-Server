@@ -8,16 +8,19 @@ import com.example.musing.prefer.entity.Prefer;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Data // Lombok 어노테이션 : 클래스 내 모든 필드의 Getter 메소드 자동 생성
+@Getter // Lombok 어노테이션 : 클래스 내 모든 필드의 Getter 메소드 자동 생성
 @NoArgsConstructor // Lombok 어노테이션 : 기본 생성자 자동 추가
 @Entity
 @Table(name = "user")
+@DynamicInsert
 @DynamicUpdate  //update 될때 바뀐 컬럼만 변경하도록 함, 기존에는 모든 컬럼을 가져와서 바꿈
 public class User { //https://developers.google.com/identity/openid-connect/openid-connect?hl=ko#an-id-tokens-payload
     @Id
@@ -73,6 +76,10 @@ public class User { //https://developers.google.com/identity/openid-connect/open
         this.email=email;
         this.profile=profile;
         this.role = Role.USER;
+    }
+    public void updateGoogleInfo(String username, String profile){
+        this.username =username;
+        this.profile = profile;
     }
     public void updateGenre(String genre){
         this.likegenre = genre;
