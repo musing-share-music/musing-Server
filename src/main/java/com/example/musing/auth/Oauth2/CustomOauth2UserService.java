@@ -39,18 +39,12 @@ public class CustomOauth2UserService extends DefaultOAuth2UserService {
     }
     @Transactional
     private User saveUser(Oauth2Google oauth2Google){
-        Optional<User> user;
-        user = userRepository.findByEmail(oauth2Google.email());
-        //최초 로그인 이후 구글 계정의 정보 수정 시 갱신을 위해 저장과 같이 둠
-        if(user.isPresent()){
-            user = Optional.of(oauth2Google.toEntity()); //유저 정보가 있으면 Optional타입에서 User로 변환, 다시 빌드하여 변경된 부분을 수정하고 저장
-            log.info("유저 정보를 확인했습니다 " + user.get().getUsername());
-            return userRepository.save(user.get());
-        }else{
-            User userObject = oauth2Google.toEntity(); //유저 정보가 없다면 새로운 계정 저장
-
-            log.info("구글 계정을 통해 회원가입이 되었습니다. " + userObject.getUsername());
-            return userRepository.save(userObject);
+        User user = userRepository.findByEmail(oauth2Google.email()).orElseGet(oauth2Google::toEntity);
+        //구글 닉네임 또는 프사 변경 시 적용하기 위해 추가
+        if(!user.getUsername().equals(oauth2Google.name())||!user.getProfile().equals(oauth2Google.profile())){
+            user.updateGoogleInfo(oauth2Google.name(),oauth2Google.profile());
         }
+        log.info("유저 정보를 확인했습니다 " + user.getUsername());
+        return userRepository.save(user);
     }
 }

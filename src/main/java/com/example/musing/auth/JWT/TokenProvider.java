@@ -5,6 +5,7 @@ import com.example.musing.auth.exception.TokenException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,15 +39,30 @@ public class TokenProvider {
     private void setSecretKey() {
         secretKey = Keys.hmacShaKeyFor(key.getBytes());
     }
+
+    //쿠키 생성
+    public Cookie generateCookie(String accessToken){
+        String cookieName = "accessToken";
+        String cookieValue = accessToken;
+        Cookie cookie = new Cookie(cookieName,cookieValue);
+
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(60*30);
+
+        return cookie;
+    }
+
     //엑세스 토큰 생성
     public String generateAccessToken(Authentication authentication) {
         return generateToken(authentication, ACCESS_TOKEN_EXPIRE_TIME);
     }
 
     //리프래쉬 토큰 생성 및 수정
-    public void generateRefreshToken(Authentication authentication, String accessToken) {
+    public void generateRefreshToken(Token token, Authentication authentication, String accessToken) {
         String refreshToken = generateToken(authentication, REFRESH_TOKEN_EXPIRE_TIME);
-        tokenService.saveOrUpdate(authentication.getName(),accessToken, refreshToken); //토큰 db에 저장하려는 부분 수정하기
+        tokenService.saveOrUpdate(token, authentication.getName(),accessToken, refreshToken); //토큰 db에 저장하려는 부분 수정하기
     }
     private String generateToken(Authentication authentication, long expireTime) {
         Date now = new Date();

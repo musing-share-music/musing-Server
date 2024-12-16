@@ -22,6 +22,7 @@ public record Oauth2Google (
                 .name((String) attributes.get("name"))
                 .email((String) attributes.get("email"))
                 .profile((String) attributes.get("picture")).build();
+
         //이름,이메일,프로필 이미지 링크
     }
 
