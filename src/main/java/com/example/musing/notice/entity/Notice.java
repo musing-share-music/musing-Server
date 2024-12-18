@@ -1,24 +1,17 @@
-package com.example.musing.board.entity;
+package com.example.musing.notice.entity;
 
-import com.example.musing.report.entity.Report;
-import com.example.musing.notice.entity.Notice;
-import com.example.musing.music.entity.Music;
-import com.example.musing.reply.entity.Reply;
 import com.example.musing.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter // Lombok 어노테이션 : 클래스 내 모든 필드의 Getter 메소드 자동 생성
 @NoArgsConstructor // Lombok 어노테이션 : 기본 생성자 자동 추가
 @Entity
-@Table(name="board")
-public class Board {
-    //글번호(자동증가)
+@Table(name="notice")
+public class Notice {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
@@ -40,23 +33,5 @@ public class Board {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="user_id", nullable = false)
     private User user_id;
-
-    //관계설정 노래에 관한 외래키 보유 주인테이블
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="music_id", nullable = false)
-    private Music music_id;
-
-
-    //댓글과 일대다관계 매핑
-    @OneToMany(mappedBy = "board_id", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Reply> replies = new ArrayList<>();
-
-    //신고내역과 일대다관계 매핑
-    @OneToMany(mappedBy = "board_id", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Report> Reports = new ArrayList<>();
-
-
-
-
 
 }
