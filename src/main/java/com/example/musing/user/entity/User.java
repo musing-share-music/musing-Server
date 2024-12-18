@@ -45,9 +45,13 @@ public class User { //https://developers.google.com/identity/openid-connect/open
     private Boolean activated; //null허용을 위해 웨퍼클래스 타입 적용
 
     @Column
+    //K-POP, J-POP, 클래식, 발라드, 얼터너티브, 인디, 디스코, 록,
+    //메탈, 신디팝, R&B, 뉴웨이브, 컨트리, 블루스, 일렉트로닉, 트로트, OST, CCM, 뮤지컬, EDM, 슈게이징
     private String likegenre; //자신이 좋아하는 장르
 
     @Column
+    //편안한, 차분한, 조용한, 신나는, 슬픈, 느린, 경쾌한, 잔잔한 ,집중, 운동, 힙한,
+    //몰드한, 뉴웨이브, 포크, 컨트리, 트로트, OST, CCM, 뮤지컬, EDM, 슈게이징
     private String likemood; //자신이 좋아하는 분위기
 
     @Column

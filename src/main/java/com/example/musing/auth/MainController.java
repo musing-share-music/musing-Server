@@ -1,6 +1,5 @@
 package com.example.musing.auth;
 
-import com.example.musing.user.repository.UserRepository;
 import com.example.musing.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
