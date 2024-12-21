@@ -1,7 +1,7 @@
 package com.example.musing.prefer.entity;
 
 import com.example.musing.music.entity.Music;
-import com.example.musing.prefer_music.entity.Prefer_Music;
+import com.example.musing.like_music.entity.Like_Music;
 import com.example.musing.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -31,10 +31,9 @@ public class Prefer {
     @JoinColumn(name = "user_id",nullable = false)
     private User user_id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "music_id",nullable = false)
-    private Music music_id;
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "music_id",nullable = false)
+//    private Music music_id;
 
-    @OneToMany(mappedBy = "prefer_id", cascade = CascadeType.ALL, orphanRemoval = true )
-    private List<Prefer_Music> preferMusics = new ArrayList<Prefer_Music>();
+
 }

@@ -1,22 +1,26 @@
 package com.example.musing.user.entity;
 
 import com.example.musing.board.entity.Board;
+import com.example.musing.like_music.entity.Like_Music;
 import com.example.musing.reply.entity.Reply;
 import com.example.musing.playlist.entity.PlayList;
 import com.example.musing.prefer.entity.Prefer;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Data // Lombok 어노테이션 : 클래스 내 모든 필드의 Getter 메소드 자동 생성
+@Getter // Lombok 어노테이션 : 클래스 내 모든 필드의 Getter 메소드 자동 생성
 @NoArgsConstructor // Lombok 어노테이션 : 기본 생성자 자동 추가
 @Entity
 @Table(name = "user")
+@DynamicInsert
 @DynamicUpdate  //update 될때 바뀐 컬럼만 변경하도록 함, 기존에는 모든 컬럼을 가져와서 바꿈
 public class User { //https://developers.google.com/identity/openid-connect/openid-connect?hl=ko#an-id-tokens-payload
     @Id
@@ -61,6 +65,9 @@ public class User { //https://developers.google.com/identity/openid-connect/open
     //답글 리스트와 일대다 매핑
     @OneToMany(mappedBy = "user_id", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Reply> replyList = new ArrayList<>();
+    //유저가 음악에 좋아요를 눌렀을때의 관계
+    @OneToMany(mappedBy = "user_id", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Like_Music> likes = new ArrayList<>();
 
     @Builder
     public User(String id,String username, String email, String profile){
@@ -69,6 +76,10 @@ public class User { //https://developers.google.com/identity/openid-connect/open
         this.email=email;
         this.profile=profile;
         this.role = Role.USER;
+    }
+    public void updateGoogleInfo(String username, String profile){
+        this.username =username;
+        this.profile = profile;
     }
     public void updateGenre(String genre){
         this.likegenre = genre;

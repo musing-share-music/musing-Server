@@ -22,6 +22,7 @@ import java.util.Objects;
 @Tag(name = "메인 페이지 관련 도메인", description = "메인 페이지 및 모달 창")
 public class MainController {
     //http://localhost:8090/oauth2/authorization/google //구글 로그인
+    //http://localhost:8090/swagger-ui/index.html //스웨거
     private final UserService userService;
     private final MainService mainService;
 
