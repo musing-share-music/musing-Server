@@ -38,6 +38,12 @@ public class Music {
     @Column(nullable = true)
     private String albumName;
 
+    @Column(nullable = false)
+    private String songLink;
+
+    @Column(nullable = false)
+    private String thumbNailLink;
+
     // 음악과 게시판 일대다 관계 매핑
     @OneToMany(mappedBy = "music_id" , cascade = CascadeType.ALL, orphanRemoval = true )
     private List<Board> boardList = new ArrayList<Board>();
