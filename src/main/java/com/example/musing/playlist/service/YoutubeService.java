@@ -31,9 +31,11 @@ public class YoutubeService {
 
 
 
-    public String searchmusic(String query) {
-        String url = API_URL + "search?part=snippet&q=" + query + "&key=" + apiKey;
+    public String searchMusic(String query) {
+        String url = API_URL + "search?part=snippet&query=" + query + "&key=" + apiKey;
+        System.out.println("url :" +  url);
         String response = restTemplate.getForObject(url, String.class);
+        System.out.println("response :" +  response);
         try {
             // JSON 파싱
             JsonNode root = objectMapper.readTree(response);

@@ -90,11 +90,15 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private String resolveToken(HttpServletRequest request) {
-/*        String token = request.getHeader(AUTHORIZATION);*/
+        /*        String token = request.getHeader(AUTHORIZATION);*/
         String token = null;
-        for(Cookie cookie : request.getCookies()){
-            if(cookie.getName().equals("accessToken")){
-                 token = cookie.getValue();
+        if(request.getCookies()!=null){
+            for(Cookie cookie : request.getCookies()){
+
+                if(cookie.getName().equals("accessToken")){
+                    token = cookie.getValue();
+                    System.out.println("token : " + token);
+                }
             }
         }
 

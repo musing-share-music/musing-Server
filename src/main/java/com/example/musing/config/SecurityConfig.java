@@ -33,6 +33,7 @@ public class SecurityConfig {
         //해당 부분은 필터를 거치지 않게 설정
         return web -> web.ignoring().dispatcherTypeMatchers(DispatcherType.ERROR)
                 .requestMatchers("/error","/favicon.ico") //에러페이지는 필터 안거치게 설정
+                .requestMatchers("/youtube/search/**") //에러페이지는 필터 안거치게 설정
                 .requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**", "/v3/api-docs/**");
     }
     @Bean
