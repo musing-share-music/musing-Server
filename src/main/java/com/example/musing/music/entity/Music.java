@@ -4,7 +4,9 @@ import com.example.musing.board.entity.Board;
 import com.example.musing.hashtag.entity.HashTag;
 import com.example.musing.prefer.entity.Prefer;
 import com.example.musing.like_music.entity.Like_Music;
+import com.example.musing.user.entity.Role;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -34,7 +36,7 @@ public class Music {
     private String playtime;
 
     @Column(nullable = true)
-    private String album;
+    private String albumName;
 
     // 음악과 게시판 일대다 관계 매핑
     @OneToMany(mappedBy = "music_id" , cascade = CascadeType.ALL, orphanRemoval = true )
@@ -48,4 +50,15 @@ public class Music {
     @OneToMany(mappedBy = "music_id", cascade = CascadeType.ALL, orphanRemoval = true )
     private List<Like_Music> preferMusics = new ArrayList<Like_Music>();
 
+
+    @Builder
+    public Music(long id,String name,String artist,String genre,String playtime,String albumName){
+        this.id = id;
+        this.name = name;
+        this.artist = artist;
+        this.genre = genre;
+        this.playtime = playtime;
+        this.albumName = albumName;
+
+    }
 }
