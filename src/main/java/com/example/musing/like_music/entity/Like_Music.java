@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @Entity
-
+@Table(name="like_music")
 public class Like_Music {
 
    //유저가 좋아요를 눌렀을때에 관한 객체

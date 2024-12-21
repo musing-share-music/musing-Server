@@ -7,11 +7,11 @@ import com.example.musing.playlist.entity.PlayList;
 import com.example.musing.prefer.entity.Prefer;
 import jakarta.persistence.*;
 import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
-import org.springframework.boot.context.properties.bind.DefaultValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +20,7 @@ import java.util.List;
 @NoArgsConstructor // Lombok 어노테이션 : 기본 생성자 자동 추가
 @Entity
 @Table(name = "user")
+@DynamicInsert
 @DynamicUpdate  //update 될때 바뀐 컬럼만 변경하도록 함, 기존에는 모든 컬럼을 가져와서 바꿈
 public class User { //https://developers.google.com/identity/openid-connect/openid-connect?hl=ko#an-id-tokens-payload
     @Id
@@ -41,8 +42,16 @@ public class User { //https://developers.google.com/identity/openid-connect/open
 
     // true면 사용가능 false면 정지상태, null일 경우 장르 및 분위기 선택 안한 상태
     @Column(nullable = true)
-    private boolean Activated;
-    
+    private Boolean activated; //null허용을 위해 웨퍼클래스 타입 적용
+
+    @Column
+    private String likegenre; //자신이 좋아하는 장르
+
+    @Column
+    private String likemood; //자신이 좋아하는 분위기
+
+    @Column
+    private String likeartists; //자신이 좋아하는 아티스트들
 
     //게시판 일대다 매핑
     @OneToMany(mappedBy = "user_id", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -67,6 +76,19 @@ public class User { //https://developers.google.com/identity/openid-connect/open
         this.email=email;
         this.profile=profile;
         this.role = Role.USER;
+    }
+    public void updateGoogleInfo(String username, String profile){
+        this.username =username;
+        this.profile = profile;
+    }
+    public void updateGenre(String genre){
+        this.likegenre = genre;
+    }
+    public void updateMood(String mood){
+        this.likemood = mood;
+    }
+    public void updateArtists(String artists){
+        this.likeartists = artists;
     }
 
 }
