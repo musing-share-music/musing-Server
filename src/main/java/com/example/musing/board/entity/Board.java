@@ -1,13 +1,15 @@
 package com.example.musing.board.entity;
 
 import com.example.musing.report.entity.Report;
-import com.example.musing.boardCategory.entity.BCategory;
+import com.example.musing.notice.entity.Notice;
 import com.example.musing.music.entity.Music;
 import com.example.musing.reply.entity.Reply;
 import com.example.musing.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -33,13 +35,17 @@ public class Board {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
+    //추천수
+    @ColumnDefault("0")
+    @Column(nullable = false)
+    private int recommendCount;
+
+    @ColumnDefault("0")
+    @Column(nullable = false)
+    private int viewCount;
+
     @Column(nullable = false)
     private boolean activeCheck;
-
-    //관계설정 카테고리에 관한 외래키 보유 주인테이블
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="category", nullable = false)
-    private BCategory category;
 
     //관계설정 유저에 관한 외래키 보유 주인테이블
     @ManyToOne(fetch = FetchType.LAZY)
@@ -59,9 +65,4 @@ public class Board {
     //신고내역과 일대다관계 매핑
     @OneToMany(mappedBy = "board_id", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Report> Reports = new ArrayList<>();
-
-
-
-
-
 }
