@@ -33,7 +33,7 @@ public class SecurityConfig {
         //해당 부분은 필터를 거치지 않게 설정
         return web -> web.ignoring().dispatcherTypeMatchers(DispatcherType.ERROR)
                 .requestMatchers("/error","/favicon.ico") //에러페이지는 필터 안거치게 설정
-                .requestMatchers("/youtube/search/**") //에러페이지는 필터 안거치게 설정
+/*                .requestMatchers("/youtube/search/**") //에러페이지는 필터 안거치게 설정*/
                 .requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**", "/v3/api-docs/**");
     }
     @Bean
@@ -47,7 +47,9 @@ public class SecurityConfig {
                 .logout(AbstractHttpConfigurer::disable) //로그아웃할때 쿠키 삭제하는거 해야할듯
                 //JWT 사용으로 세션 사용하지않음
                 .sessionManagement(c ->
-                        c.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용하지 않음
+                        c.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                // 세션 사용하지 않음
                 //X-Frame 차단 (타 사이트 iframe 및 오브젝트 등등 접근 차단)
                 .headers(c -> c.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable).disable())
                 .authorizeHttpRequests((authorize) -> authorize
@@ -69,6 +71,11 @@ public class SecurityConfig {
                                         .successHandler(oauth2SuccessHandler)
                                         .failureHandler(new OAuth2FailureHandler())
                         )
+                .logout(auth -> auth
+                        .logoutUrl("/musing/logout")
+                        .deleteCookies("accessToken")
+                        .logoutSuccessUrl("/musing/main")
+                )
                    //JWT 관련 설정, 하단 필터 실행
                 .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(new TokenExceptionFilter(), tokenAuthenticationFilter.getClass())
@@ -79,5 +86,4 @@ public class SecurityConfig {
                     .accessDeniedHandler(new CustomAccessDeniedHandler()));
         return http.build();
     }
-
 }

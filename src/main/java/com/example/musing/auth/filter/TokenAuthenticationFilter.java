@@ -48,9 +48,6 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
                 if (StringUtils.hasText(reissueAccessToken)) {//재발급이 성공했다면
                     setAuthentication(reissueAccessToken);//시큐리티 콘텍스트 추가
 
-                    // 재발급된 accessToken 다시 전달
-                    /*response.setHeader(AUTHORIZATION, "Bearer " + reissueAccessToken);*/
-
                     //기존 쿠키 남은거 있나확인하고 없애고 새로 넣어주기
                     //Null이 아니면 쿠키 삭제하기
                     Objects.requireNonNull(checkCookie(request)).setMaxAge(0);
@@ -74,6 +71,9 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
     private Cookie checkCookie(HttpServletRequest request){
+        if(request.getCookies()==null){
+            return null;
+        }
         for(Cookie cookie : request.getCookies()){
             if(cookie.getName().equals("accessToken")){
                 return cookie;
@@ -90,11 +90,9 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private String resolveToken(HttpServletRequest request) {
-        /*        String token = request.getHeader(AUTHORIZATION);*/
         String token = null;
         if(request.getCookies()!=null){
             for(Cookie cookie : request.getCookies()){
-
                 if(cookie.getName().equals("accessToken")){
                     token = cookie.getValue();
                     System.out.println("token : " + token);
