@@ -8,22 +8,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
-public class NoticeServiceImpl implements NoticeService{
+public class NoticeServiceImpl implements NoticeService {
 
     private final NoticeRepository noticeRepository;
+
     @Override
     @Transactional
     public NoticeDto entityToDto(Notice notice) {
-            return NoticeDto.builder()
-                    .id(notice.getId())
-                    .title(notice.getTitle())
-                    .content(notice.getContent())
-                    .createdAt(notice.getCreatedAt())
-                    .username(notice.getUser_id().getUsername())
-                    .build();
-        }
+        return NoticeDto.toDto(notice);
+    }
 
     @Override
     @Transactional

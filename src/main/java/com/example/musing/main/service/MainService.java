@@ -1,8 +1,10 @@
 package com.example.musing.main.service;
 
-import com.example.musing.main.dto.MainPageDto;
+import com.example.musing.main.dto.LoginMainPageDto;
+import com.example.musing.main.dto.NotLoginMainPageDto;
 
 public interface MainService {
-    public MainPageDto.NotLoginMainPageDto notLoginMainPage();
-    public MainPageDto.LoginMainPageDto LoginMainPage();
+    public NotLoginMainPageDto notLoginMainPage();
+
+    public LoginMainPageDto LoginMainPage();
 }

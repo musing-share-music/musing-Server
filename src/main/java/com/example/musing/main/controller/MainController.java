@@ -1,8 +1,6 @@
 package com.example.musing.main.controller;
 
-import com.example.musing.board.dto.BoardDto;
-import com.example.musing.board.entity.Board;
-import com.example.musing.main.dto.MainPageDto;
+import com.example.musing.main.dto.NotLoginMainPageDto;
 import com.example.musing.main.service.MainService;
 import com.example.musing.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,7 +12,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.Objects;
 
 @RestController
 @RequestMapping("/musing")
@@ -56,7 +53,7 @@ public class MainController {
                 //작성 완료단계면 이 부분도 Dto에 넣어서 전송해야함, 프론트에서 상황에 맞게 모달 띄우기 위해
             }
         }else{
-            MainPageDto.NotLoginMainPageDto mainPageDto = mainService.notLoginMainPage();
+            NotLoginMainPageDto mainPageDto = mainService.notLoginMainPage();
             return ResponseEntity.ok(mainPageDto);
         }
 
