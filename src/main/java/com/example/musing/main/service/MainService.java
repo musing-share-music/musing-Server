@@ -6,5 +6,5 @@ import com.example.musing.main.dto.NotLoginMainPageDto;
 public interface MainService {
     public NotLoginMainPageDto notLoginMainPage();
 
-    public LoginMainPageDto LoginMainPage();
+    public LoginMainPageDto LoginMainPage(String userId);
 }
