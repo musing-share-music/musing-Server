@@ -21,6 +21,7 @@ public class Board {
     //글번호(자동증가)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name="boardid")
     private long id;
     //글 제목
     @Column(nullable = false, length = 100)
@@ -47,12 +48,12 @@ public class Board {
 
     //관계설정 유저에 관한 외래키 보유 주인테이블
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "userid", nullable = false)
     private User user;
 
     //관계설정 노래에 관한 외래키 보유 주인테이블
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "music_id", nullable = false)
+    @JoinColumn(name = "musicid", nullable = false)
     private Music music;
 
 

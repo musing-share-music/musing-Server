@@ -17,13 +17,14 @@ public class Like_Music {
     // 일대다 중간 테이블
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long prefer_music_id;
+    @Column(name="like_musicid")
+    private long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "userid")
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "music_id")
+    @JoinColumn(name = "musicid")
     private Music music;
 }

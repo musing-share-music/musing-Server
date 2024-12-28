@@ -20,6 +20,7 @@ import java.util.List;
 public class Notice {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name="noticeid")
     private long id;
     //글 제목
     @Column(nullable=false,length = 100)
@@ -37,6 +38,6 @@ public class Notice {
 
     //관계설정 유저에 관한 외래키 보유 주인테이블
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="user_id", nullable = false)
+    @JoinColumn(name="userid", nullable = false)
     private User user;
 }

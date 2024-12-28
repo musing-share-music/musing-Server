@@ -21,6 +21,7 @@ public class Music {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name="musicid")
     private long id;
 
     @Column(nullable = false)
@@ -47,7 +48,6 @@ public class Music {
     // 음악과 게시판 일대다 관계 매핑
     @OneToMany(mappedBy = "music" , cascade = CascadeType.ALL, orphanRemoval = true )
     private List<Board> boardList = new ArrayList<Board>();
-
 
     // 음악과 해쉬태그 일대다 관계 매핑
     @OneToMany(mappedBy = "music" , cascade = CascadeType.ALL, orphanRemoval = true )
