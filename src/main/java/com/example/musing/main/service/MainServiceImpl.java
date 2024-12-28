@@ -67,6 +67,11 @@ public class MainServiceImpl implements MainService {
         return LoginMainPageDto.of(noticeDto,likeGenre,likeMusic,genreBoardDtos,hotBoardDto,mainPageBoardDtos);
     }
 
+    @Override
+    public List<GenreBoardDto> selcetGenre(String genre) {
+        return boardService.findBy5GenreBoard(genre);
+    }
+
     private String randomGenre(String[] gernes) {//랜덤한 장르를 뽑는 용
         Random random = new Random();
         int index = random.nextInt(gernes.length);

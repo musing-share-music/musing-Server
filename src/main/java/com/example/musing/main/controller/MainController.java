@@ -1,5 +1,6 @@
 package com.example.musing.main.controller;
 
+import com.example.musing.board.dto.GenreBoardDto;
 import com.example.musing.main.dto.LoginMainPageDto;
 import com.example.musing.main.dto.NotLoginMainPageDto;
 import com.example.musing.main.service.MainService;
@@ -10,12 +11,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 
 @RestController
 @RequestMapping("/musing")
@@ -55,18 +58,22 @@ public class MainController {
     @GetMapping("main")
     public ResponseEntity<Object> mainPage(Principal principal) {//비로그인 기준 Dto와 로그인 기준 Dto파일을 다르게 보내기 위해 와일드카드 사용
         //메인페이지 로그인 전에 시큐리티 권한확인하여 로그인상태를 구분,[ROLE_USER, ROLE_ADMIN, ROLE_ANONYMOUS]로 구분
-        if (checkRole()) {//로그인 여부 체크
+        if (checkRole()) { //로그인 여부 체크
             String check = userService.checkInputTags(principal.getName());//유저가 분위기 및 장르, 좋아하는 아티스트를 넣었는지 확인하기
             if (check.equals("pass")) {// 최초 로그인 이후의 회원가입 단계에서 다 작성하였을 때
                 LoginMainPageDto mainPageDto = mainService.LoginMainPage(principal.getName());
                 return ResponseEntity.ok(mainPageDto);
-            }
+            } //작성이 다 안끝났을 경우에는 비로그인 Dto를 띄우고 모달창 추가 호출해야함
         } else {
             NotLoginMainPageDto mainPageDto = mainService.notLoginMainPage();
             return ResponseEntity.ok(mainPageDto);
         }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("로그인 여부 확인 부분에서 잘못된 요청입니다.");
+    }
 
-        return ResponseEntity.ok("");
+    @GetMapping("main/genre")
+    public ResponseEntity<List<GenreBoardDto>> genreForm(@RequestParam(name = "genre") String genre){
+        return ResponseEntity.ok(mainService.selcetGenre(genre));
     }
 
     @PostMapping("/modal/like/genres")

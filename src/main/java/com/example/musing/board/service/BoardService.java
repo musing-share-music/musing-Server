@@ -2,6 +2,7 @@ package com.example.musing.board.service;
 
 import com.example.musing.board.dto.BoardDto;
 import com.example.musing.board.dto.GenreBoardDto;
+import com.example.musing.board.entity.Board;
 import com.example.musing.main.dto.MainPageBoardDto;
 
 import java.util.List;
