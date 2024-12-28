@@ -5,6 +5,9 @@ import com.example.musing.main.dto.NotLoginMainPageDto;
 import com.example.musing.main.service.MainService;
 import com.example.musing.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -42,10 +45,15 @@ public class MainController {
 
     @Operation(summary = "메인 페이지 이동", description = "메인페이지로 이동할 때 접근한 사용자의 로그인 정보에 따라 전송하는 DTO 다르게 할 예정<br>" +
             "비로그인 : 음악 추천 게시판 및 공지사항 정보<br>" +
-            "로그인 : 음악 추천 게시판 및 공지사항, 곡 추천, 좋아요한 음악, 자신의 태그 정보<br>+" +
-            "Dto json타입으로 작성 양식 추가 예정")
+            "로그인 : 음악 추천 게시판 및 공지사항, 곡 추천, 좋아요한 음악, 자신의 태그 정보<br>" +
+            "<b>반환 타입이 두가지 이니 Example Value 말고 schema도 확인해주세요</b>", responses = {
+            @ApiResponse(responseCode = "200", description = "Success<br>" +
+                    "<b>JSON 타입의 {}와 []를 구분하여 확인해주세요. []에 경우에는 여러개가 들어갈 부분입니다.</b>",
+                    content = @Content(mediaType = "application/json", schema = @Schema(oneOf = {NotLoginMainPageDto.class, LoginMainPageDto.class}))
+            )
+    })
     @GetMapping("main")
-    public ResponseEntity<?> mainPage(Principal principal) {//비로그인 기준 Dto와 로그인 기준 Dto파일을 다르게 보내기 위해 와일드카드 사용
+    public ResponseEntity<Object> mainPage(Principal principal) {//비로그인 기준 Dto와 로그인 기준 Dto파일을 다르게 보내기 위해 와일드카드 사용
         //메인페이지 로그인 전에 시큐리티 권한확인하여 로그인상태를 구분,[ROLE_USER, ROLE_ADMIN, ROLE_ANONYMOUS]로 구분
         if (checkRole()) {//로그인 여부 체크
             String check = userService.checkInputTags(principal.getName());//유저가 분위기 및 장르, 좋아하는 아티스트를 넣었는지 확인하기

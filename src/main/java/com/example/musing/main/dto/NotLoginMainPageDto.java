@@ -3,10 +3,11 @@ package com.example.musing.main.dto;
 import com.example.musing.board.dto.BoardDto;
 import com.example.musing.board.dto.GenreBoardDto;
 import com.example.musing.notice.dto.NoticeDto;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
 import java.util.List;
-
+@Schema(description = "로그인하지 않은 메인페이지")
 @Builder
 public record NotLoginMainPageDto(
         NoticeDto noticeDto, //메인페이지 공지사항
