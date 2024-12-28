@@ -10,9 +10,9 @@ public record BoardDto(
     public static BoardDto toDto(Board board) {
         return BoardDto.builder()
                 .title(board.getTitle())
-                .musicName(board.getMusicId().getName())
-                .artist(board.getMusicId().getArtist())
-                .thumbNailLink(board.getMusicId().getThumbNailLink())
+                .musicName(board.getMusic().getName())
+                .artist(board.getMusic().getArtist())
+                .thumbNailLink(board.getMusic().getThumbNailLink())
                 .build();
     }
 }

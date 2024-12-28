@@ -14,7 +14,7 @@ public record NoticeDto(long id, String title, String content,
                 .title(notice.getTitle())
                 .content(notice.getContent())
                 .createdAt(notice.getCreatedAt())
-                .username(notice.getUserId().getUsername())
+                .username(notice.getUser().getUsername())
                 .build();
     }
 }
