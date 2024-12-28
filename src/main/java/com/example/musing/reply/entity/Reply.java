@@ -19,6 +19,7 @@ public class Reply {
     //댓글 번호
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name="replyid")
     private long id;
 
     @Column
@@ -32,12 +33,12 @@ public class Reply {
 
     //관계설정 유저에 관한 외래키 보유 주인테이블
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="user_id", nullable = false)
+    @JoinColumn(name="userid", nullable = false)
     private User user;
 
     //관계설정 게시판에 관한 외래키 보유 주인테이블
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="board_id", nullable = false)
+    @JoinColumn(name="boardid", nullable = false)
     private Board board;
 
     //일대다 관계로 신고테이블과 메핑

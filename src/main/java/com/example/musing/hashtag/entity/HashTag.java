@@ -12,16 +12,17 @@ import lombok.NoArgsConstructor;
 @Table(name="hashtag")
 public class HashTag {
 
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name="hashtagid")
     private Long id;
 
     @Column(nullable = false)
     private String hashtag;
+
     //해쉬태그에 관한 외래키 보유 주인테이블
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "music_id", nullable = false)
+    @JoinColumn(name = "musicid", nullable = false)
     private Music music; // 작성자
 
 

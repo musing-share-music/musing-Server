@@ -16,6 +16,7 @@ public class Report {
     //신고 번호
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name="reportid")
     private long id;
 
     @Column(nullable = false)
@@ -27,11 +28,11 @@ public class Report {
 
     //관계설정 게시판에 관한 외래키 보유 주인테이블
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="board_id", nullable = false)
+    @JoinColumn(name="boardid", nullable = false)
     private Board board;
 
     //관계설정 답글에 관한 외래키 보유 주인테이블
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="reply_id", nullable = false)
+    @JoinColumn(name="replyid", nullable = false)
     private Reply reply;
 }
