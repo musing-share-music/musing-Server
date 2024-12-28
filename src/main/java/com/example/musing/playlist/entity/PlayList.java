@@ -21,5 +21,5 @@ public class PlayList {
     //유저에 관한 외래키 보유 주인테이블
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User user_id; // 작성자
+    private User userId; // 작성자
 }

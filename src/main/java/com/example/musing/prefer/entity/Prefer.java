@@ -29,7 +29,7 @@ public class Prefer {
     //유저에 관한 외래키 보유 주인테이블
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id",nullable = false)
-    private User user_id;
+    private User userId;
 
 //    @ManyToOne(fetch = FetchType.LAZY)
 //    @JoinColumn(name = "music_id",nullable = false)

@@ -48,19 +48,19 @@ public class Board {
     //관계설정 유저에 관한 외래키 보유 주인테이블
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User user_id;
+    private User userId;
 
     //관계설정 노래에 관한 외래키 보유 주인테이블
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "music_id", nullable = false)
-    private Music music_id;
+    private Music musicId;
 
 
     //댓글과 일대다관계 매핑
-    @OneToMany(mappedBy = "board_id", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "boardId", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Reply> replies = new ArrayList<>();
 
     //신고내역과 일대다관계 매핑
-    @OneToMany(mappedBy = "board_id", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "boardId", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Report> Reports = new ArrayList<>();
 }

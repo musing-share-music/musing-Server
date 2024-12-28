@@ -9,8 +9,8 @@ public record GenreBoardDto(long id, String musicName,
     public static GenreBoardDto toDto(Board board){
         return GenreBoardDto.builder()
                 .id(board.getId())
-                .musicName(board.getMusic_id().getName())
-                .thumbNailLink(board.getMusic_id().getThumbNailLink())
+                .musicName(board.getMusicId().getName())
+                .thumbNailLink(board.getMusicId().getThumbNailLink())
                 .build();
     }
 }
