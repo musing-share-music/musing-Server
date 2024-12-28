@@ -8,26 +8,21 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
-@Service
+
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
-public class NoticeServiceImpl implements NoticeService{
+@Service
+public class NoticeServiceImpl implements NoticeService {
 
     private final NoticeRepository noticeRepository;
-    @Override
-    @Transactional
-    public NoticeDto entityToDto(Notice notice) {
-            return NoticeDto.builder()
-                    .id(notice.getId())
-                    .title(notice.getTitle())
-                    .content(notice.getContent())
-                    .createdAt(notice.getCreatedAt())
-                    .username(notice.getUser_id().getUsername())
-                    .build();
-        }
 
     @Override
-    @Transactional
-    public Optional<Notice> findNotice() {
-        return noticeRepository.findFirstByActiveCheckFalseOrderByCreatedAtDesc();
+    public NoticeDto findNotice() {
+        Optional<Notice> notice = noticeRepository.findFirstByActiveCheckFalseOrderByCreatedAtDesc();
+        return notice.map(this::entityToDto).orElse(null);
+    }
+
+    private NoticeDto entityToDto(Notice notice) {
+        return NoticeDto.toDto(notice);
     }
 }

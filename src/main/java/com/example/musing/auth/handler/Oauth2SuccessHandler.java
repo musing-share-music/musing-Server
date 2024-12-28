@@ -34,7 +34,6 @@ public class Oauth2SuccessHandler implements AuthenticationSuccessHandler {
     private final TokenService tokenService;
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-/*        String authorization = response.getHeader(AUTHORIZATION);*/
         String authorization = null;
 
         for(Cookie cookie : request.getCookies()){//쿠키 여부 체크
@@ -49,7 +48,6 @@ public class Oauth2SuccessHandler implements AuthenticationSuccessHandler {
             Cookie cookie = tokenProvider.generateCookie(accessToken);
 
             response.addCookie(cookie);
-/*            response.setHeader(AUTHORIZATION, "Bearer " + accessToken);//헤더에 엑세스 토큰 추가*/
 
             Optional<Token> token = tokenService.findById(accessToken);//리프래시 토큰있나 확인
             if(token.isPresent()){//자신의 아이디의 리프래시토큰이 있나 검사, 임의로 쿠키또는 헤더값을 지웠을 경우로 작성
@@ -74,11 +72,9 @@ public class Oauth2SuccessHandler implements AuthenticationSuccessHandler {
         }
         if(oAuth2User.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"))) {
             System.out.println("register");
-/*            response.sendRedirect("/admin");*/
-        }else if(oAuth2User.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_USER"))) {
 
-            response.sendRedirect("/musing/test");
-            System.out.println("user");
+        }else if(oAuth2User.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_USER"))) {
+            response.sendRedirect("/musing/main");
         }else{
             throw new AuthorityException(ErrorCode.INVALID_AUTHORITY);
         }

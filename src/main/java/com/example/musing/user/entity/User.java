@@ -54,19 +54,19 @@ public class User { //https://developers.google.com/identity/openid-connect/open
     private String likeartists; //자신이 좋아하는 아티스트들
 
     //게시판 일대다 매핑
-    @OneToMany(mappedBy = "user_id", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Board> boards = new ArrayList<>();
     //플레이 리스트 일대다 매핑
-    @OneToMany(mappedBy = "user_id", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PlayList> playLists = new ArrayList<>();
     //플레이 리스트 일대다 매핑
-    @OneToMany(mappedBy = "user_id", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Prefer> prefers = new ArrayList<>();
     //답글 리스트와 일대다 매핑
-    @OneToMany(mappedBy = "user_id", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Reply> replyList = new ArrayList<>();
     //유저가 음악에 좋아요를 눌렀을때의 관계
-    @OneToMany(mappedBy = "user_id", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Like_Music> likes = new ArrayList<>();
 
     @Builder
