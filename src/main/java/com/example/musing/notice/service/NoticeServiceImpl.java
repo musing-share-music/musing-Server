@@ -9,21 +9,20 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
-@Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
+@Service
 public class NoticeServiceImpl implements NoticeService {
 
     private final NoticeRepository noticeRepository;
 
     @Override
-    @Transactional
-    public NoticeDto entityToDto(Notice notice) {
-        return NoticeDto.toDto(notice);
+    public NoticeDto findNotice() {
+        Optional<Notice> notice = noticeRepository.findFirstByActiveCheckFalseOrderByCreatedAtDesc();
+        return notice.map(this::entityToDto).orElse(null);
     }
 
-    @Override
-    @Transactional
-    public Optional<Notice> findNotice() {
-        return noticeRepository.findFirstByActiveCheckFalseOrderByCreatedAtDesc();
+    private NoticeDto entityToDto(Notice notice) {
+        return NoticeDto.toDto(notice);
     }
 }
