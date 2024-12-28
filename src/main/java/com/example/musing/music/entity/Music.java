@@ -38,16 +38,22 @@ public class Music {
     @Column(nullable = true)
     private String albumName;
 
+    @Column(nullable = false)
+    private String songLink;
+
+    @Column(nullable = false)
+    private String thumbNailLink;
+
     // 음악과 게시판 일대다 관계 매핑
-    @OneToMany(mappedBy = "music_id" , cascade = CascadeType.ALL, orphanRemoval = true )
+    @OneToMany(mappedBy = "music" , cascade = CascadeType.ALL, orphanRemoval = true )
     private List<Board> boardList = new ArrayList<Board>();
 
 
     // 음악과 해쉬태그 일대다 관계 매핑
-    @OneToMany(mappedBy = "music_id" , cascade = CascadeType.ALL, orphanRemoval = true )
+    @OneToMany(mappedBy = "music" , cascade = CascadeType.ALL, orphanRemoval = true )
     private List<HashTag> HashTagList = new ArrayList<HashTag>();
     // 음악과 좋아요 일대다 관계 매핑
-    @OneToMany(mappedBy = "music_id", cascade = CascadeType.ALL, orphanRemoval = true )
+    @OneToMany(mappedBy = "music", cascade = CascadeType.ALL, orphanRemoval = true )
     private List<Like_Music> preferMusics = new ArrayList<Like_Music>();
 
 

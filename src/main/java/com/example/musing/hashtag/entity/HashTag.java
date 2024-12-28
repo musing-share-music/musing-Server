@@ -22,7 +22,7 @@ public class HashTag {
     //해쉬태그에 관한 외래키 보유 주인테이블
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "music_id", nullable = false)
-    private Music music_id; // 작성자
+    private Music music; // 작성자
 
 
 
