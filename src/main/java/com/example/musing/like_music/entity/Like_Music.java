@@ -21,9 +21,9 @@ public class Like_Music {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User userId;
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "music_id")
-    private Music musicId;
+    private Music music;
 }

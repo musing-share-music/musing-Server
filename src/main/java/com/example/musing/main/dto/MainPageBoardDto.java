@@ -14,13 +14,13 @@ public record MainPageBoardDto(
                 .id(board.getId())
                 .title(board.getTitle())
                 .content(board.getContent())
-                .username(board.getUserId().getUsername())
+                .username(board.getUser().getUsername())
                 .replyCount(board.getReplies().size()) //해당부분은 조회 최적화를 위해 Count만 가져올 예정
                 .recommendCount(board.getRecommendCount())
                 .viewCount(board.getViewCount())
-                .musicName(board.getMusicId().getName())
-                .artist(board.getMusicId().getArtist())
-                .thumbNailLink(board.getMusicId().getThumbNailLink())
+                .musicName(board.getMusic().getName())
+                .artist(board.getMusic().getArtist())
+                .thumbNailLink(board.getMusic().getThumbNailLink())
                 .build();
     }
 }

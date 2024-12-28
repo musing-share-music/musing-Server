@@ -52,7 +52,7 @@ public class BoardServiceImpl implements BoardService {
 
     public List<BoardDto> findBy10LikeMusics(String userId) {
         Specification<Board> spec = Specification.where(BoardSpecificaion.isActiveCheckFalse());
-        List<Board> boards = boardRepository.findByUserId_Id(spec, //해당 장르의 게시글 5개를 최신순으로 가져옴
+        List<Board> boards = boardRepository.findByUser_Id(spec, //해당 장르의 게시글 5개를 최신순으로 가져옴
                 PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "id")), userId).getContent();
         return boards.stream().map(this::entityToBoardDto).collect(Collectors.toList());
     }

@@ -28,10 +28,10 @@ public class Report {
     //관계설정 게시판에 관한 외래키 보유 주인테이블
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="board_id", nullable = false)
-    private Board boardId;
+    private Board board;
 
     //관계설정 답글에 관한 외래키 보유 주인테이블
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="reply_id", nullable = false)
-    private Reply replyId;
+    private Reply reply;
 }

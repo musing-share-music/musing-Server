@@ -38,5 +38,5 @@ public class Notice {
     //관계설정 유저에 관한 외래키 보유 주인테이블
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="user_id", nullable = false)
-    private User userId;
+    private User user;
 }

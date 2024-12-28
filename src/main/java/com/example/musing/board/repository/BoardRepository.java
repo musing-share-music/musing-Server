@@ -11,6 +11,6 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 public interface BoardRepository extends JpaRepository<Board, Long>, JpaSpecificationExecutor<Board> {
     // 레파지토리 문법이 너무 길어져 가독성이 낮은 부분을 Specification으로 사용
-    Page<Board> findByUserId_Id(Specification<Board> spec, Pageable pageable, String id);
+    Page<Board> findByUser_Id(Specification<Board> spec, Pageable pageable, String id);
 
 }
