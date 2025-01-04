@@ -6,13 +6,15 @@ import org.springframework.data.domain.Page;
 
 public interface ReplyService {
 
-    void writeReply(ReplyDto replyDto, long boardId);
+    void writeReply(long boardId, ReplyDto replyDto);
 
-    ReplyDto findMyReply(long boardId);
+    ReplyDto findMyReplyByBoardId(long boardId);
+
+    ReplyDto findMyReplyByReplyId(long replyId);
 
     void modifyReply(long replyId, ReplyDto replyDto);
 
     void deleteReply(long replyId);
 
-    Page<ReplyDto> findReplies(int page);
+    Page<ReplyDto> findReplies(long boardId, int page);
 }

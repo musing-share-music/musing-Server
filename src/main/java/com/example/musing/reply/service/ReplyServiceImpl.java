@@ -10,6 +10,8 @@ import com.example.musing.user.entity.User;
 import com.example.musing.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -27,10 +29,11 @@ public class ReplyServiceImpl implements ReplyService {
     private final ReplyRepository replyRepository;
     private final UserRepository userRepository;
     private final BoardRepository boardRepository;
+    private static int PAGE_SIZE = 10;
 
     @Transactional
     @Override
-    public void writeReply(ReplyDto replyDto, long boardId) {
+    public void writeReply(long boardId, ReplyDto replyDto) {
         String email = getUserEmail(); //유저 정보 확인 이후 이메일 가져오기
 
         User user = userRepository.findByEmail(email)
@@ -39,16 +42,30 @@ public class ReplyServiceImpl implements ReplyService {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new CustomException(NOT_FOUND_BOARDID));
 
+        boolean replyExist = replyRepository.existByBoard_IdAndUser_Email(boardId, email);
+
+        if (replyExist) {
+            throw new CustomException(EXIST_REPLY);
+        }
+
         Reply reply = Reply.from(replyDto, user, board);
 
         replyRepository.save(reply);
     }
 
     @Override
-    public ReplyDto findMyReply(long boardId) {
+    public ReplyDto findMyReplyByBoardId(long boardId) {
         String email = getUserEmail(); //유저 정보 확인 이후 이메일 가져오기
         Optional<Reply> reply = replyRepository.findByBoard_IdAndUser_Email(boardId, email);
         return reply.map(ReplyDto::from).orElse(null); //없으면 null리턴
+    }
+
+    @Override
+    public ReplyDto findMyReplyByReplyId(long replyId) {
+        String email = getUserEmail(); //유저 정보 확인 이후 이메일 가져오기
+        Reply reply = replyRepository.findById(replyId).orElseThrow(() -> new CustomException(NOT_FOUND_REPLY));
+
+        return Reply.toDto(reply);
     }
 
     @Transactional
@@ -71,8 +88,20 @@ public class ReplyServiceImpl implements ReplyService {
     }
 
     @Override
-    public Page<ReplyDto> findReplies(int page) {
-        return null;
+    public Page<ReplyDto> findReplies(long boardId, int page) {
+        if (page < 1) { // 잘못된 접근으로 throw할때 쿼리문 실행을 안하기 위해 나눠서 체크
+            throw new CustomException(BAD_REQUEST_REPLY_PAGE);
+        }
+        
+        Pageable pageable = PageRequest.of(page - 1, PAGE_SIZE);
+        Page<Reply> pageReply = replyRepository.findByBoard_Id(boardId, pageable);
+        int totalPages = pageReply.getTotalPages();
+
+        if ( page > totalPages) {
+            throw new CustomException(BAD_REQUEST_REPLY_PAGE);
+        }
+
+        return pageReply.map(Reply::toDto);
     }
 
     private String getUserEmail() {

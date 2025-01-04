@@ -44,6 +44,7 @@ public class Reply extends BaseEntity {
     //일대다 관계로 신고테이블과 메핑
     @OneToMany(mappedBy = "reply", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Report> reportList = new ArrayList<Report>();
+
     @Builder
     public Reply(long starScore, String content, User user, Board board) {
         this.starScore = starScore;
@@ -55,6 +56,10 @@ public class Reply extends BaseEntity {
     public void updateReply(long starScore, String content){
         this.starScore = starScore;
         this.content = content;
+    }
+
+    public static ReplyDto toDto(Reply reply){
+        return ReplyDto.from(reply);
     }
 
     public static Reply from(ReplyDto replyDto, User user, Board board) {
