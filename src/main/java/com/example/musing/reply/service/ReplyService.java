@@ -6,11 +6,11 @@ import org.springframework.data.domain.Page;
 
 public interface ReplyService {
 
-    Reply writeReply(ReplyDto replyDto);
+    void writeReply(ReplyDto replyDto, long boardId);
 
-    ReplyDto findMyReply(long replyid);
+    ReplyDto findMyReply(long boardId);
 
-    Reply modifyReply(long replyId, ReplyDto replyDto);
+    void modifyReply(long replyId, ReplyDto replyDto);
 
     void deleteReply(long replyId);
 

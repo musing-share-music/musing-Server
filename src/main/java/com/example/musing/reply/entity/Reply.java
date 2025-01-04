@@ -2,39 +2,28 @@ package com.example.musing.reply.entity;
 
 import com.example.musing.board.entity.Board;
 import com.example.musing.common.jpa.BaseEntity;
+import com.example.musing.reply.dto.ReplyDto;
 import com.example.musing.report.entity.Report;
 import com.example.musing.user.entity.User;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-import java.util.ArrayList;
-import java.util.List;
-import lombok.AllArgsConstructor;
+import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Getter // Lombok 어노테이션 : 클래스 내 모든 필드의 Getter 메소드 자동 생성
-@NoArgsConstructor // Lombok 어노테이션 : 기본 생성자 자동 추가
-@AllArgsConstructor
-@Builder
-@Entity
+import java.util.ArrayList;
+import java.util.List;
+
+@Getter
+@NoArgsConstructor
 @Table(name = "reply")
+@Entity
 public class Reply extends BaseEntity {
 
     //댓글 번호
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "replyid")
-    private long id;
+    private Long id;
 
     @Column(nullable = false)
     private Long starScore;
@@ -55,10 +44,26 @@ public class Reply extends BaseEntity {
     //일대다 관계로 신고테이블과 메핑
     @OneToMany(mappedBy = "reply", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Report> reportList = new ArrayList<Report>();
-
-    public static Reply from(ReplyDto replyDto) {
-        return Reply.builder()
-            .user(user)
-            .build();
+    @Builder
+    public Reply(long starScore, String content, User user, Board board) {
+        this.starScore = starScore;
+        this.content = content;
+        this.user = user;
+        this.board = board;
     }
+
+    public void updateReply(long starScore, String content){
+        this.starScore = starScore;
+        this.content = content;
+    }
+
+    public static Reply from(ReplyDto replyDto, User user, Board board) {
+        return Reply.builder()
+                .starScore(replyDto.starScore())
+                .content(replyDto.content())
+                .user(user)
+                .board(board)
+                .build();
+    }
+
 }

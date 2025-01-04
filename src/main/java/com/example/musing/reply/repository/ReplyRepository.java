@@ -7,4 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ReplyRepository extends JpaRepository<Reply, Long> {
     Optional<Reply> findByIdAndUser_Email(long replyId, String email);
+    Optional<Reply>  findByBoard_IdAndUser_Email(long boardId, String email);
 }

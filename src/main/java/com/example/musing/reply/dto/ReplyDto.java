@@ -1,21 +1,26 @@
 package com.example.musing.reply.dto;
 
 import com.example.musing.reply.entity.Reply;
-import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import lombok.Builder;
+
+import java.time.LocalDateTime;
 
 @Builder
 public record ReplyDto(
-    String starScore,
-    String content
+        Long id,
+        long starScore,
+        String content,
+        LocalDateTime createdAt,
+        LocalDateTime updatedAt
+
 ) {
-    public static ReplyDto from(Reply reply){
+    public static ReplyDto from(Reply reply) {
         return ReplyDto.builder()
-            .starScore(reply.getStarScore())
-            .content(reply.getContent())
-            .build();
+                .id(reply.getId())
+                .starScore(reply.getStarScore())
+                .content(reply.getContent())
+                .createdAt(reply.getCreatedAt())
+                .updatedAt(reply.getUpdatedAt())
+                .build();
     }
 }
