@@ -39,7 +39,7 @@ public record MainPageBoardDto(
                 .recommendCount(board.getRecommendCount())
                 .viewCount(board.getViewCount())
                 .musicName(board.getMusic().getName())
-                .artist(board.getMusic().getArtist())
+                .artist(board.getMusic().getArtist().getName())
                 .thumbNailLink(board.getMusic().getThumbNailLink())
                 .build();
     }
