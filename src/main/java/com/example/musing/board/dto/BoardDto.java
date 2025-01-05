@@ -16,11 +16,12 @@ public record BoardDto(
         String artist,
         @Schema(description = "유튜브 썸네일 사진 링크", example = "https://img.youtube.com/vi/-KG2O5PSCSs/maxresdefault.jpg")
         String thumbNailLink) { //메인 페이지 음악 추천 게시판 인기곡 부분과 좋아요한 음악
+
     public static BoardDto toDto(Board board) {
         return BoardDto.builder()
                 .title(board.getTitle())
                 .musicName(board.getMusic().getName())
-                .artist(board.getMusic().getArtist())
+                .artist(board.getMusic().getArtist().getName())
                 .thumbNailLink(board.getMusic().getThumbNailLink())
                 .build();
     }

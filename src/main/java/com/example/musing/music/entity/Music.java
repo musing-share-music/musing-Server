@@ -1,10 +1,9 @@
 package com.example.musing.music.entity;
 
+import com.example.musing.artist.entity.Artist;
 import com.example.musing.board.entity.Board;
 import com.example.musing.hashtag.entity.HashTag;
-import com.example.musing.prefer.entity.Prefer;
 import com.example.musing.like_music.entity.Like_Music;
-import com.example.musing.user.entity.Role;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -26,9 +25,6 @@ public class Music {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
-    private String artist;
-
     @Column(nullable = true)
     private String genre;
 
@@ -48,7 +44,6 @@ public class Music {
     @OneToMany(mappedBy = "music" , cascade = CascadeType.ALL, orphanRemoval = true )
     private List<Board> boardList = new ArrayList<Board>();
 
-
     // 음악과 해쉬태그 일대다 관계 매핑
     @OneToMany(mappedBy = "music" , cascade = CascadeType.ALL, orphanRemoval = true )
     private List<HashTag> HashTagList = new ArrayList<HashTag>();
@@ -57,11 +52,17 @@ public class Music {
     private List<Like_Music> preferMusics = new ArrayList<Like_Music>();
 
 
+    //아티스트와 관계 매핑
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "artist", nullable = false)
+    private Artist artist;
+
+
     @Builder
     public Music(long id,String name,String artist,String genre,String playtime,String albumName){
         this.id = id;
         this.name = name;
-        this.artist = artist;
+        this.artist = Artist.builder().name(artist).build();
         this.genre = genre;
         this.playtime = playtime;
         this.albumName = albumName;
