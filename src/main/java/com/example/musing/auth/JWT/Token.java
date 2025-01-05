@@ -17,6 +17,7 @@ public class Token {
     private String tokenid;
 
     private String accesstoken;
+
     private String refreshtoken;
 
     //리프래쉬 토큰 재발급용

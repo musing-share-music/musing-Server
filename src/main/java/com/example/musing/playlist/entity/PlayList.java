@@ -13,6 +13,7 @@ public class PlayList {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name="playlistid")
     private long id;
 
     @Column(nullable = false)
@@ -20,6 +21,6 @@ public class PlayList {
 
     //유저에 관한 외래키 보유 주인테이블
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "userid", nullable = false)
     private User user; // 작성자
 }

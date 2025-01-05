@@ -18,6 +18,7 @@ public class Prefer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name="preferid")
     private long id;
 
     @Column
@@ -28,7 +29,7 @@ public class Prefer {
     private String mood;
     //유저에 관한 외래키 보유 주인테이블
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id",nullable = false)
+    @JoinColumn(name = "userid",nullable = false)
     private User user;
 
 //    @ManyToOne(fetch = FetchType.LAZY)

@@ -20,6 +20,7 @@ public class Music {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name="musicid")
     private long id;
 
     @Column(nullable = false)
