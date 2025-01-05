@@ -1,5 +1,6 @@
 package com.example.musing.board.entity;
 
+import com.example.musing.common.jpa.BaseEntity;
 import com.example.musing.music.entity.Music;
 import com.example.musing.reply.entity.Reply;
 import com.example.musing.report.entity.Report;
@@ -17,7 +18,7 @@ import java.util.List;
 @NoArgsConstructor // Lombok 어노테이션 : 기본 생성자 자동 추가
 @Entity
 @Table(name = "board")
-public class Board {
+public class Board extends BaseEntity {
     //글번호(자동증가)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,10 +31,6 @@ public class Board {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    //생성일자
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
-
     //추천수
     @ColumnDefault("0")
     @Column(nullable = false)
@@ -45,6 +42,9 @@ public class Board {
 
     @Column(nullable = false)
     private boolean activeCheck;
+
+    @Column(nullable = false)
+    private boolean permitRegister;
 
     //관계설정 유저에 관한 외래키 보유 주인테이블
     @ManyToOne(fetch = FetchType.LAZY)
