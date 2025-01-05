@@ -1,11 +1,9 @@
 package com.example.musing.auth.JWT.DTO;
 
 
-
 import com.example.musing.user.entity.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.util.Collection;
@@ -14,8 +12,8 @@ import java.util.Map;
 
 public record PrincipalDetails(
         User user,
-        Map<String,Object> attributes
-        ) implements OAuth2User {
+        Map<String, Object> attributes
+) implements OAuth2User {
 
     @Override
     public Map<String, Object> getAttributes() {
@@ -28,9 +26,6 @@ public record PrincipalDetails(
                 new SimpleGrantedAuthority(user.getRole().getKey()));
     }
 
-    public String getUser_username(){
-        return user.getUsername();
-    }
     @Override
     public String getName() {
         return attributes.get("sub").toString(); //구글은 필드값 이름이 sub
