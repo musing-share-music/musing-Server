@@ -2,6 +2,7 @@ package com.example.musing.board.dto;
 
 
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +16,7 @@ public class CreateBoardRequest {
     private String youtubeLink;
     private List<String> hashtags;
     private String genre;
-    private String image; // Base64 인코딩된 이미지 데이터
+    private MultipartFile image;
     private String content;
 
 }
