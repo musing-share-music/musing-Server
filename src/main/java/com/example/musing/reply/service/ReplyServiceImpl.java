@@ -42,7 +42,7 @@ public class ReplyServiceImpl implements ReplyService {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new CustomException(NOT_FOUND_BOARDID));
 
-        boolean replyExist = replyRepository.existByBoard_IdAndUser_Email(boardId, email);
+        boolean replyExist = replyRepository.existsByBoard_IdAndUser_Email(boardId, email);
 
         if (replyExist) {
             throw new CustomException(EXIST_REPLY);
