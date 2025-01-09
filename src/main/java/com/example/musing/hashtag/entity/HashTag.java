@@ -3,6 +3,7 @@ package com.example.musing.hashtag.entity;
 import com.example.musing.music.entity.Music;
 import com.example.musing.user.entity.User;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -25,6 +26,8 @@ public class HashTag {
     @JoinColumn(name = "musicid", nullable = false)
     private Music music; // 작성자
 
+    @Builder
+    public HashTag(String hashtag, Music music) {}
 
 
 }

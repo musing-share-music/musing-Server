@@ -18,7 +18,6 @@ public record GenreBoardDto(
         return GenreBoardDto.builder()
                 .id(board.getId())
                 .musicName(board.getMusic().getName())
-                .artist(board.getMusic().getArtist())
                 .thumbNailLink(board.getMusic().getThumbNailLink())
                 .build();
     }

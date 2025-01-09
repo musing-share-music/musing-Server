@@ -1,7 +1,11 @@
 package com.example.musing.board.service;
 
+import com.example.musing.artist.entity.Artist;
+import com.example.musing.artist.repository.ArtistRepository;
 import com.example.musing.board.dto.BoardDto;
+import com.example.musing.board.dto.CreateBoardRequest;
 import com.example.musing.board.dto.GenreBoardDto;
+import com.example.musing.board.dto.PostDto;
 import com.example.musing.board.entity.Board;
 import com.example.musing.board.repository.BoardRepository;
 import com.example.musing.like_music.entity.Like_Music;
@@ -25,6 +29,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 public class BoardServiceImpl implements BoardService {
+
     private final BoardRepository boardRepository;
     private final Like_MusicRepository likeMusicRepository;
     @Override
@@ -70,6 +75,31 @@ public class BoardServiceImpl implements BoardService {
         return boards.stream().map(this::entityToGenreDto).collect(Collectors.toList());
     }
 
+    //게시판 등록 로직
+    @Override
+    public PostDto createBoard(CreateBoardRequest request) {
+        // Artist 조회
+        Artist artistEntity = artistRepository.findByName(request.getArtist())
+                .orElseThrow(() -> new EntityNotFoundException("Artist not found: " + request.getArtist()));
+
+        // Music 조회 또는 생성
+
+
+        // Board 생성
+        Board board = Board.builder()
+                .title(request.getTitle())
+                .content(request.getContent())
+                .user(userRepository.findByEmail(request.getUserEmail())
+                        .orElseThrow(() -> new EntityNotFoundException("User not found: " + request.getUserEmail())))
+                .build();
+
+        Board savedBoard = boardRepository.save(board);
+        return PostDto.fromEntity(savedBoard);
+
+        // 4. DTO로 변환 후 반환
+
+    }
+
     private GenreBoardDto entityToGenreDto(Board board) { //장르로 검색한 게시글 엔티티를 Dto로 전환
         return GenreBoardDto.toDto(board);
     }
@@ -82,3 +112,5 @@ public class BoardServiceImpl implements BoardService {
         return MainPageBoardDto.toDto(board);
     }
 }
+
+

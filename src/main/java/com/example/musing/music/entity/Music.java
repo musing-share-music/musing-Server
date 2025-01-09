@@ -1,10 +1,9 @@
 package com.example.musing.music.entity;
 
+import com.example.musing.artist.entity.Artist;
 import com.example.musing.board.entity.Board;
 import com.example.musing.hashtag.entity.HashTag;
-import com.example.musing.prefer.entity.Prefer;
 import com.example.musing.like_music.entity.Like_Music;
-import com.example.musing.user.entity.Role;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -60,11 +59,17 @@ public class Music {
     private List<Like_Music> preferMusics = new ArrayList<Like_Music>();
 
 
+    //아티스트와 관계 매핑
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "artist", nullable = false)
+    private Artist artist;
+
+
     @Builder
     public Music(long id,String name,String artist,String genre,String mood,String playtime,String albumName){
         this.id = id;
         this.name = name;
-        this.artist = artist;
+        this.artist = Artist.builder().name(artist).build();
         this.genre = genre;
         this.mood = mood;
         this.playtime = playtime;
