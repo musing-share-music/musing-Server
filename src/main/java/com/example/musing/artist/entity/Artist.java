@@ -17,27 +17,19 @@ import java.util.List;
 public class Artist {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     @Column(nullable = false)
     private String name;
-
-    @Column
-    private String age;
-
-    @Column
-    private String birthday;
 
     @OneToMany(mappedBy = "artist" , cascade = CascadeType.ALL, orphanRemoval = true )
     private List<Music> musicList = new ArrayList<Music>();
 
 
     @Builder
-    public Artist(String name, String age, String birthday) {
+    public Artist(String name) {
         this.name = name;
-        this.age = age;
-        this.birthday = birthday;
 
     }
 

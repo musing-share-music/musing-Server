@@ -18,4 +18,7 @@ public interface BoardService {
     List<MainPageBoardDto> findBy5Board();
 
     List<GenreBoardDto> findBy10LikeMusics(String userId);
+
+    //게시판 등록 로직
+    PostDto createBoard(CreateBoardRequest request);
 }
