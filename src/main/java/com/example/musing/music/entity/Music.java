@@ -26,7 +26,10 @@ public class Music {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = true)
+    @Column(nullable = false)
+    private String artist;
+
+    @Column(nullable = false)
     private String genre;
 
     @Column(nullable = false)
@@ -34,6 +37,9 @@ public class Music {
 
     @Column(nullable = true)
     private String albumName;
+
+    @Column(nullable = false)
+    private String mood;
 
     @Column(nullable = false)
     private String songLink;
@@ -60,13 +66,13 @@ public class Music {
 
 
     @Builder
-    public Music(long id,String name,String artist,String genre,String playtime,String albumName){
+    public Music(long id,String name,String artist,String genre,String mood,String playtime,String albumName){
         this.id = id;
         this.name = name;
         this.artist = Artist.builder().name(artist).build();
         this.genre = genre;
+        this.mood = mood;
         this.playtime = playtime;
         this.albumName = albumName;
-
     }
 }

@@ -6,6 +6,7 @@ import com.example.musing.board.dto.GenreBoardDto;
 import com.example.musing.board.dto.PostDto;
 import com.example.musing.board.entity.Board;
 import com.example.musing.main.dto.MainPageBoardDto;
+import com.example.musing.user.entity.User;
 
 import java.util.List;
 
@@ -16,9 +17,5 @@ public interface BoardService {
 
     List<MainPageBoardDto> findBy5Board();
 
-    List<BoardDto> findBy10LikeMusics(String userId);
-
-    PostDto createBoard(CreateBoardRequest request);
-
-
+    List<GenreBoardDto> findBy10LikeMusics(String userId);
 }

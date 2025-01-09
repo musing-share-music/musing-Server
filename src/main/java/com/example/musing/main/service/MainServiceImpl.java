@@ -28,11 +28,12 @@ public class MainServiceImpl implements MainService {
             "R&B", "뉴웨이브", "포크", "컨트리", "블루스", "일렉트로닉", "트로트", "OST", "CCM", "뮤지컬", "EDM", "슈게이징"};
 
     @Override
-    public NotLoginMainPageDto notLoginMainPage() { //로그인 하지않는 메인페이지
+    public NotLoginMainPageDto notLoginMainPage(String modalCheck) { //로그인 하지않는 메인페이지
 
         NoticeDto noticeDto = noticeService.findNotice(); //최신 공지사항 가져오기
 
         //랜덤 장르를 고르고 최신순의 게시글을 최대5개 가져옴
+        String recommendGenreName = randomGenre(gernes);
         List<GenreBoardDto> genreBoardDtos = boardService.findBy5GenreBoard(randomGenre(gernes));
 
         BoardDto hotBoardDto = boardService.findHotMusicBoard(); //핫한 게시글
@@ -41,11 +42,11 @@ public class MainServiceImpl implements MainService {
         //최신 게시글 5개 가져오기
         List<MainPageBoardDto> mainPageBoardDtos = boardService.findBy5Board();
 
-        return NotLoginMainPageDto.of(noticeDto, genreBoardDtos, hotBoardDto, mainPageBoardDtos);
+        return NotLoginMainPageDto.of(noticeDto, recommendGenreName, genreBoardDtos, hotBoardDto, mainPageBoardDtos, modalCheck);
     }
 
     @Override
-    public LoginMainPageDto LoginMainPage(String userId) {
+    public LoginMainPageDto LoginMainPage(String userId, String modalCheck) {
 
         NoticeDto noticeDto = noticeService.findNotice(); //최신 공지사항 가져오기
 
@@ -54,9 +55,10 @@ public class MainServiceImpl implements MainService {
         List<String> likeGenre = toList(likeGenreStr);
 
         //좋아요한 음악
-        List<BoardDto> likeMusic = boardService.findBy10LikeMusics(userId);
+        List<GenreBoardDto> likeMusic = boardService.findBy10LikeMusics(userId);
 
         //랜덤 장르를 고르고 최신순의 게시글을 최대5개 가져옴
+        String recommendGenreName = randomGenre(gernes);
         List<GenreBoardDto> genreBoardDtos = boardService.findBy5GenreBoard(randomGenre(gernes));
 
         BoardDto hotBoardDto = boardService.findHotMusicBoard(); //핫한 게시글
@@ -64,7 +66,7 @@ public class MainServiceImpl implements MainService {
         //최신 게시글 5개 가져오기
         List<MainPageBoardDto> mainPageBoardDtos = boardService.findBy5Board();
 
-        return LoginMainPageDto.of(noticeDto,likeGenre,likeMusic,genreBoardDtos,hotBoardDto,mainPageBoardDtos);
+        return LoginMainPageDto.of(noticeDto,likeGenre,likeMusic,recommendGenreName,genreBoardDtos,hotBoardDto,mainPageBoardDtos ,modalCheck);
     }
 
     @Override

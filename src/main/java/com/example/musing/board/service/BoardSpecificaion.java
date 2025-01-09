@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 public class BoardSpecificaion {
     public static Specification<Board> hasGenre(String genre) { //장르에 대한 조회
         return (root, query, criteriaBuilder) ->
-                criteriaBuilder.equal(root.get("music_id").get("genre"), genre);
+                criteriaBuilder.like(root.get("music").get("genre"), "%" + genre + "%");
     }
 
     public static Specification<Board> isActiveCheckFalse() { //삭제 여부 확인
