@@ -7,9 +7,9 @@ import com.example.musing.main.dto.NotLoginMainPageDto;
 import java.util.List;
 
 public interface MainService {
-    NotLoginMainPageDto notLoginMainPage();
+    NotLoginMainPageDto notLoginMainPage(String modalCheck);
 
-    LoginMainPageDto LoginMainPage(String userId);
+    LoginMainPageDto LoginMainPage(String userId, String modalCheck);
 
     List<GenreBoardDto> selcetGenre(String genre);
 }

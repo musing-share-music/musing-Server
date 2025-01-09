@@ -49,18 +49,25 @@ public class MainController {
     @GetMapping("main")
     public ResponseDto<Object> mainPage(Principal principal) {//비로그인 기준 Dto와 로그인 기준 Dto파일을 다르게 보내기 위해 와일드카드 사용
         //메인페이지 로그인 전에 시큐리티 권한확인하여 로그인상태를 구분,[ROLE_USER, ROLE_ADMIN, ROLE_ANONYMOUS]로 구분
+        String modalCheck = "notLogIn";
         if (checkRole()) { //로그인 여부 체크
             String check = userService.checkInputTags(principal.getName());//유저가 분위기 및 장르, 좋아하는 아티스트를 넣었는지 확인하기
+            modalCheck = check;
             if (check.equals("pass")) {// 최초 로그인 이후의 회원가입 단계에서 다 작성하였을 때
-                LoginMainPageDto mainPageDto = mainService.LoginMainPage(principal.getName());
-                return ResponseDto.of(mainPageDto);
+                LoginMainPageDto mainPageDto = mainService.LoginMainPage(principal.getName(), modalCheck);
+                return ResponseDto.of(mainPageDto, "모달창 입력을 다 한 상태입니다.");
+            } else {
+                NotLoginMainPageDto mainPageDto = mainService.notLoginMainPage(modalCheck);
+                return ResponseDto.of(mainPageDto, "모달창 입력을 완료 하지않았습니다.");
             }
         }// 작성이 다 안끝났을 경우에는 비로그인 Dto를 띄우고 모달창 추가 호출해야함
-        NotLoginMainPageDto mainPageDto = mainService.notLoginMainPage();
-        return ResponseDto.of(mainPageDto);
+        NotLoginMainPageDto mainPageDto = mainService.notLoginMainPage(modalCheck);
+        return ResponseDto.of(mainPageDto, "로그인을 하지 않았습니다.");
     }
 
     @GetMapping("main/genre")
+    @Operation(summary = "유저가 좋아하는 장르 부분의 버튼을 클릭 시 해당 장르 최신 5개이하 게시글",
+            description = "우선 최신순으로 해두고 데이터 형식 그대로 추천식으로 바꿀 예정")
     public ResponseDto<List<GenreBoardDto>> genreForm(@RequestParam(name = "genre") String genre) {
         return ResponseDto.of(mainService.selcetGenre(genre));
     }
@@ -74,7 +81,7 @@ public class MainController {
     public ResponseDto<String> selectModalGenre(@RequestBody String selectGenres) { //로그인 접속한 유저의 장르선택 저장
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         userService.saveGenres(userId, selectGenres);
-        return ResponseDto.of(null, "장르 선택 모달창");
+        return ResponseDto.of(selectGenres, "장르 선택 모달창");
     }
 
     @PostMapping("/modal/like/moods")
@@ -86,7 +93,7 @@ public class MainController {
     public ResponseDto<String> selectModalMood(@RequestBody String selectMoods) { //로그인 접속한 유저의 장르선택 저장
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         userService.saveMoods(userId, selectMoods);
-        return ResponseDto.of("", "장르 선택 모달창");
+        return ResponseDto.of(selectMoods, "장르 선택 모달창");
     }
 
     @PostMapping("/modal/like/artists")
@@ -99,7 +106,7 @@ public class MainController {
         //null값 허용을 위해 required 설정 false
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         userService.saveArtists(userId, selectArtists);
-        return ResponseDto.of("", "아티스트 선택 모달창");
+        return ResponseDto.of(selectArtists, "아티스트 선택 모달창");
     }
 
     private boolean checkRole() { //로그인했는지와 유저인지 확인

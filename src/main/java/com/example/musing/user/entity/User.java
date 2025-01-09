@@ -82,7 +82,7 @@ public class User { //https://developers.google.com/identity/openid-connect/open
         this.profile = profile;
     }
     public void updateGenre(String genre){
-        this.likegenre = genre;
+        this.likegenre = genre.replaceAll(" ", "");
     }
     public void updateMood(String mood){
         this.likemood = mood;
