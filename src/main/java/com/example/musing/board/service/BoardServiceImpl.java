@@ -9,11 +9,11 @@ import com.example.musing.board.dto.PostDto;
 import com.example.musing.board.entity.Board;
 import com.example.musing.board.repository.BoardRepository;
 import com.example.musing.like_music.entity.Like_Music;
-import com.example.musing.like_music.playlist.LikeMusicRepository;
 import com.example.musing.like_music.repository.Like_MusicRepository;
 import com.example.musing.main.dto.MainPageBoardDto;
 import com.example.musing.music.entity.Music;
-import com.example.musing.user.entity.User;
+import com.example.musing.user.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Transactional(readOnly = true)
@@ -30,8 +29,11 @@ import java.util.stream.Collectors;
 @Service
 public class BoardServiceImpl implements BoardService {
 
+    private final UserRepository userRepository;
     private final BoardRepository boardRepository;
+    private final ArtistRepository artistRepository;
     private final Like_MusicRepository likeMusicRepository;
+
     @Override
     public List<GenreBoardDto> findBy5GenreBoard(String genre) { //장르로 검색한 게시글들을 엔티티에서 Dto로 전환
         Specification<Board> spec = Specification.where(BoardSpecificaion.hasGenre(genre))

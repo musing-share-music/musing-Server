@@ -19,15 +19,12 @@ import java.util.List;
 public class Music {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="musicid")
     private long id;
 
     @Column(nullable = false)
     private String name;
-
-    @Column(nullable = false)
-    private String artist;
 
     @Column(nullable = false)
     private String genre;
@@ -57,7 +54,6 @@ public class Music {
     // 음악과 좋아요 일대다 관계 매핑
     @OneToMany(mappedBy = "music", cascade = CascadeType.ALL, orphanRemoval = true )
     private List<Like_Music> preferMusics = new ArrayList<Like_Music>();
-
 
     //아티스트와 관계 매핑
     @ManyToOne(fetch = FetchType.LAZY)

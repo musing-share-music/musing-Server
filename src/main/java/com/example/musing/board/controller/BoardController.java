@@ -26,6 +26,4 @@ public class BoardController {
         PostDto boardDto = boardService.createBoard(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(boardDto);
     }
-
-
 }

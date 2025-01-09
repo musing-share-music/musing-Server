@@ -63,7 +63,6 @@ public class Board extends BaseEntity {
     @JoinColumn(name = "musicid", nullable = false)
     private Music music;
 
-
     //댓글과 일대다관계 매핑
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Reply> replies = new ArrayList<>();
@@ -78,14 +77,12 @@ public class Board extends BaseEntity {
         this.content = content;
         this.user = user;
         this.music = music;
-        this.createdAt = LocalDateTime.now(); // 생성 시점 기록
         this.recommendCount = 0; // 기본값 설정
         this.viewCount = 0; // 기본값 설정
         this.activeCheck = activeCheck;
         this.image = image;
         this.youtubeLink = youtubeLink;
     }
-
 }
 
 

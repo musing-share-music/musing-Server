@@ -19,7 +19,7 @@ import java.util.List;
 @Table(name="notice")
 public class Notice {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="noticeid")
     private long id;
     //글 제목
