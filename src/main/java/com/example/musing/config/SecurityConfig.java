@@ -9,6 +9,7 @@ import com.example.musing.auth.filter.TokenAuthenticationFilter;
 import com.example.musing.auth.filter.TokenExceptionFilter;
 import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -19,15 +20,23 @@ import org.springframework.security.config.annotation.web.configurers.HeadersCon
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+
     public final TokenAuthenticationFilter tokenAuthenticationFilter;
     public final CustomOauth2UserService userService;
     private final Oauth2SuccessHandler oauth2SuccessHandler;
+
+    @Value("${client.host}")
+    private String clientHost;
+
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer(){
         //해당 부분은 필터를 거치지 않게 설정
@@ -39,7 +48,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
         http
-                .cors(AbstractHttpConfigurer::disable) //cors 차단
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable) // csrf 차단, jwt사용으로 차단
                 // oauth2 사용으로 기존 시큐리티 로그인 페이지 차단
                 .httpBasic(AbstractHttpConfigurer::disable)
@@ -86,4 +95,18 @@ public class SecurityConfig {
                     .accessDeniedHandler(new CustomAccessDeniedHandler()));
         return http.build();
     }
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource(){
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.addAllowedOrigin(clientHost);
+        config.addAllowedMethod("*");
+        config.addAllowedHeader("*");
+        config.addAllowedHeader("Set-Cookie");
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
+
 }
