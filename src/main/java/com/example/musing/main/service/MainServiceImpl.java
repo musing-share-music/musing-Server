@@ -1,6 +1,6 @@
 package com.example.musing.main.service;
 
-import com.example.musing.board.dto.BoardDto;
+import com.example.musing.board.dto.HotBoardDto;
 import com.example.musing.board.dto.GenreBoardDto;
 import com.example.musing.board.service.BoardService;
 import com.example.musing.main.dto.LoginMainPageDto;
@@ -36,7 +36,7 @@ public class MainServiceImpl implements MainService {
         String recommendGenreName = randomGenre(gernes);
         List<GenreBoardDto> genreBoardDtos = boardService.findBy5GenreBoard(randomGenre(gernes));
 
-        BoardDto hotBoardDto = boardService.findHotMusicBoard(); //핫한 게시글
+        HotBoardDto hotBoardDto = boardService.findHotMusicBoard(); //핫한 게시글
 
 
         //최신 게시글 5개 가져오기
@@ -61,7 +61,7 @@ public class MainServiceImpl implements MainService {
         String recommendGenreName = randomGenre(gernes);
         List<GenreBoardDto> genreBoardDtos = boardService.findBy5GenreBoard(randomGenre(gernes));
 
-        BoardDto hotBoardDto = boardService.findHotMusicBoard(); //핫한 게시글
+        HotBoardDto hotBoardDto = boardService.findHotMusicBoard(); //핫한 게시글
 
         //최신 게시글 5개 가져오기
         List<MainPageBoardDto> mainPageBoardDtos = boardService.findBy5Board();

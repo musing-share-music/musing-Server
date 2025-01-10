@@ -46,7 +46,7 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public BoardDto findHotMusicBoard() {
+    public HotBoardDto findHotMusicBoard() {
         //한달이내 생성이 되었고, 추천수가 제일 많으며, 삭제 처리가 되지않음을 확인
         Specification<Board> spec = Specification.where(BoardSpecificaion.isCreateAtAfter())
                 .and(BoardSpecificaion.isActiveCheckFalse()).and(BoardSpecificaion.orderByRecommendCountDesc());
@@ -206,8 +206,8 @@ public class BoardServiceImpl implements BoardService {
         return GenreBoardDto.toDto(board);
     }
 
-    private BoardDto entityToBoardDto(Board board) { //핫한 게시글을 엔티티에서 Dto로 전환
-        return BoardDto.toDto(board);
+    private HotBoardDto entityToBoardDto(Board board) { //핫한 게시글을 엔티티에서 Dto로 전환
+        return HotBoardDto.toDto(board);
     }
 
     private MainPageBoardDto entityToMainDto(Board board) { //게시글을 엔티티에서 Dto로 전환

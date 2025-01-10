@@ -9,7 +9,7 @@ import java.util.List;
 public interface BoardService {
     List<GenreBoardDto> findBy5GenreBoard(String genre);
 
-    BoardDto findHotMusicBoard();
+    HotBoardDto findHotMusicBoard();
 
     List<MainPageBoardDto> findBy5Board();
 
