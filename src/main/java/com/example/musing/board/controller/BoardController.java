@@ -25,7 +25,6 @@ public class BoardController {
         this.boardService = boardService;
     }
 
-
     @PostMapping("/create")
     public ResponseDto<Board> createPost(@RequestBody @Valid CreateBoardRequest request) {
         boardService.createBoard(request); // DTO를 Service로 전달
