@@ -27,7 +27,13 @@ public class HashTag {
     private Music music; // 작성자
 
     @Builder
-    public HashTag(String hashtag, Music music) {}
+    public HashTag(String hashtag, Music music) {
+        this.hashtag = hashtag;
+        this.music = music;
+    }
 
 
+    public void setMusic(Music music) {
+        this.music = music;
+    }
 }

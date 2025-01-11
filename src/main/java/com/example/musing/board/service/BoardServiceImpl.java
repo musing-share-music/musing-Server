@@ -135,6 +135,66 @@ public class BoardServiceImpl implements BoardService {
                 .collect(Collectors.toList()); // List<CreateBoardResponse>로 반환
     }
 
+    @Override
+    public void deleteBoard(Long boardId) {
+
+    }
+
+    @Override
+    public void updateBoard(Long boardId, UpdateBoardRequestDto updateRequest) {
+
+
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다. ID: " + boardId));
+
+
+
+        String fileName = UUID.randomUUID() + "_" + updateRequest.getImage().getOriginalFilename();
+
+        // 2. 업데이트 요청에 따라 필드 수정
+        if (updateRequest.getTitle() != null) {
+            board.builder().title(updateRequest.getTitle()).build();
+        }
+
+        if(updateRequest.getMusicTitle() != null) {
+            board.getMusic().builder().name(updateRequest.getMusicTitle()).build();
+        }
+
+        if(updateRequest.getArtist() != null) {
+            board.getMusic().getArtist().builder().name(updateRequest.getArtist()).build();
+        }
+        if(updateRequest.getYoutubeLink() != null) {
+            board.getMusic().builder().songLink(updateRequest.getYoutubeLink()).build();
+        }
+        if (updateRequest.getContent() != null) {
+            board.builder().content(updateRequest.getContent());
+        }
+
+        if (updateRequest.getHashtags() != null && !updateRequest.getHashtags().isEmpty()) {
+            // 기존 해시태그를 제거
+            board.getMusic().getHashTagList().clear();
+
+            // 새로운 해시태그 추가
+            updateRequest.getHashtags().forEach(tag -> {
+                // 각 해시태그 엔티티 생성 및 관계 설정
+                HashTag newHashTag = HashTag.builder()
+                        .hashtag(tag)
+                        .music(board.getMusic()) // Music 객체 설정
+                        .build();
+
+                // Music 객체에 해시태그 추가
+                board.getMusic().addHashTag(newHashTag);
+            });
+        }
+        if (updateRequest.getImage().getOriginalFilename() != null) {
+            board.builder().image(fileName);
+        }
+
+        // 3. 수정된 엔티티 저장
+        boardRepository.save(board);
+
+    }
+
     private GenreBoardDto entityToGenreDto(Board board) { //장르로 검색한 게시글 엔티티를 Dto로 전환
         return GenreBoardDto.toDto(board);
     }
