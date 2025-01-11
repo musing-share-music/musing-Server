@@ -3,6 +3,7 @@ package com.example.musing.board.controller;
 import com.example.musing.board.dto.CreateBoardRequest;
 import com.example.musing.board.dto.CreateBoardResponse;
 import com.example.musing.board.dto.PostDto;
+import com.example.musing.board.dto.UpdateBoardRequestDto;
 import com.example.musing.board.entity.Board;
 import com.example.musing.board.service.BoardService;
 import com.example.musing.common.dto.ResponseDto;
@@ -36,5 +37,17 @@ public class BoardController {
     public ResponseEntity<List<CreateBoardResponse>> getAllBoards() {
         List<CreateBoardResponse> responseList = boardService.getAllBoards();
         return ResponseEntity.ok(responseList);
+    }
+
+    @PutMapping("/updatePost")
+    public ResponseDto<Board> updatePost(@RequestParam("boardId") Long boardId,@RequestBody UpdateBoardRequestDto updateRequest){
+        boardService.updateBoard(boardId,updateRequest);
+        return ResponseDto.of(null,"성공적으로 글이 수정되었습니다.");
+    }
+
+    @DeleteMapping("/deletePost")
+    public ResponseDto<Board> updatePost(@RequestParam("boardId") Long boardId){
+        boardService.deleteBoard(boardId);
+        return ResponseDto.of(null,"성공적으로 글이 삭제되었습니다.");
     }
 }

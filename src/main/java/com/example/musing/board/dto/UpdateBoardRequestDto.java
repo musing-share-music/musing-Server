@@ -1,14 +1,18 @@
 package com.example.musing.board.dto;
 
-
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.util.List;
 
-//클라이언트로부터 전달 받은 데이터 객체화
 @Data
-public class CreateBoardRequest {
+@AllArgsConstructor
+@NoArgsConstructor
+public class UpdateBoardRequestDto {
 
+    //업데이트 리퀘스트 dto
     private String userEmail;
     private String title;
     private String musicTitle;
