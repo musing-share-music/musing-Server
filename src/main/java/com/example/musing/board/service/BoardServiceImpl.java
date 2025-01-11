@@ -2,16 +2,16 @@ package com.example.musing.board.service;
 
 import com.example.musing.artist.entity.Artist;
 import com.example.musing.artist.repository.ArtistRepository;
-import com.example.musing.board.dto.BoardDto;
-import com.example.musing.board.dto.CreateBoardRequest;
-import com.example.musing.board.dto.GenreBoardDto;
-import com.example.musing.board.dto.PostDto;
+import com.example.musing.board.dto.*;
 import com.example.musing.board.entity.Board;
 import com.example.musing.board.repository.BoardRepository;
+import com.example.musing.hashtag.entity.HashTag;
 import com.example.musing.like_music.entity.Like_Music;
 import com.example.musing.like_music.repository.Like_MusicRepository;
 import com.example.musing.main.dto.MainPageBoardDto;
 import com.example.musing.music.entity.Music;
+import com.example.musing.music.repository.MusicRepository;
+import com.example.musing.user.entity.User;
 import com.example.musing.user.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Transactional(readOnly = true)
@@ -33,6 +34,7 @@ public class BoardServiceImpl implements BoardService {
     private final BoardRepository boardRepository;
     private final ArtistRepository artistRepository;
     private final Like_MusicRepository likeMusicRepository;
+    private final MusicRepository musicRepository;
 
     @Override
     public List<GenreBoardDto> findBy5GenreBoard(String genre) { //장르로 검색한 게시글들을 엔티티에서 Dto로 전환
@@ -78,28 +80,59 @@ public class BoardServiceImpl implements BoardService {
     }
 
     //게시판 등록 로직
+    @Transactional
     @Override
-    public PostDto createBoard(CreateBoardRequest request) {
-        // Artist 조회
-        Artist artistEntity = artistRepository.findByName(request.getArtist())
-                .orElseThrow(() -> new EntityNotFoundException("Artist not found: " + request.getArtist()));
+    public void createBoard(CreateBoardRequest request) {
 
-        // Music 조회 또는 생성
+        String fileName = UUID.randomUUID() + "_" + request.getImage().getOriginalFilename();
 
-
-        // Board 생성
         Board board = Board.builder()
                 .title(request.getTitle())
                 .content(request.getContent())
-                .user(userRepository.findByEmail(request.getUserEmail())
-                        .orElseThrow(() -> new EntityNotFoundException("User not found: " + request.getUserEmail())))
+                .image(fileName)
+                .activeCheck(false)
+                .recommendCount(0)
+                .viewCount(0)
                 .build();
+        boardRepository.save(board);
+    }
 
-        Board savedBoard = boardRepository.save(board);
-        return PostDto.fromEntity(savedBoard);
+    @Override
+    public List<CreateBoardResponse> getAllBoards() {
 
-        // 4. DTO로 변환 후 반환
+        List<Board> boards = boardRepository.findAll(); // 모든 게시글을 조회
 
+        // 각 Board에 대해 CreateBoardResponse 객체 생성 후 리스트로 반환
+        return boards.stream()
+                .map(board -> {
+                    // Music, Artist, Hashtags 정보를 가져옴
+                    Music music = board.getMusic();
+                    Artist artist = board.getMusic().getArtist();
+                    List<HashTag> hashtags = board.getMusic().getHashTagList();
+                    User user = board.getUser();
+
+                    CreateBoardResponse response = new CreateBoardResponse();
+
+                    response.setUserEmail(user.getEmail());
+                    response.setTitle(board.getTitle());
+                    response.setMusicTitle(music.getName()); // Music 엔티티에서 제목을 가져옴
+                    response.setArtist(artist.getName());  // Artist 엔티티에서 이름을 가져옴
+                    response.setYoutubeLink(music.getSongLink()); // 유튜브 링크
+                    response.setHashtags(hashtags.stream()
+                            .map(HashTag::getHashtag)
+                            .collect(Collectors.toList())); // 해시태그 목록
+                    response.setGenre(music.getGenre());  // 음악의 장르 가져오기
+                    response.setImageUrl(board.getImage()); // 이미지 URL 처리
+                    response.setContent(board.getContent());
+
+
+                    response.setCreatedAt(board.getCreatedAt());
+                    response.setUpdatedAt(board.getUpdatedAt());
+
+                    // 생성된 response 객체 반환
+                    return response;
+                })
+                .collect(Collectors.toList()); // List<CreateBoardResponse>로 반환
     }
 
     private GenreBoardDto entityToGenreDto(Board board) { //장르로 검색한 게시글 엔티티를 Dto로 전환

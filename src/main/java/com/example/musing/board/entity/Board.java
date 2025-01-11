@@ -1,7 +1,9 @@
 package com.example.musing.board.entity;
 
+import com.example.musing.board.dto.PostDto;
 import com.example.musing.common.jpa.BaseEntity;
 import com.example.musing.music.entity.Music;
+import com.example.musing.reply.dto.ReplyDto;
 import com.example.musing.reply.entity.Reply;
 import com.example.musing.report.entity.Report;
 import com.example.musing.user.entity.User;
@@ -50,8 +52,6 @@ public class Board extends BaseEntity {
     @Column
     private String image;
 
-    @Column(nullable = false)
-    private String youtubeLink;
 
     //관계설정 유저에 관한 외래키 보유 주인테이블
     @ManyToOne(fetch = FetchType.LAZY)
@@ -71,17 +71,17 @@ public class Board extends BaseEntity {
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Report> Reports = new ArrayList<>();
 
+    public static PostDto toDto(Board board){
+        return PostDto.fromEntity(board);
+    }
     @Builder
-    public Board(String title, String content, User user, Music music, boolean activeCheck,String image,String youtubeLink) {
+    public Board(String title, String content,boolean activeCheck,String image,int recommendCount, int viewCount, boolean permitRegister) {
         this.title = title;
         this.content = content;
-        this.user = user;
-        this.music = music;
         this.recommendCount = 0; // 기본값 설정
         this.viewCount = 0; // 기본값 설정
         this.activeCheck = activeCheck;
         this.image = image;
-        this.youtubeLink = youtubeLink;
     }
 }
 
