@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 @Transactional(readOnly = true)
@@ -48,7 +49,7 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public HotBoardDto findHotMusicBoard() {
         //한달이내 생성이 되었고, 추천수가 제일 많으며, 삭제 처리가 되지않음을 확인
-        Specification<Board> spec = Specification.where(BoardSpecificaion.isCreateAtAfter())
+        Specification<Board> spec = Specification.where(BoardSpecificaion.isCreateAtAfterMonth())
                 .and(BoardSpecificaion.isActiveCheckFalse()).and(BoardSpecificaion.orderByRecommendCountDesc());
         List<Board> boards = boardRepository.findAll(spec, PageRequest.of(0, 1)).getContent();
 

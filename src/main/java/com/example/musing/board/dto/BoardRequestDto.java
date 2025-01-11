@@ -73,4 +73,17 @@ public class BoardRequestDto {
                 .build();
         }
     }
+
+    @Builder
+    public record BoardPopUpDto(
+        RecommendBoardFirstDto recommendBoardFirstDto,
+        RecommendBoardDto recommendBoardDto
+    ) {
+        public BoardPopUpDto of(RecommendBoardFirstDto boardFirstDto, RecommendBoardDto recommendBoardDto) {
+            return BoardPopUpDto.builder()
+                    .recommendBoardFirstDto(boardFirstDto)
+                    .recommendBoardDto(recommendBoardDto)
+                    .build();
+        }
+    }
 }
