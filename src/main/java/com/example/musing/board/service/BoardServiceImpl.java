@@ -138,6 +138,10 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public void deleteBoard(Long boardId) {
 
+        if(!boardRepository.existsById(boardId)) {
+            throw new EntityNotFoundException("Board does not exist");
+        }
+       boardRepository.deleteById(boardId);
     }
 
     @Override
@@ -190,6 +194,9 @@ public class BoardServiceImpl implements BoardService {
             board.builder().image(fileName);
         }
 
+        if(updateRequest.getGenre() != null){
+            board.getMusic().builder().genre(updateRequest.getGenre());
+        }
         // 3. 수정된 엔티티 저장
         boardRepository.save(board);
 
