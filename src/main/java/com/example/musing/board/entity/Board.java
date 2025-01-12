@@ -45,7 +45,7 @@ public class Board extends BaseEntity {
 
     @ColumnDefault("0")
     @Column(nullable = false)
-    private int rating;
+    private float rating;
 
     @ColumnDefault("0")
     @Column(nullable = false)

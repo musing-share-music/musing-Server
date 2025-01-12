@@ -1,25 +1,19 @@
 package com.example.musing.board.controller;
 
+import com.example.musing.board.dto.BoardRequestDto;
 import com.example.musing.board.dto.CreateBoardRequest;
-import com.example.musing.board.dto.CreateBoardResponse;
-import com.example.musing.board.dto.PostDto;
 import com.example.musing.board.dto.UpdateBoardRequestDto;
 import com.example.musing.board.entity.Board;
 import com.example.musing.board.service.BoardService;
 import com.example.musing.common.dto.ResponseDto;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/boards")
 public class BoardController {
-
     private final BoardService boardService;
-
 
     public BoardController(BoardService boardService) {
         this.boardService = boardService;
@@ -28,25 +22,40 @@ public class BoardController {
     @PostMapping("/create")
     public ResponseDto<Board> createPost(@RequestBody @Valid CreateBoardRequest request) {
         boardService.createBoard(request); // DTO를 Service로 전달
-        return ResponseDto.of(null,"성공적으로 글이 작성되었습니다.");
+        return ResponseDto.of(null, "성공적으로 글이 작성되었습니다.");
     }
 
+    @GetMapping("/list")
+    public ResponseDto<BoardRequestDto.BoardListDto> BoardListPage() {
+        BoardRequestDto.BoardListDto boardList = boardService.findBoardList();
+        return ResponseDto.of(boardList);
+    }
 
-    @GetMapping("/selectAll")
-    public ResponseEntity<List<CreateBoardResponse>> getAllBoards() {
-        List<CreateBoardResponse> responseList = boardService.getAllBoards();
-        return ResponseEntity.ok(responseList);
+    @GetMapping("/list/page")
+    public ResponseDto<Page<BoardRequestDto.BoardDto>> getBoards(
+            @RequestParam(name = "page", defaultValue = "1") int page) {
+        Page<BoardRequestDto.BoardDto> responseList = boardService.findBoardDto(page);
+        return ResponseDto.of(responseList);
+    }
+
+    @GetMapping("/list/page/search")
+    public ResponseDto<Page<BoardRequestDto.BoardDto>> getBoardsByKeyword(
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "searchType") String searchType,
+            @RequestParam(name = "keyword") String keyword) {
+        Page<BoardRequestDto.BoardDto> responseList = boardService.search(page, searchType, keyword);
+        return ResponseDto.of(responseList);
     }
 
     @PutMapping("/updatePost")
-    public ResponseDto<Board> updatePost(@RequestParam("boardId") Long boardId,@RequestBody UpdateBoardRequestDto updateRequest){
-        boardService.updateBoard(boardId,updateRequest);
-        return ResponseDto.of(null,"성공적으로 글이 수정되었습니다.");
+    public ResponseDto<Board> updatePost(@RequestParam("boardId") Long boardId, @RequestBody UpdateBoardRequestDto updateRequest) {
+        boardService.updateBoard(boardId, updateRequest);
+        return ResponseDto.of(null, "성공적으로 글이 수정되었습니다.");
     }
 
     @DeleteMapping("/deletePost")
-    public ResponseDto<Board> updatePost(@RequestParam("boardId") Long boardId){
+    public ResponseDto<Board> updatePost(@RequestParam("boardId") Long boardId) {
         boardService.deleteBoard(boardId);
-        return ResponseDto.of(null,"성공적으로 글이 삭제되었습니다.");
+        return ResponseDto.of(null, "성공적으로 글이 삭제되었습니다.");
     }
 }

@@ -83,7 +83,7 @@ public class SecurityConfig {
                 .logout(auth -> auth
                         .logoutUrl("/musing/logout")
                         .deleteCookies("accessToken")
-                        .logoutSuccessUrl("/musing/main")
+                        .logoutSuccessUrl(clientHost)
                 )
                    //JWT 관련 설정, 하단 필터 실행
                 .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

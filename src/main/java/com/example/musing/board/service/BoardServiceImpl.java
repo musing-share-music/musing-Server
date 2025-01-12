@@ -1,30 +1,31 @@
 package com.example.musing.board.service;
 
-import com.example.musing.artist.entity.Artist;
 import com.example.musing.artist.repository.ArtistRepository;
 import com.example.musing.board.dto.*;
 import com.example.musing.board.entity.Board;
 import com.example.musing.board.repository.BoardRepository;
+import com.example.musing.exception.CustomException;
 import com.example.musing.hashtag.entity.HashTag;
 import com.example.musing.like_music.entity.Like_Music;
 import com.example.musing.like_music.repository.Like_MusicRepository;
 import com.example.musing.main.dto.MainPageBoardDto;
 import com.example.musing.music.entity.Music;
 import com.example.musing.music.repository.MusicRepository;
-import com.example.musing.user.entity.User;
 import com.example.musing.user.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.UUID;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.example.musing.exception.ErrorCode.NOT_FOUND_KEYWORD;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -37,12 +38,18 @@ public class BoardServiceImpl implements BoardService {
     private final Like_MusicRepository likeMusicRepository;
     private final MusicRepository musicRepository;
 
+    private static PageRequest pageRequestOrderBy = PageRequest.
+            of(0, 5, Sort.by(Sort.Direction.DESC, "createdAt"));
+    private static PageRequest pageRequest = PageRequest.of(0, 1);
+    private static int PAGESIZE = 8;
+
     @Override
     public List<GenreBoardDto> findBy5GenreBoard(String genre) { //장르로 검색한 게시글들을 엔티티에서 Dto로 전환
         Specification<Board> spec = Specification.where(BoardSpecificaion.hasGenre(genre))
                 .and(BoardSpecificaion.isActiveCheckFalse());
-        List<Board> boards = boardRepository.findAll(spec, //해당 장르의 게시글 5개를 최신순으로 가져옴
-                PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "createdAt"))).getContent();
+
+        List<Board> boards = findBySpecBoard(spec, pageRequestOrderBy);
+
         return boards.stream().map(this::entityToGenreDto).collect(Collectors.toList());
     }
 
@@ -51,7 +58,8 @@ public class BoardServiceImpl implements BoardService {
         //한달이내 생성이 되었고, 추천수가 제일 많으며, 삭제 처리가 되지않음을 확인
         Specification<Board> spec = Specification.where(BoardSpecificaion.isCreateAtAfterMonth())
                 .and(BoardSpecificaion.isActiveCheckFalse()).and(BoardSpecificaion.orderByRecommendCountDesc());
-        List<Board> boards = boardRepository.findAll(spec, PageRequest.of(0, 1)).getContent();
+
+        List<Board> boards = findBySpecBoard(spec, pageRequest);
 
         //레파지토리에 상속받은 JpaSpecificationExecutor로 사용
         return boards.stream().map(this::entityToBoardDto).findFirst().orElse(null);
@@ -61,11 +69,12 @@ public class BoardServiceImpl implements BoardService {
     public List<MainPageBoardDto> findBy5Board() {
         //삭제 처리가 되지않은 게시글
         Specification<Board> spec = Specification.where(BoardSpecificaion.isActiveCheckFalse());
-        List<Board> boards = boardRepository.findAll(spec, //해당 장르의 게시글 5개를 최신순으로 가져옴
-                PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "createdAt"))).getContent();
+
+        List<Board> boards = findBySpecBoard(spec, pageRequestOrderBy); //해당 장르의 게시글 5개를 최신순으로 가져옴
+
         return boards.stream().map(this::entityToMainDto).collect(Collectors.toList());
     }
-
+    @Override
     public List<GenreBoardDto> findBy10LikeMusics(String userId) {
         // 사용자가 좋아요를 누른 음악 목록을 ID가 높은 순서로 10개만 가져옵니다.
         List<Like_Music> likedMusicList = likeMusicRepository.findTop10ByUserOrderByIdDesc(userId);
@@ -77,8 +86,11 @@ public class BoardServiceImpl implements BoardService {
 
         // fetch join을 사용하여 해당 음악에 관련된 게시글을 가져옵니다.
         List<Board> boards = boardRepository.findBoardsByMusicList(musicList);
+
         return boards.stream().map(this::entityToGenreDto).collect(Collectors.toList());
     }
+
+    /// 메인 페이지까지 쓰는 부분
 
     //게시판 등록 로직
     @Transactional
@@ -97,46 +109,69 @@ public class BoardServiceImpl implements BoardService {
                 .build();
         boardRepository.save(board);
     }
-
+    //음악 추천 게시판 전체 리스트
     @Override
-    public List<CreateBoardResponse> getAllBoards() {
+    public BoardRequestDto.BoardListDto findBoardList() {
+        BoardRequestDto.BoardPopUpDto boardPopUpDto = findBoardPopUp();
+        Page<BoardRequestDto.BoardDto> boardDtos = findBoardDto(1);
 
-        List<Board> boards = boardRepository.findAll(); // 모든 게시글을 조회
-
-        // 각 Board에 대해 CreateBoardResponse 객체 생성 후 리스트로 반환
-        return boards.stream()
-                .map(board -> {
-                    // Music, Artist, Hashtags 정보를 가져옴
-                    Music music = board.getMusic();
-                    Artist artist = board.getMusic().getArtist();
-                    List<HashTag> hashtags = board.getMusic().getHashTagList();
-                    User user = board.getUser();
-
-                    CreateBoardResponse response = new CreateBoardResponse();
-
-                    response.setUserEmail(user.getEmail());
-                    response.setTitle(board.getTitle());
-                    response.setMusicTitle(music.getName()); // Music 엔티티에서 제목을 가져옴
-                    response.setArtist(artist.getName());  // Artist 엔티티에서 이름을 가져옴
-                    response.setYoutubeLink(music.getSongLink()); // 유튜브 링크
-                    response.setHashtags(hashtags.stream()
-                            .map(HashTag::getHashtag)
-                            .collect(Collectors.toList())); // 해시태그 목록
-                    response.setGenre(music.getGenre());  // 음악의 장르 가져오기
-                    response.setImageUrl(board.getImage()); // 이미지 URL 처리
-                    response.setContent(board.getContent());
-
-
-                    response.setCreatedAt(board.getCreatedAt());
-                    response.setUpdatedAt(board.getUpdatedAt());
-
-                    // 생성된 response 객체 반환
-                    return response;
-                })
-                .collect(Collectors.toList()); // List<CreateBoardResponse>로 반환
+        return BoardRequestDto.BoardListDto.of(boardPopUpDto, boardDtos);
     }
 
+    //음악 추천 게시판 리스트 부분
     @Override
+    public Page<BoardRequestDto.BoardDto> findBoardDto(int page) {
+        Specification<Board> spec = Specification.where(BoardSpecificaion.isActiveCheckFalse())
+                .and(BoardSpecificaion.findBoardsWithAtLeastTenRecommend());
+
+        Pageable pageable = PageRequest.of(page - 1, PAGESIZE);
+
+        Page<Board> boards = boardRepository.findActiveBoardPage(pageable);
+
+        return boards.map(board -> {
+            List<String> genreList = board.getMusic().getGenreList();
+            List<String> moodList = board.getMusic().getMoodList();
+            return BoardRequestDto.BoardDto.toDto(board, genreList, moodList);
+        });
+    }
+
+    // 음악 추천 게시판 상단
+    private BoardRequestDto.BoardPopUpDto findBoardPopUp() {
+        Specification<Board> spec = Specification.where(BoardSpecificaion.isCreateAtAfterWeek())
+                .and(BoardSpecificaion.isActiveCheckFalse()).and(BoardSpecificaion.findBoardsWithAtLeastTenRecommend());
+
+        List<Board> boards = findBySpecBoard(spec);
+
+        if (boards.isEmpty()) {
+            return null;
+        }
+
+        // 조건에 맞는 3개 이하의 게시글 가져오기
+        List<Board> randomBoard = selectRandomBoards(boards, 3);
+        BoardRequestDto.RecommendBoardFirstDto firstPopUpDto = findBoardListPopUpFirst(boards);
+
+        List<BoardRequestDto.RecommendBoardDto> boardPopUpDto = new ArrayList<>();
+
+        boardPopUpDto.add(findBoardListPopUp(boards, 1));
+        boardPopUpDto.add(findBoardListPopUp(boards, 2));
+
+        return BoardRequestDto.BoardPopUpDto.of(firstPopUpDto, boardPopUpDto);
+    }
+
+    // 검색조건으로 음악 추천 게시판 검색
+    @Override
+    public Page<BoardRequestDto.BoardDto> search(int page, String searchType, String keyword){
+        Pageable pageable = PageRequest.of(page - 1, PAGESIZE);
+
+        Page<Board> boards = searchBoards(searchType, keyword, pageable);
+
+        return boards.map(board -> {
+            List<String> genreList = board.getMusic().getGenreList();
+            List<String> moodList = board.getMusic().getMoodList();
+            return BoardRequestDto.BoardDto.toDto(board, genreList, moodList);
+        });
+    }
+
     public void deleteBoard(Long boardId) {
 
         if(!boardRepository.existsById(boardId)) {
@@ -145,14 +180,11 @@ public class BoardServiceImpl implements BoardService {
        boardRepository.deleteById(boardId);
     }
 
+    @Transactional
     @Override
     public void updateBoard(Long boardId, UpdateBoardRequestDto updateRequest) {
-
-
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다. ID: " + boardId));
-
-
 
         String fileName = UUID.randomUUID() + "_" + updateRequest.getImage().getOriginalFilename();
 
@@ -198,9 +230,59 @@ public class BoardServiceImpl implements BoardService {
         if(updateRequest.getGenre() != null){
             board.getMusic().builder().genre(updateRequest.getGenre());
         }
-        // 3. 수정된 엔티티 저장
-        boardRepository.save(board);
+    }
 
+    private Page<Board> searchBoards(String searchType, String keyword, Pageable pageable) {
+        switch (searchType) {
+            case "username":
+                return boardRepository.findActiveBoardsByUsername(keyword, pageable);
+            case "title":
+                return boardRepository.findActiveBoardsByTitle(keyword, pageable);
+            case "artist":
+                return boardRepository.findActiveBoardsByArtist(keyword, pageable);
+            case "genre":
+                return boardRepository.findActiveBoardsByGenre(keyword, pageable);
+            case "mood":
+                return boardRepository.findActiveBoardsByMood(keyword, pageable);
+            default:
+                throw new CustomException(NOT_FOUND_KEYWORD);
+        }
+    }
+
+    private List<Board> findBySpecBoard(Specification<Board> spec) {
+        return boardRepository.findAll(spec); //조건에 부합하는 게시글 전부가져오기
+    }
+
+    private List<Board> findBySpecBoard(Specification<Board> spec, PageRequest request) {
+        Page<Board> boards = boardRepository.findAll(spec, request); //조건에 부합하는 게시글 전부가져오기
+        return boards.getContent();
+    }
+
+    // 랜덤한 게시글을 가져오는 메서드
+    private List<Board> selectRandomBoards(List<Board> boards, int count) {
+        int effectiveCount = Math.min(count, boards.size());
+
+        Set<Integer> selectedIndices = new HashSet<>();
+        Random random = new Random();
+
+        while (selectedIndices.size() < effectiveCount) {
+            int randomIndex = random.nextInt(boards.size());
+            selectedIndices.add(randomIndex);
+        }
+
+        return selectedIndices.stream()
+                .map(boards::get)
+                .collect(Collectors.toList());
+    }
+
+    private BoardRequestDto.RecommendBoardFirstDto findBoardListPopUpFirst(List<Board> boards) {
+        Board selectBoard = boards.get(0);
+        return BoardRequestDto.RecommendBoardFirstDto.toDto(selectBoard);
+    }
+
+    private BoardRequestDto.RecommendBoardDto findBoardListPopUp(List<Board> boards, int indexNum) {
+        Board selectBoard = boards.get(indexNum);
+        return BoardRequestDto.RecommendBoardDto.toDto(selectBoard);
     }
 
     private GenreBoardDto entityToGenreDto(Board board) { //장르로 검색한 게시글 엔티티를 Dto로 전환

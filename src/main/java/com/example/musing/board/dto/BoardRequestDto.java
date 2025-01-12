@@ -4,6 +4,7 @@ import com.example.musing.board.entity.Board;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Builder;
+import org.springframework.data.domain.Page;
 
 //nested record class 사용
 
@@ -15,7 +16,7 @@ public class BoardRequestDto {
         String content,
         String musicName,
         String artistName,
-        int rating,
+        float rating,
         String thumbNailLink
     ) {
         public static RecommendBoardFirstDto toDto(Board board) {
@@ -54,7 +55,7 @@ public class BoardRequestDto {
         String title,
         String musicName,
         String artistName,
-        int rating,
+        float rating,
         int replyCount,
         String thumbNailLink,
         List<String> genreList,
@@ -77,12 +78,24 @@ public class BoardRequestDto {
     @Builder
     public record BoardPopUpDto(
         RecommendBoardFirstDto recommendBoardFirstDto,
-        RecommendBoardDto recommendBoardDto
+        List<RecommendBoardDto> recommendBoardListDto
     ) {
-        public BoardPopUpDto of(RecommendBoardFirstDto boardFirstDto, RecommendBoardDto recommendBoardDto) {
+        public static BoardPopUpDto of(RecommendBoardFirstDto boardFirstDto, List<RecommendBoardDto> recommendBoardListDto) {
             return BoardPopUpDto.builder()
                     .recommendBoardFirstDto(boardFirstDto)
-                    .recommendBoardDto(recommendBoardDto)
+                    .recommendBoardListDto(recommendBoardListDto)
+                    .build();
+        }
+    }
+    @Builder
+    public record BoardListDto(
+        BoardPopUpDto boardPopUpDto,
+        Page<BoardDto> boardDtos
+    ){
+        public static BoardListDto of(BoardPopUpDto boardPopUpDto, Page<BoardDto> boardDtos) {
+            return BoardListDto.builder()
+                    .boardPopUpDto(boardPopUpDto)
+                    .boardDtos(boardDtos)
                     .build();
         }
     }
