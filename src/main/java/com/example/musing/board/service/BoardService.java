@@ -3,7 +3,6 @@ package com.example.musing.board.service;
 import com.example.musing.board.dto.*;
 import com.example.musing.main.dto.MainPageBoardDto;
 import org.springframework.data.domain.Page;
-import org.mortbay.log.Log;
 
 import java.util.List;
 
@@ -19,10 +18,10 @@ public interface BoardService {
     //게시판 등록 로직
     void createBoard(CreateBoardRequest request);
 
-    BoardRequestDto.BoardListDto findBoardList();
-    Page<BoardRequestDto.BoardDto> findBoardDto(int page);
+    BoardListRequestDto.BoardListDto findBoardList();
+    Page<BoardListRequestDto.BoardDto> findBoardDto(int page);
 
-    Page<BoardRequestDto.BoardDto> search(int page, String searchType, String keyword);
+    Page<BoardListRequestDto.BoardDto> search(int page, String searchType, String keyword);
     // 글 삭제
     void deleteBoard(Long boardId);
     //글 수정

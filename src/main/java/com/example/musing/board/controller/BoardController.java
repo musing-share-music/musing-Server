@@ -1,6 +1,6 @@
 package com.example.musing.board.controller;
 
-import com.example.musing.board.dto.BoardRequestDto;
+import com.example.musing.board.dto.BoardListRequestDto;
 import com.example.musing.board.dto.CreateBoardRequest;
 import com.example.musing.board.dto.UpdateBoardRequestDto;
 import com.example.musing.board.entity.Board;
@@ -11,7 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/boards")
+@RequestMapping("/api/board")
 public class BoardController {
     private final BoardService boardService;
 
@@ -26,24 +26,24 @@ public class BoardController {
     }
 
     @GetMapping("/list")
-    public ResponseDto<BoardRequestDto.BoardListDto> BoardListPage() {
-        BoardRequestDto.BoardListDto boardList = boardService.findBoardList();
+    public ResponseDto<BoardListRequestDto.BoardListDto> BoardListPage() {
+        BoardListRequestDto.BoardListDto boardList = boardService.findBoardList();
         return ResponseDto.of(boardList);
     }
 
     @GetMapping("/list/page")
-    public ResponseDto<Page<BoardRequestDto.BoardDto>> getBoards(
+    public ResponseDto<Page<BoardListRequestDto.BoardDto>> getBoards(
             @RequestParam(name = "page", defaultValue = "1") int page) {
-        Page<BoardRequestDto.BoardDto> responseList = boardService.findBoardDto(page);
+        Page<BoardListRequestDto.BoardDto> responseList = boardService.findBoardDto(page);
         return ResponseDto.of(responseList);
     }
 
     @GetMapping("/list/page/search")
-    public ResponseDto<Page<BoardRequestDto.BoardDto>> getBoardsByKeyword(
+    public ResponseDto<Page<BoardListRequestDto.BoardDto>> getBoardsByKeyword(
             @RequestParam(name = "page", defaultValue = "1") int page,
             @RequestParam(name = "searchType") String searchType,
             @RequestParam(name = "keyword") String keyword) {
-        Page<BoardRequestDto.BoardDto> responseList = boardService.search(page, searchType, keyword);
+        Page<BoardListRequestDto.BoardDto> responseList = boardService.search(page, searchType, keyword);
         return ResponseDto.of(responseList);
     }
 

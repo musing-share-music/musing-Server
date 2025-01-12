@@ -72,7 +72,8 @@ public class ReplyServiceImpl implements ReplyService {
     @Override
     public void modifyReply(long replyId, ReplyDto replyDto) {
         String email = getUserEmail(); //유저 정보 확인 이후 이메일 가져오기
-        Reply reply = replyRepository.findByBoard_IdAndUser_Email(replyId, email).orElseThrow(() -> new CustomException(NOT_FOUND_REPLY));
+        Reply reply = replyRepository.findByBoard_IdAndUser_Email(replyId, email)
+                .orElseThrow(() -> new CustomException(NOT_FOUND_REPLY));
 
         reply.updateReply(replyDto.starScore(), replyDto.content());
     }
@@ -82,7 +83,8 @@ public class ReplyServiceImpl implements ReplyService {
     public void deleteReply(long replyId) {
         String email = getUserEmail(); //유저 정보 확인 이후 이메일 가져오기
 
-        Reply reply = replyRepository.findByIdAndUser_Email(replyId, email).orElseThrow(() -> new CustomException(NOT_MATCHED_REPLY_AND_USER));
+        Reply reply = replyRepository.findByIdAndUser_Email(replyId, email)
+                .orElseThrow(() -> new CustomException(NOT_MATCHED_REPLY_AND_USER));
 
         replyRepository.deleteById(replyId);
     }

@@ -8,7 +8,7 @@ import org.springframework.data.domain.Page;
 
 //nested record class 사용
 
-public class BoardRequestDto {
+public class BoardListRequestDto {
 
     @Builder
     public record RecommendBoardFirstDto(

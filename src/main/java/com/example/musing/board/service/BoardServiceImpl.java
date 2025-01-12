@@ -25,7 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.example.musing.exception.ErrorCode.NOT_FOUND_KEYWORD;
+import static com.example.musing.exception.ErrorCode.*;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -111,16 +111,20 @@ public class BoardServiceImpl implements BoardService {
     }
     //음악 추천 게시판 전체 리스트
     @Override
-    public BoardRequestDto.BoardListDto findBoardList() {
-        BoardRequestDto.BoardPopUpDto boardPopUpDto = findBoardPopUp();
-        Page<BoardRequestDto.BoardDto> boardDtos = findBoardDto(1);
+    public BoardListRequestDto.BoardListDto findBoardList() {
+        BoardListRequestDto.BoardPopUpDto boardPopUpDto = findBoardPopUp();
+        Page<BoardListRequestDto.BoardDto> boardDtos = findBoardDto(1);
 
-        return BoardRequestDto.BoardListDto.of(boardPopUpDto, boardDtos);
+        return BoardListRequestDto.BoardListDto.of(boardPopUpDto, boardDtos);
     }
 
     //음악 추천 게시판 리스트 부분
     @Override
-    public Page<BoardRequestDto.BoardDto> findBoardDto(int page) {
+    public Page<BoardListRequestDto.BoardDto> findBoardDto(int page) {
+        if (page < 1) { // 잘못된 접근으로 throw할때 쿼리문 실행을 안하기 위해 나눠서 체크
+            throw new CustomException(BAD_REQUEST_REPLY_PAGE);
+        }
+
         Specification<Board> spec = Specification.where(BoardSpecificaion.isActiveCheckFalse())
                 .and(BoardSpecificaion.findBoardsWithAtLeastTenRecommend());
 
@@ -128,47 +132,41 @@ public class BoardServiceImpl implements BoardService {
 
         Page<Board> boards = boardRepository.findActiveBoardPage(pageable);
 
+        int totalPages = boards.getTotalPages();
+
+        if ( page > totalPages) {
+            throw new CustomException(BAD_REQUEST_REPLY_PAGE);
+        }
+
         return boards.map(board -> {
             List<String> genreList = board.getMusic().getGenreList();
             List<String> moodList = board.getMusic().getMoodList();
-            return BoardRequestDto.BoardDto.toDto(board, genreList, moodList);
+            return BoardListRequestDto.BoardDto.toDto(board, genreList, moodList);
         });
     }
 
-    // 음악 추천 게시판 상단
-    private BoardRequestDto.BoardPopUpDto findBoardPopUp() {
-        Specification<Board> spec = Specification.where(BoardSpecificaion.isCreateAtAfterWeek())
-                .and(BoardSpecificaion.isActiveCheckFalse()).and(BoardSpecificaion.findBoardsWithAtLeastTenRecommend());
-
-        List<Board> boards = findBySpecBoard(spec);
-
-        if (boards.isEmpty()) {
-            return null;
-        }
-
-        // 조건에 맞는 3개 이하의 게시글 가져오기
-        List<Board> randomBoard = selectRandomBoards(boards, 3);
-        BoardRequestDto.RecommendBoardFirstDto firstPopUpDto = findBoardListPopUpFirst(boards);
-
-        List<BoardRequestDto.RecommendBoardDto> boardPopUpDto = new ArrayList<>();
-
-        boardPopUpDto.add(findBoardListPopUp(boards, 1));
-        boardPopUpDto.add(findBoardListPopUp(boards, 2));
-
-        return BoardRequestDto.BoardPopUpDto.of(firstPopUpDto, boardPopUpDto);
-    }
 
     // 검색조건으로 음악 추천 게시판 검색
     @Override
-    public Page<BoardRequestDto.BoardDto> search(int page, String searchType, String keyword){
+    public Page<BoardListRequestDto.BoardDto> search(int page, String searchType, String keyword){
+        if (page < 1) { // 잘못된 접근으로 throw할때 쿼리문 실행을 안하기 위해 나눠서 체크
+            throw new CustomException(BAD_REQUEST_REPLY_PAGE);
+        }
+
         Pageable pageable = PageRequest.of(page - 1, PAGESIZE);
 
         Page<Board> boards = searchBoards(searchType, keyword, pageable);
 
+        int totalPages = boards.getTotalPages();
+
+        if ( page > totalPages) {
+            throw new CustomException(BAD_REQUEST_REPLY_PAGE);
+        }
+
         return boards.map(board -> {
             List<String> genreList = board.getMusic().getGenreList();
             List<String> moodList = board.getMusic().getMoodList();
-            return BoardRequestDto.BoardDto.toDto(board, genreList, moodList);
+            return BoardListRequestDto.BoardDto.toDto(board, genreList, moodList);
         });
     }
 
@@ -232,6 +230,40 @@ public class BoardServiceImpl implements BoardService {
         }
     }
 
+    //게시글 상세 정보
+    private BoardRequestDto.BoardDto findBoard(long boardId){
+        Optional<Board> board = boardRepository.findById(boardId);
+        if(board.isEmpty()){
+            throw new CustomException(NOT_FOUND_BOARDID);
+        }
+        List<String> genreList = board.get().getMusic().getGenreList();
+        List<String> moodList = board.get().getMusic().getMoodList();
+        return BoardRequestDto.BoardDto.toDto(board.get(), genreList, moodList);
+    }
+
+    // 음악 추천 게시판 상단
+    private BoardListRequestDto.BoardPopUpDto findBoardPopUp() {
+        Specification<Board> spec = Specification.where(BoardSpecificaion.isCreateAtAfterWeek())
+                .and(BoardSpecificaion.isActiveCheckFalse()).and(BoardSpecificaion.findBoardsWithAtLeastTenRecommend());
+
+        List<Board> boards = findBySpecBoard(spec);
+
+        if (boards.isEmpty()) {
+            return null;
+        }
+
+        // 조건에 맞는 3개 이하의 게시글 가져오기
+        List<Board> randomBoard = selectRandomBoards(boards, 3);
+        BoardListRequestDto.RecommendBoardFirstDto firstPopUpDto = findBoardListPopUpFirst(boards);
+
+        List<BoardListRequestDto.RecommendBoardDto> boardPopUpDto = new ArrayList<>();
+
+        boardPopUpDto.add(findBoardListPopUp(boards, 1));
+        boardPopUpDto.add(findBoardListPopUp(boards, 2));
+
+        return BoardListRequestDto.BoardPopUpDto.of(firstPopUpDto, boardPopUpDto);
+    }
+
     private Page<Board> searchBoards(String searchType, String keyword, Pageable pageable) {
         switch (searchType) {
             case "username":
@@ -275,14 +307,14 @@ public class BoardServiceImpl implements BoardService {
                 .collect(Collectors.toList());
     }
 
-    private BoardRequestDto.RecommendBoardFirstDto findBoardListPopUpFirst(List<Board> boards) {
+    private BoardListRequestDto.RecommendBoardFirstDto findBoardListPopUpFirst(List<Board> boards) {
         Board selectBoard = boards.get(0);
-        return BoardRequestDto.RecommendBoardFirstDto.toDto(selectBoard);
+        return BoardListRequestDto.RecommendBoardFirstDto.toDto(selectBoard);
     }
 
-    private BoardRequestDto.RecommendBoardDto findBoardListPopUp(List<Board> boards, int indexNum) {
+    private BoardListRequestDto.RecommendBoardDto findBoardListPopUp(List<Board> boards, int indexNum) {
         Board selectBoard = boards.get(indexNum);
-        return BoardRequestDto.RecommendBoardDto.toDto(selectBoard);
+        return BoardListRequestDto.RecommendBoardDto.toDto(selectBoard);
     }
 
     private GenreBoardDto entityToGenreDto(Board board) { //장르로 검색한 게시글 엔티티를 Dto로 전환
