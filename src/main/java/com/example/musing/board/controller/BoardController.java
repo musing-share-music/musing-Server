@@ -9,6 +9,7 @@ import com.example.musing.board.service.BoardService;
 import com.example.musing.common.dto.ResponseDto;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,27 +27,27 @@ public class BoardController {
     }
 
 
-    @PostMapping("/create")
+    @PostMapping(value ="/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseDto<Board> createPost(@RequestBody @Valid CreateBoardRequest request) {
         boardService.createBoard(request); // DTO를 Service로 전달
         return ResponseDto.of(null,"성공적으로 글이 작성되었습니다.");
     }
 
 
-    @GetMapping("/selectAll")
+    @GetMapping(value ="/selectAll", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<List<CreateBoardResponse>> getAllBoards() {
         List<CreateBoardResponse> responseList = boardService.getAllBoards();
         return ResponseEntity.ok(responseList);
     }
 
-    @PutMapping("/updatePost")
+    @PutMapping(value ="/updatePost", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseDto<Board> updatePost(@RequestParam("boardId") Long boardId,@RequestBody UpdateBoardRequestDto updateRequest){
         boardService.updateBoard(boardId,updateRequest);
         return ResponseDto.of(null,"성공적으로 글이 수정되었습니다.");
     }
 
     @DeleteMapping("/deletePost")
-    public ResponseDto<Board> updatePost(@RequestParam("boardId") Long boardId){
+    public ResponseDto<Board> deletePost(@RequestParam("boardId") Long boardId){
         boardService.deleteBoard(boardId);
         return ResponseDto.of(null,"성공적으로 글이 삭제되었습니다.");
     }

@@ -5,6 +5,7 @@ import com.example.musing.artist.repository.ArtistRepository;
 import com.example.musing.board.dto.*;
 import com.example.musing.board.entity.Board;
 import com.example.musing.board.repository.BoardRepository;
+import com.example.musing.exception.CustomException;
 import com.example.musing.hashtag.entity.HashTag;
 import com.example.musing.like_music.entity.Like_Music;
 import com.example.musing.like_music.repository.Like_MusicRepository;
@@ -20,10 +21,13 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import static com.example.musing.exception.ErrorCode.NOT_FOUND_BOARDID;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -135,39 +139,40 @@ public class BoardServiceImpl implements BoardService {
                 .collect(Collectors.toList()); // List<CreateBoardResponse>로 반환
     }
 
+    @Transactional
     @Override
     public void deleteBoard(Long boardId) {
 
-        if(!boardRepository.existsById(boardId)) {
-            throw new EntityNotFoundException("Board does not exist");
+        if (!boardRepository.existsById(boardId)) {
+            throw new CustomException(NOT_FOUND_BOARDID, "Board does not exist");
         }
-       boardRepository.deleteById(boardId);
+        boardRepository.deleteById(boardId);
     }
 
+    @Transactional
     @Override
     public void updateBoard(Long boardId, UpdateBoardRequestDto updateRequest) {
 
 
         Board board = boardRepository.findById(boardId)
-                .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다. ID: " + boardId));
+                .orElseThrow(() -> new CustomException(NOT_FOUND_BOARDID, "Board does not exist  id is" + boardId));
 
+        List<MultipartFile> imgList = updateRequest.getImage();
 
-
-        String fileName = UUID.randomUUID() + "_" + updateRequest.getImage().getOriginalFilename();
 
         // 2. 업데이트 요청에 따라 필드 수정
         if (updateRequest.getTitle() != null) {
             board.builder().title(updateRequest.getTitle()).build();
         }
 
-        if(updateRequest.getMusicTitle() != null) {
+        if (updateRequest.getMusicTitle() != null) {
             board.getMusic().builder().name(updateRequest.getMusicTitle()).build();
         }
 
-        if(updateRequest.getArtist() != null) {
+        if (updateRequest.getArtist() != null) {
             board.getMusic().getArtist().builder().name(updateRequest.getArtist()).build();
         }
-        if(updateRequest.getYoutubeLink() != null) {
+        if (updateRequest.getYoutubeLink() != null) {
             board.getMusic().builder().songLink(updateRequest.getYoutubeLink()).build();
         }
         if (updateRequest.getContent() != null) {
@@ -190,11 +195,13 @@ public class BoardServiceImpl implements BoardService {
                 board.getMusic().addHashTag(newHashTag);
             });
         }
-        if (updateRequest.getImage().getOriginalFilename() != null) {
-            board.builder().image(fileName);
+        if (imgList != null) {
+            for(MultipartFile file : imgList) {
+                String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            }
         }
 
-        if(updateRequest.getGenre() != null){
+        if (updateRequest.getGenre() != null) {
             board.getMusic().builder().genre(updateRequest.getGenre());
         }
         // 3. 수정된 엔티티 저장
