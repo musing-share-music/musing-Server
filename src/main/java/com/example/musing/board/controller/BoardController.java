@@ -1,5 +1,6 @@
 package com.example.musing.board.controller;
 
+import com.example.musing.board.dto.BoardAndReplyPageDto;
 import com.example.musing.board.dto.BoardListRequestDto;
 import com.example.musing.board.dto.CreateBoardRequest;
 import com.example.musing.board.dto.UpdateBoardRequestDto;
@@ -7,17 +8,16 @@ import com.example.musing.board.entity.Board;
 import com.example.musing.board.service.BoardService;
 import com.example.musing.common.dto.ResponseDto;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/board")
 public class BoardController {
-    private final BoardService boardService;
 
-    public BoardController(BoardService boardService) {
-        this.boardService = boardService;
-    }
+    private final BoardService boardService;
 
     @PostMapping("/create")
     public ResponseDto<Board> createPost(@RequestBody @Valid CreateBoardRequest request) {
@@ -45,6 +45,12 @@ public class BoardController {
             @RequestParam(name = "keyword") String keyword) {
         Page<BoardListRequestDto.BoardDto> responseList = boardService.search(page, searchType, keyword);
         return ResponseDto.of(responseList);
+    }
+
+    @GetMapping("/board/{boardId}")
+    public ResponseDto<BoardAndReplyPageDto> getDetailPage(@PathVariable long boardId){
+        BoardAndReplyPageDto boardAndReplyPageDto = boardService.findBoardDetailPage(boardId);
+        return ResponseDto.of(boardAndReplyPageDto);
     }
 
     @PutMapping("/updatePost")

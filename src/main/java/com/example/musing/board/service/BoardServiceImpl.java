@@ -11,6 +11,8 @@ import com.example.musing.like_music.repository.Like_MusicRepository;
 import com.example.musing.main.dto.MainPageBoardDto;
 import com.example.musing.music.entity.Music;
 import com.example.musing.music.repository.MusicRepository;
+import com.example.musing.reply.dto.ReplyDto;
+import com.example.musing.reply.service.ReplyService;
 import com.example.musing.user.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -32,16 +34,16 @@ import static com.example.musing.exception.ErrorCode.*;
 @Service
 public class BoardServiceImpl implements BoardService {
 
+    private static PageRequest pageRequestOrderBy = PageRequest.
+            of(0, 5, Sort.by(Sort.Direction.DESC, "createdAt"));
+    private static PageRequest pageRequest = PageRequest.of(0, 1);
+    private static int PAGESIZE = 8;
     private final UserRepository userRepository;
     private final BoardRepository boardRepository;
     private final ArtistRepository artistRepository;
     private final Like_MusicRepository likeMusicRepository;
     private final MusicRepository musicRepository;
-
-    private static PageRequest pageRequestOrderBy = PageRequest.
-            of(0, 5, Sort.by(Sort.Direction.DESC, "createdAt"));
-    private static PageRequest pageRequest = PageRequest.of(0, 1);
-    private static int PAGESIZE = 8;
+    private final ReplyService replyService;
 
     @Override
     public List<GenreBoardDto> findBy5GenreBoard(String genre) { //장르로 검색한 게시글들을 엔티티에서 Dto로 전환
@@ -74,6 +76,7 @@ public class BoardServiceImpl implements BoardService {
 
         return boards.stream().map(this::entityToMainDto).collect(Collectors.toList());
     }
+
     @Override
     public List<GenreBoardDto> findBy10LikeMusics(String userId) {
         // 사용자가 좋아요를 누른 음악 목록을 ID가 높은 순서로 10개만 가져옵니다.
@@ -109,6 +112,7 @@ public class BoardServiceImpl implements BoardService {
                 .build();
         boardRepository.save(board);
     }
+
     //음악 추천 게시판 전체 리스트
     @Override
     public BoardListRequestDto.BoardListDto findBoardList() {
@@ -134,7 +138,7 @@ public class BoardServiceImpl implements BoardService {
 
         int totalPages = boards.getTotalPages();
 
-        if ( page > totalPages) {
+        if (page -1 > totalPages) {
             throw new CustomException(BAD_REQUEST_REPLY_PAGE);
         }
 
@@ -148,7 +152,7 @@ public class BoardServiceImpl implements BoardService {
 
     // 검색조건으로 음악 추천 게시판 검색
     @Override
-    public Page<BoardListRequestDto.BoardDto> search(int page, String searchType, String keyword){
+    public Page<BoardListRequestDto.BoardDto> search(int page, String searchType, String keyword) {
         if (page < 1) { // 잘못된 접근으로 throw할때 쿼리문 실행을 안하기 위해 나눠서 체크
             throw new CustomException(BAD_REQUEST_REPLY_PAGE);
         }
@@ -159,7 +163,7 @@ public class BoardServiceImpl implements BoardService {
 
         int totalPages = boards.getTotalPages();
 
-        if ( page > totalPages) {
+        if (page -1 > totalPages) {
             throw new CustomException(BAD_REQUEST_REPLY_PAGE);
         }
 
@@ -172,10 +176,10 @@ public class BoardServiceImpl implements BoardService {
 
     public void deleteBoard(Long boardId) {
 
-        if(!boardRepository.existsById(boardId)) {
+        if (!boardRepository.existsById(boardId)) {
             throw new EntityNotFoundException("Board does not exist");
         }
-       boardRepository.deleteById(boardId);
+        boardRepository.deleteById(boardId);
     }
 
     @Transactional
@@ -191,14 +195,14 @@ public class BoardServiceImpl implements BoardService {
             board.builder().title(updateRequest.getTitle()).build();
         }
 
-        if(updateRequest.getMusicTitle() != null) {
+        if (updateRequest.getMusicTitle() != null) {
             board.getMusic().builder().name(updateRequest.getMusicTitle()).build();
         }
 
-        if(updateRequest.getArtist() != null) {
+        if (updateRequest.getArtist() != null) {
             board.getMusic().getArtist().builder().name(updateRequest.getArtist()).build();
         }
-        if(updateRequest.getYoutubeLink() != null) {
+        if (updateRequest.getYoutubeLink() != null) {
             board.getMusic().builder().songLink(updateRequest.getYoutubeLink()).build();
         }
         if (updateRequest.getContent() != null) {
@@ -225,15 +229,24 @@ public class BoardServiceImpl implements BoardService {
             board.builder().image(fileName);
         }
 
-        if(updateRequest.getGenre() != null){
+        if (updateRequest.getGenre() != null) {
             board.getMusic().builder().genre(updateRequest.getGenre());
         }
     }
 
+    // 음악 추천 게시판 상세페이지 (리뷰 포함)
+    @Override
+    public BoardAndReplyPageDto findBoardDetailPage(long boardId) {
+        BoardRequestDto.BoardDto boardDto = findBoard(boardId);
+        Page<ReplyDto> replyDtos = replyService.findReplies(boardId, 1);
+
+        return BoardAndReplyPageDto.of(boardDto, replyDtos);
+    }
+
     //게시글 상세 정보
-    private BoardRequestDto.BoardDto findBoard(long boardId){
+    private BoardRequestDto.BoardDto findBoard(long boardId) {
         Optional<Board> board = boardRepository.findById(boardId);
-        if(board.isEmpty()){
+        if (board.isEmpty()) {
             throw new CustomException(NOT_FOUND_BOARDID);
         }
         List<String> genreList = board.get().getMusic().getGenreList();

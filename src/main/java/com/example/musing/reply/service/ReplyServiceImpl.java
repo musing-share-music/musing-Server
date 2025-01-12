@@ -26,10 +26,10 @@ import static com.example.musing.exception.ErrorCode.*;
 @Service
 public class ReplyServiceImpl implements ReplyService {
 
+    private static int PAGE_SIZE = 10;
     private final ReplyRepository replyRepository;
     private final UserRepository userRepository;
     private final BoardRepository boardRepository;
-    private static int PAGE_SIZE = 10;
 
     @Transactional
     @Override
@@ -63,7 +63,7 @@ public class ReplyServiceImpl implements ReplyService {
     @Override
     public ReplyDto findMyReplyByReplyId(long replyId) {
         String email = getUserEmail(); //유저 정보 확인 이후 이메일 가져오기
-        Reply reply = replyRepository.findByIdAndUser_Email(replyId,email)
+        Reply reply = replyRepository.findByIdAndUser_Email(replyId, email)
                 .orElseThrow(() -> new CustomException(NOT_FOUND_REPLY));
 
         return Reply.toDto(reply);
@@ -84,7 +84,7 @@ public class ReplyServiceImpl implements ReplyService {
     public void deleteReply(long replyId) {
         String email = getUserEmail(); //유저 정보 확인 이후 이메일 가져오기
 
-        if(replyRepository.existsByIdAndUser_Email(replyId, email)){
+        if (replyRepository.existsByIdAndUser_Email(replyId, email)) {
             new CustomException(NOT_MATCHED_REPLY_AND_USER);
         }
         replyRepository.deleteById(replyId);
@@ -95,12 +95,12 @@ public class ReplyServiceImpl implements ReplyService {
         if (page < 1) { // 잘못된 접근으로 throw할때 쿼리문 실행을 안하기 위해 나눠서 체크
             throw new CustomException(BAD_REQUEST_REPLY_PAGE);
         }
-        
+
         Pageable pageable = PageRequest.of(page - 1, PAGE_SIZE);
         Page<Reply> pageReply = replyRepository.findByBoard_Id(boardId, pageable);
         int totalPages = pageReply.getTotalPages();
 
-        if ( page > totalPages) {
+        if (page - 1 > totalPages) {
             throw new CustomException(BAD_REQUEST_REPLY_PAGE);
         }
 

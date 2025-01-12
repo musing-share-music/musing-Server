@@ -22,6 +22,9 @@ public interface BoardService {
     Page<BoardListRequestDto.BoardDto> findBoardDto(int page);
 
     Page<BoardListRequestDto.BoardDto> search(int page, String searchType, String keyword);
+
+    BoardAndReplyPageDto findBoardDetailPage(long boardId);
+
     // 글 삭제
     void deleteBoard(Long boardId);
     //글 수정
