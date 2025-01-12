@@ -16,11 +16,22 @@ public class BoardSpecificaion {
                 criteriaBuilder.isFalse(root.get("activeCheck"));
     }
 
-    public static Specification<Board> isCreateAtAfter() { //생성일자가 한달이내인지 체크
+    public static Specification<Board> isCreateAtAfterWeek() { //생성일자가 1주이내인지 체크
+        LocalDateTime oneWeekAgo = LocalDateTime.now().minusWeeks(1);
+        return (root, query, criteriaBuilder) ->
+                criteriaBuilder.greaterThanOrEqualTo(root.get("createdAt"), oneWeekAgo);
+    }
+
+    public static Specification<Board> isCreateAtAfterMonth() { //생성일자가 한달이내인지 체크
         LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
         return (root, query, criteriaBuilder) ->
                 criteriaBuilder.greaterThanOrEqualTo(root.get("createdAt"), oneMonthAgo);
     }
+    public static Specification<Board> findBoardsWithAtLeastTenRecommend() {
+        return (root, query, criteriaBuilder) ->
+                criteriaBuilder.greaterThanOrEqualTo(root.get("recommendCount"), 10);
+        };
+
     public static Specification<Board> orderByRecommendCountDesc() {
         return (root, query, criteriaBuilder) -> {
             query.orderBy(criteriaBuilder.desc(root.get("recommendCount")));
