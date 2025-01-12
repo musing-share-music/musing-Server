@@ -13,6 +13,6 @@ public interface ReplyRepository extends JpaRepository<Reply, Long> {
     Optional<Reply>  findByBoard_IdAndUser_Email(long boardId, String email);
 
     boolean existsByBoard_IdAndUser_Email(long boardId, String email);
-
+    boolean existsByIdAndUser_Email(long boardId, String email);
     Page<Reply> findByBoard_Id(long boardId, Pageable pageable);
 }

@@ -63,7 +63,8 @@ public class ReplyServiceImpl implements ReplyService {
     @Override
     public ReplyDto findMyReplyByReplyId(long replyId) {
         String email = getUserEmail(); //유저 정보 확인 이후 이메일 가져오기
-        Reply reply = replyRepository.findById(replyId).orElseThrow(() -> new CustomException(NOT_FOUND_REPLY));
+        Reply reply = replyRepository.findByIdAndUser_Email(replyId,email)
+                .orElseThrow(() -> new CustomException(NOT_FOUND_REPLY));
 
         return Reply.toDto(reply);
     }
@@ -83,9 +84,9 @@ public class ReplyServiceImpl implements ReplyService {
     public void deleteReply(long replyId) {
         String email = getUserEmail(); //유저 정보 확인 이후 이메일 가져오기
 
-        Reply reply = replyRepository.findByIdAndUser_Email(replyId, email)
-                .orElseThrow(() -> new CustomException(NOT_MATCHED_REPLY_AND_USER));
-
+        if(replyRepository.existsByIdAndUser_Email(replyId, email)){
+            new CustomException(NOT_MATCHED_REPLY_AND_USER);
+        }
         replyRepository.deleteById(replyId);
     }
 
