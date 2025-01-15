@@ -1,14 +1,23 @@
 package com.example.musing.board.service;
 
 import com.example.musing.board.entity.Board;
+import com.example.musing.genre.entity.Genre_Music;
+import com.example.musing.genre.entity.GerneEnum;
+import com.example.musing.music.entity.Music;
+import jakarta.persistence.criteria.Join;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDateTime;
 
 public class BoardSpecificaion {
-    public static Specification<Board> hasGenre(String genre) { //장르에 대한 조회
-        return (root, query, criteriaBuilder) ->
-                criteriaBuilder.like(root.get("music").get("genre"), "%" + genre + "%");
+    public static Specification<Board> hasGenre(String genre) {
+        return (root, query, criteriaBuilder) -> {
+            Join<Board, Music> musicJoin = root.join("music");
+            Join<Music, Genre_Music> genreJoin = musicJoin.join("genreMusics");
+
+            // 장르 이름을 기준으로 필터링
+            return criteriaBuilder.equal(genreJoin.get("genre").get("genreName"), GerneEnum.valueOf(genre.toUpperCase()));
+        };
     }
 
     public static Specification<Board> isActiveCheckFalse() { //삭제 여부 확인
@@ -27,10 +36,11 @@ public class BoardSpecificaion {
         return (root, query, criteriaBuilder) ->
                 criteriaBuilder.greaterThanOrEqualTo(root.get("createdAt"), oneMonthAgo);
     }
+
     public static Specification<Board> findBoardsWithAtLeastTenRecommend() {
         return (root, query, criteriaBuilder) ->
                 criteriaBuilder.greaterThanOrEqualTo(root.get("recommendCount"), 10);
-        };
+    }
 
     public static Specification<Board> orderByRecommendCountDesc() {
         return (root, query, criteriaBuilder) -> {

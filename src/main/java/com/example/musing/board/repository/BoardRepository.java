@@ -46,11 +46,17 @@ public interface BoardRepository extends JpaRepository<Board, Long>, JpaSpecific
             getDescQuery)
     Page<Board> findActiveBoardsByArtist(@Param("artist") String artist, Pageable pageable);
 
-    @Query(value = getFetchBoardQuery + getActiveCheckQuery + "AND m.genre LIKE %:genre% " +
-            getDescQuery)
+    @Query("SELECT b FROM Board b " +
+            "JOIN b.music m " +
+            "JOIN Genre_Music gm ON m.id = gm.music.id " +
+            "JOIN Genre g ON gm.genre.id = g.id " +
+            "WHERE g.genreName = :genre AND b.activeCheck = false")
     Page<Board> findActiveBoardsByGenre(@Param("genre") String genre, Pageable pageable);
 
-    @Query(value = getFetchBoardQuery + getActiveCheckQuery + "AND m.mood LIKE %:mood% " +
-            getDescQuery)
+    @Query("SELECT b FROM Board b " +
+            "JOIN b.music m " +
+            "JOIN Mood_Music mm ON m.id = mm.music.id " +
+            "JOIN Mood mo ON mm.mood.id = mo.id " +
+            "WHERE mo.moodName = :mood AND b.activeCheck = false")
     Page<Board> findActiveBoardsByMood(@Param("mood") String mood, Pageable pageable);
 }

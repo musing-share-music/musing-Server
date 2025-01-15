@@ -1,6 +1,8 @@
 package com.example.musing.board.dto;
 
 import com.example.musing.board.entity.Board;
+import com.example.musing.genre.dto.Genre_MusicDto;
+import com.example.musing.mood.dto.Mood_MusicDto;
 import lombok.Builder;
 
 import java.time.LocalDateTime;
@@ -21,10 +23,10 @@ public class BoardRequestDto {
             String thumbNailLink,
             String content,
             String imageUrl,
-            List<String> genreList,
-            List<String> moodList
+            List<Genre_MusicDto> genreList,
+            List<Mood_MusicDto> moodList
     ) {
-        public static BoardRequestDto.BoardDto toDto(Board board , List<String> genreList, List<String> moodList) {
+        public static BoardRequestDto.BoardDto toDto(Board board , List<Genre_MusicDto> genreList, List<Mood_MusicDto> moodList) {
             return BoardDto.builder()
                     .title(board.getTitle())
                     .musicName(board.getMusic().getName())

@@ -5,10 +5,14 @@ import com.example.musing.board.dto.*;
 import com.example.musing.board.entity.Board;
 import com.example.musing.board.repository.BoardRepository;
 import com.example.musing.exception.CustomException;
+import com.example.musing.genre.dto.Genre_MusicDto;
+import com.example.musing.genre.entity.Genre_Music;
 import com.example.musing.hashtag.entity.HashTag;
 import com.example.musing.like_music.entity.Like_Music;
 import com.example.musing.like_music.repository.Like_MusicRepository;
 import com.example.musing.main.dto.MainPageBoardDto;
+import com.example.musing.mood.dto.Mood_MusicDto;
+import com.example.musing.mood.entity.Mood_Music;
 import com.example.musing.music.entity.Music;
 import com.example.musing.music.repository.MusicRepository;
 import com.example.musing.reply.dto.ReplyDto;
@@ -129,22 +133,21 @@ public class BoardServiceImpl implements BoardService {
             throw new CustomException(BAD_REQUEST_REPLY_PAGE);
         }
 
-        Specification<Board> spec = Specification.where(BoardSpecificaion.isActiveCheckFalse())
-                .and(BoardSpecificaion.findBoardsWithAtLeastTenRecommend());
-
         Pageable pageable = PageRequest.of(page - 1, PAGESIZE);
-
         Page<Board> boards = boardRepository.findActiveBoardPage(pageable);
 
         int totalPages = boards.getTotalPages();
-
         if (page -1 > totalPages) {
             throw new CustomException(BAD_REQUEST_REPLY_PAGE);
         }
 
         return boards.map(board -> {
-            List<String> genreList = board.getMusic().getGenreList();
-            List<String> moodList = board.getMusic().getMoodList();
+            List<Genre_MusicDto> genreList = board.getMusic().getGenreMusics().stream()
+                    .map(Genre_MusicDto::toDto)
+                    .collect(Collectors.toList());
+            List<Mood_MusicDto> moodList = board.getMusic().getMoodMusics().stream()
+                    .map(Mood_MusicDto::toDto)
+                    .collect(Collectors.toList());
             return BoardListRequestDto.BoardDto.toDto(board, genreList, moodList);
         });
     }
@@ -167,11 +170,8 @@ public class BoardServiceImpl implements BoardService {
             throw new CustomException(BAD_REQUEST_REPLY_PAGE);
         }
 
-        return boards.map(board -> {
-            List<String> genreList = board.getMusic().getGenreList();
-            List<String> moodList = board.getMusic().getMoodList();
-            return BoardListRequestDto.BoardDto.toDto(board, genreList, moodList);
-        });
+        return boards.map(board ->
+            BoardListRequestDto.BoardDto.toDto(board, getGenreMusicListDto(board), getMoodMusicListDto(board)));
     }
 
     public void deleteBoard(Long boardId) {
@@ -229,9 +229,9 @@ public class BoardServiceImpl implements BoardService {
             board.builder().image(fileName);
         }
 
-        if (updateRequest.getGenre() != null) {
+/*        if (updateRequest.getGenre() != null) {
             board.getMusic().builder().genre(updateRequest.getGenre());
-        }
+        }*/
     }
 
     // 음악 추천 게시판 상세페이지 (리뷰 포함)
@@ -243,15 +243,25 @@ public class BoardServiceImpl implements BoardService {
         return BoardAndReplyPageDto.of(boardDto, replyDtos);
     }
 
+    //게시글의 음악에 포함된 장르를 Dto로 담아 리스트로 반환
+    private List<Genre_MusicDto> getGenreMusicListDto(Board board){
+        return board.getMusic().getGenreMusics().stream()
+                .map(Genre_MusicDto::toDto)
+                .collect(Collectors.toList());
+    }
+    
+    //게시글의 음악에 포함된 분위기를 Dto로 담아 리스트로 반환
+    private List<Mood_MusicDto> getMoodMusicListDto(Board board){
+        return board.getMusic().getMoodMusics().stream()
+                .map(Mood_MusicDto::toDto)
+                .collect(Collectors.toList());
+    }
+    
     //게시글 상세 정보
     private BoardRequestDto.BoardDto findBoard(long boardId) {
-        Optional<Board> board = boardRepository.findById(boardId);
-        if (board.isEmpty()) {
-            throw new CustomException(NOT_FOUND_BOARDID);
-        }
-        List<String> genreList = board.get().getMusic().getGenreList();
-        List<String> moodList = board.get().getMusic().getMoodList();
-        return BoardRequestDto.BoardDto.toDto(board.get(), genreList, moodList);
+        Board board = boardRepository.findById(boardId).orElseThrow(() -> new CustomException(NOT_FOUND_BOARDID));
+
+        return BoardRequestDto.BoardDto.toDto(board, getGenreMusicListDto(board), getMoodMusicListDto(board));
     }
 
     // 음악 추천 게시판 상단

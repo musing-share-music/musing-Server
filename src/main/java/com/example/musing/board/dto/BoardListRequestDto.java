@@ -3,6 +3,9 @@ package com.example.musing.board.dto;
 import com.example.musing.board.entity.Board;
 import java.time.LocalDateTime;
 import java.util.List;
+
+import com.example.musing.genre.dto.Genre_MusicDto;
+import com.example.musing.mood.dto.Mood_MusicDto;
 import lombok.Builder;
 import org.springframework.data.domain.Page;
 
@@ -58,10 +61,10 @@ public class BoardListRequestDto {
         float rating,
         int replyCount,
         String thumbNailLink,
-        List<String> genreList,
-        List<String> moodList
+        List<Genre_MusicDto> genreList,
+        List<Mood_MusicDto> moodList
     ) {
-        public static BoardDto toDto(Board board , List<String> genreList, List<String> moodList) {
+        public static BoardDto toDto(Board board , List<Genre_MusicDto> genreList, List<Mood_MusicDto> moodList) {
             return BoardDto.builder()
                 .title(board.getTitle())
                 .musicName(board.getMusic().getName())
