@@ -20,6 +20,7 @@ public class UpdateBoardRequestDto {
     private String youtubeLink;
     private List<String> hashtags;
     private String genre;
-    private MultipartFile image;
+
+    private List<MultipartFile> image;
     private String content;
 }

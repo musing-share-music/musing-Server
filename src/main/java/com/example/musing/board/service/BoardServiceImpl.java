@@ -27,9 +27,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
 
 import static com.example.musing.exception.ErrorCode.*;
 
@@ -152,8 +154,8 @@ public class BoardServiceImpl implements BoardService {
         });
     }
 
-
     // 검색조건으로 음악 추천 게시판 검색
+    @Transactional
     @Override
     public Page<BoardListRequestDto.BoardDto> search(int page, String searchType, String keyword) {
         if (page < 1) { // 잘못된 접근으로 throw할때 쿼리문 실행을 안하기 위해 나눠서 체크
@@ -177,7 +179,7 @@ public class BoardServiceImpl implements BoardService {
     public void deleteBoard(Long boardId) {
 
         if (!boardRepository.existsById(boardId)) {
-            throw new EntityNotFoundException("Board does not exist");
+            throw new CustomException(NOT_FOUND_BOARDID, "Board does not exist");
         }
         boardRepository.deleteById(boardId);
     }
@@ -186,9 +188,9 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public void updateBoard(Long boardId, UpdateBoardRequestDto updateRequest) {
         Board board = boardRepository.findById(boardId)
-                .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다. ID: " + boardId));
+                .orElseThrow(() -> new CustomException(NOT_FOUND_BOARDID, "Board does not exist  id is" + boardId));
 
-        String fileName = UUID.randomUUID() + "_" + updateRequest.getImage().getOriginalFilename();
+        List<MultipartFile> imgList = updateRequest.getImage();
 
         // 2. 업데이트 요청에 따라 필드 수정
         if (updateRequest.getTitle() != null) {
@@ -225,8 +227,10 @@ public class BoardServiceImpl implements BoardService {
                 board.getMusic().addHashTag(newHashTag);
             });
         }
-        if (updateRequest.getImage().getOriginalFilename() != null) {
-            board.builder().image(fileName);
+        if (imgList != null) {
+            for(MultipartFile file : imgList) {
+                String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            }
         }
 
 /*        if (updateRequest.getGenre() != null) {
