@@ -1,5 +1,6 @@
 package com.example.musing.board.dto;
 
+import com.example.musing.artist.entity.Artist;
 import com.example.musing.board.entity.Board;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,7 +19,7 @@ public class BoardListRequestDto {
         String title,
         String content,
         String musicName,
-        String artistName,
+        List<Artist> artists,
         float rating,
         String thumbNailLink
     ) {
@@ -27,7 +28,7 @@ public class BoardListRequestDto {
                 .title(board.getTitle())
                 .content(board.getContent())
                 .musicName(board.getMusic().getName())
-                .artistName(board.getMusic().getArtist().getName())
+                .artists(board.getMusic().getArtists())
                 .rating(board.getRating())
                 .thumbNailLink(board.getMusic().getThumbNailLink())
                 .build();

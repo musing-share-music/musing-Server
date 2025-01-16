@@ -1,13 +1,14 @@
 package com.example.musing.user.entity;
 
+import com.example.musing.artist.entity.Artist_User;
 import com.example.musing.board.entity.Board;
+import com.example.musing.genre.entity.Genre_Music;
 import com.example.musing.like_music.entity.Like_Music;
+import com.example.musing.mood.entity.Mood_Music;
 import com.example.musing.reply.entity.Reply;
 import com.example.musing.playlist.entity.PlayList;
-import com.example.musing.prefer.entity.Prefer;
 import jakarta.persistence.*;
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
@@ -59,9 +60,13 @@ public class User { //https://developers.google.com/identity/openid-connect/open
     //플레이 리스트 일대다 매핑
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PlayList> playLists = new ArrayList<>();
-    //플레이 리스트 일대다 매핑
+    //유저가 선호하는 장르 및 분위기
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Prefer> prefers = new ArrayList<>();
+    private List<Mood_Music> moods = new ArrayList<>();
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Genre_Music> genres = new ArrayList<>();
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Artist_User> artists = new ArrayList<>();
     //답글 리스트와 일대다 매핑
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Reply> replyList = new ArrayList<>();

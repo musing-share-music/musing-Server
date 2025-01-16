@@ -30,7 +30,7 @@ public class BoardRequestDto {
             return BoardDto.builder()
                     .title(board.getTitle())
                     .musicName(board.getMusic().getName())
-                    .artistName(board.getMusic().getArtist().getName())
+                    .artistName(board.getMusic().getArtists())
                     .rating(board.getRating())
                     .username(board.getUser().getUsername())
                     .createAt(board.getCreatedAt())

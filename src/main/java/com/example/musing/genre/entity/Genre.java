@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 public class Genre {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name="genreid")
     private Long id;
 
     @Enumerated(EnumType.STRING)

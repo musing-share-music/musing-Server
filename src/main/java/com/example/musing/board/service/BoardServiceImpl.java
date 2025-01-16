@@ -197,10 +197,10 @@ public class BoardServiceImpl implements BoardService {
         if (updateRequest.getMusicTitle() != null) {
             board.getMusic().builder().name(updateRequest.getMusicTitle()).build();
         }
-
+/*
         if (updateRequest.getArtist() != null) {
             board.getMusic().getArtist().builder().name(updateRequest.getArtist()).build();
-        }
+        }*/
         if (updateRequest.getYoutubeLink() != null) {
             board.getMusic().builder().songLink(updateRequest.getYoutubeLink()).build();
         }

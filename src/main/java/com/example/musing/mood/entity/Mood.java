@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 public class Mood {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name="moodid")
     private Long id;
 
     @Enumerated(EnumType.STRING)

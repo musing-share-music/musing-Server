@@ -18,6 +18,7 @@ public class Artist {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name="artistid")
     private long id;
 
     @Column(nullable = false)
