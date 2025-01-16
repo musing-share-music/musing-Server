@@ -111,6 +111,7 @@ public class MainController {
 
     private boolean checkRole() { //로그인했는지와 유저인지 확인
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println(auth);
         if (auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_USER"))) {
             return true;
         }

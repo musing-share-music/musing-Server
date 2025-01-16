@@ -2,7 +2,6 @@ package com.example.musing.board.service;
 
 import com.example.musing.board.entity.Board;
 import com.example.musing.genre.entity.Genre_Music;
-import com.example.musing.genre.entity.GerneEnum;
 import com.example.musing.music.entity.Music;
 import jakarta.persistence.criteria.Join;
 import org.springframework.data.jpa.domain.Specification;
@@ -16,13 +15,13 @@ public class BoardSpecificaion {
             Join<Music, Genre_Music> genreJoin = musicJoin.join("genreMusics");
 
             // 장르 이름을 기준으로 필터링
-            return criteriaBuilder.equal(genreJoin.get("genre").get("genreName"), GerneEnum.valueOf(genre.toUpperCase()));
+            return criteriaBuilder.equal(genreJoin.get("genre").get("genreName"), genre);
         };
     }
 
-    public static Specification<Board> isActiveCheckFalse() { //삭제 여부 확인
+    public static Specification<Board> isActiveCheckTrue() { //삭제 여부 확인
         return (root, query, criteriaBuilder) ->
-                criteriaBuilder.isFalse(root.get("activeCheck"));
+                criteriaBuilder.isTrue(root.get("activeCheck"));
     }
 
     public static Specification<Board> isCreateAtAfterWeek() { //생성일자가 1주이내인지 체크

@@ -19,6 +19,7 @@ public record HotBoardDto(
 
     public static HotBoardDto toDto(Board board) {
         return HotBoardDto.builder()
+                .id(board.getId())
                 .title(board.getTitle())
                 .musicName(board.getMusic().getName())
                 .artist(board.getMusic().getArtist().getName())

@@ -1,7 +1,8 @@
 package com.example.musing.main.dto;
 
-import com.example.musing.board.dto.HotBoardDto;
 import com.example.musing.board.dto.GenreBoardDto;
+import com.example.musing.board.dto.HotBoardDto;
+import com.example.musing.genre.dto.GenreDto;
 import com.example.musing.notice.dto.NoticeDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
@@ -19,7 +20,7 @@ public record LoginMainPageDto(
         @Schema(description = "좋아요한 음악 10개, 아래 Dto에 한개 이상으로 있습니다.")
         List<GenreBoardDto> likeMusicDtos,
         @Schema(description = "랜덤 장르 이름.")
-        String recommendGenreName,//랜덤 장르 이름
+        GenreDto recommendGenre,//랜덤 장르 이름
         @Schema(description = "랜덤 장르 하나중에 관련 게시글 최대 5개.")
         List<GenreBoardDto> recommendGenres,
         @Schema(description = "음악 추천 게시글의 인기 곡 1개")
@@ -32,7 +33,7 @@ public record LoginMainPageDto(
     public static LoginMainPageDto of(NoticeDto noticeDto,
                                       List<String> likeGenre,
                                       List<GenreBoardDto> likeMusicDtos,
-                                      String recommendGenreName, List<GenreBoardDto> recommendGenres,
+                                      GenreDto recommendGenre, List<GenreBoardDto> recommendGenres,
                                       HotBoardDto hotMusicBoard,
                                       List<MainPageBoardDto> recentBoard,
                                       String modalCheck) {
@@ -40,7 +41,7 @@ public record LoginMainPageDto(
                 .noticeDto(noticeDto)
                 .likeGenre(likeGenre)
                 .likeMusicDtos(likeMusicDtos)
-                .recommendGenreName(recommendGenreName)
+                .recommendGenre(recommendGenre)
                 .recommendGenres(recommendGenres)
                 .hotMusicBoard(hotMusicBoard)
                 .recentBoard(recentBoard)

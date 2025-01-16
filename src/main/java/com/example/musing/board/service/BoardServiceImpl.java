@@ -5,20 +5,17 @@ import com.example.musing.board.dto.*;
 import com.example.musing.board.entity.Board;
 import com.example.musing.board.repository.BoardRepository;
 import com.example.musing.exception.CustomException;
-import com.example.musing.genre.dto.Genre_MusicDto;
-import com.example.musing.genre.entity.Genre_Music;
+import com.example.musing.genre.dto.GenreDto;
 import com.example.musing.hashtag.entity.HashTag;
 import com.example.musing.like_music.entity.Like_Music;
 import com.example.musing.like_music.repository.Like_MusicRepository;
 import com.example.musing.main.dto.MainPageBoardDto;
-import com.example.musing.mood.dto.Mood_MusicDto;
-import com.example.musing.mood.entity.Mood_Music;
+import com.example.musing.mood.dto.MoodDto;
 import com.example.musing.music.entity.Music;
 import com.example.musing.music.repository.MusicRepository;
 import com.example.musing.reply.dto.ReplyDto;
 import com.example.musing.reply.service.ReplyService;
 import com.example.musing.user.repository.UserRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -54,7 +51,7 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public List<GenreBoardDto> findBy5GenreBoard(String genre) { //장르로 검색한 게시글들을 엔티티에서 Dto로 전환
         Specification<Board> spec = Specification.where(BoardSpecificaion.hasGenre(genre))
-                .and(BoardSpecificaion.isActiveCheckFalse());
+                .and(BoardSpecificaion.isActiveCheckTrue());
 
         List<Board> boards = findBySpecBoard(spec, pageRequestOrderBy);
 
@@ -65,7 +62,7 @@ public class BoardServiceImpl implements BoardService {
     public HotBoardDto findHotMusicBoard() {
         //한달이내 생성이 되었고, 추천수가 제일 많으며, 삭제 처리가 되지않음을 확인
         Specification<Board> spec = Specification.where(BoardSpecificaion.isCreateAtAfterMonth())
-                .and(BoardSpecificaion.isActiveCheckFalse()).and(BoardSpecificaion.orderByRecommendCountDesc());
+                .and(BoardSpecificaion.isActiveCheckTrue()).and(BoardSpecificaion.orderByRecommendCountDesc());
 
         List<Board> boards = findBySpecBoard(spec, pageRequest);
 
@@ -76,7 +73,7 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public List<MainPageBoardDto> findBy5Board() {
         //삭제 처리가 되지않은 게시글
-        Specification<Board> spec = Specification.where(BoardSpecificaion.isActiveCheckFalse());
+        Specification<Board> spec = Specification.where(BoardSpecificaion.isActiveCheckTrue());
 
         List<Board> boards = findBySpecBoard(spec, pageRequestOrderBy); //해당 장르의 게시글 5개를 최신순으로 가져옴
 
@@ -144,11 +141,11 @@ public class BoardServiceImpl implements BoardService {
         }
 
         return boards.map(board -> {
-            List<Genre_MusicDto> genreList = board.getMusic().getGenreMusics().stream()
-                    .map(Genre_MusicDto::toDto)
+            List<GenreDto> genreList = board.getMusic().getGenreMusics().stream()
+                    .map(GenreDto::toDto)
                     .collect(Collectors.toList());
-            List<Mood_MusicDto> moodList = board.getMusic().getMoodMusics().stream()
-                    .map(Mood_MusicDto::toDto)
+            List<MoodDto> moodList = board.getMusic().getMoodMusics().stream()
+                    .map(MoodDto::toDto)
                     .collect(Collectors.toList());
             return BoardListRequestDto.BoardDto.toDto(board, genreList, moodList);
         });
@@ -248,16 +245,16 @@ public class BoardServiceImpl implements BoardService {
     }
 
     //게시글의 음악에 포함된 장르를 Dto로 담아 리스트로 반환
-    private List<Genre_MusicDto> getGenreMusicListDto(Board board){
+    private List<GenreDto> getGenreMusicListDto(Board board){
         return board.getMusic().getGenreMusics().stream()
-                .map(Genre_MusicDto::toDto)
+                .map(GenreDto::toDto)
                 .collect(Collectors.toList());
     }
     
     //게시글의 음악에 포함된 분위기를 Dto로 담아 리스트로 반환
-    private List<Mood_MusicDto> getMoodMusicListDto(Board board){
+    private List<MoodDto> getMoodMusicListDto(Board board){
         return board.getMusic().getMoodMusics().stream()
-                .map(Mood_MusicDto::toDto)
+                .map(MoodDto::toDto)
                 .collect(Collectors.toList());
     }
     
@@ -271,7 +268,7 @@ public class BoardServiceImpl implements BoardService {
     // 음악 추천 게시판 상단
     private BoardListRequestDto.BoardPopUpDto findBoardPopUp() {
         Specification<Board> spec = Specification.where(BoardSpecificaion.isCreateAtAfterWeek())
-                .and(BoardSpecificaion.isActiveCheckFalse()).and(BoardSpecificaion.findBoardsWithAtLeastTenRecommend());
+                .and(BoardSpecificaion.isActiveCheckTrue()).and(BoardSpecificaion.findBoardsWithAtLeastTenRecommend());
 
         List<Board> boards = findBySpecBoard(spec);
 

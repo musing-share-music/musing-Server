@@ -1,6 +1,7 @@
 package com.example.musing.genre.service;
 
 import com.example.musing.exception.CustomException;
+import com.example.musing.genre.dto.GenreDto;
 import com.example.musing.genre.entity.Genre;
 import com.example.musing.genre.entity.Genre_Music;
 import com.example.musing.genre.repository.GenreRepository;
@@ -26,15 +27,14 @@ public class GenreServiceImpl implements GenreService {
     private final Genre_MusicRepository genreMusicRepository;
 
     @Override
-    public String getRandomGenre() {
+    public GenreDto getRandomGenre() {
         Random random = new Random();
         long index = 0;
         if (genreRepository.count() != 0) {
             index = random.nextLong(genreRepository.count());
         }
-
-        return genreRepository.findById(index).orElseThrow(() -> new CustomException(NOT_FOUND_GENRE))
-                .getGenreName().getKey();
+        GenreDto genreMusicDto = GenreDto.toDto(genreRepository.findById(index).orElseThrow(() -> new CustomException(NOT_FOUND_GENRE)));
+        return genreMusicDto;
     }
 
     // 수정하면서 태그를 바꿀때만 쓸수 있고 추가하는 부분은 따로 필요

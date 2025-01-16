@@ -1,8 +1,10 @@
 package com.example.musing.genre.service;
 
+import com.example.musing.genre.dto.GenreDto;
+
 import java.util.List;
 
 public interface GenreService {
-    String getRandomGenre();
+    GenreDto getRandomGenre();
     void modifyGenre_Music(long musicId, List<Long> genreList);
 }

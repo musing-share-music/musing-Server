@@ -3,6 +3,7 @@ package com.example.musing.main.service;
 import com.example.musing.board.dto.HotBoardDto;
 import com.example.musing.board.dto.GenreBoardDto;
 import com.example.musing.board.service.BoardService;
+import com.example.musing.genre.dto.GenreDto;
 import com.example.musing.genre.service.GenreService;
 import com.example.musing.main.dto.LoginMainPageDto;
 import com.example.musing.main.dto.MainPageBoardDto;
@@ -31,8 +32,8 @@ public class MainServiceImpl implements MainService {
         NoticeDto noticeDto = noticeService.findNotice(); //최신 공지사항 가져오기
 
         //랜덤 장르를 고르고 최신순의 게시글을 최대5개 가져옴
-        String recommendGenreName = genreService.getRandomGenre();
-        List<GenreBoardDto> genreBoardDtos = boardService.findBy5GenreBoard(recommendGenreName);
+        GenreDto recommendGenre = genreService.getRandomGenre();
+        List<GenreBoardDto> genreBoardDtos = boardService.findBy5GenreBoard(recommendGenre.genreName());
 
         HotBoardDto hotBoardDto = boardService.findHotMusicBoard(); //핫한 게시글
 
@@ -40,7 +41,7 @@ public class MainServiceImpl implements MainService {
         //최신 게시글 5개 가져오기
         List<MainPageBoardDto> mainPageBoardDtos = boardService.findBy5Board();
 
-        return NotLoginMainPageDto.of(noticeDto, recommendGenreName, genreBoardDtos, hotBoardDto, mainPageBoardDtos, modalCheck);
+        return NotLoginMainPageDto.of(noticeDto, recommendGenre, genreBoardDtos, hotBoardDto, mainPageBoardDtos, modalCheck);
     }
 
     @Override
@@ -56,8 +57,8 @@ public class MainServiceImpl implements MainService {
         List<GenreBoardDto> likeMusic = boardService.findBy10LikeMusics(userId);
 
         //랜덤 장르를 고르고 최신순의 게시글을 최대5개 가져옴
-        String recommendGenreName = genreService.getRandomGenre();
-        List<GenreBoardDto> genreBoardDtos = boardService.findBy5GenreBoard(recommendGenreName);
+        GenreDto recommendGenre = genreService.getRandomGenre();
+        List<GenreBoardDto> genreBoardDtos = boardService.findBy5GenreBoard(recommendGenre.genreName());
 
         HotBoardDto hotBoardDto = boardService.findHotMusicBoard(); //핫한 게시글
 
@@ -65,7 +66,7 @@ public class MainServiceImpl implements MainService {
         List<MainPageBoardDto> mainPageBoardDtos = boardService.findBy5Board();
 
         return LoginMainPageDto.of(noticeDto,likeGenre,likeMusic,
-                recommendGenreName,genreBoardDtos,hotBoardDto,mainPageBoardDtos ,modalCheck);
+                recommendGenre,genreBoardDtos,hotBoardDto,mainPageBoardDtos ,modalCheck);
     }
 
     @Override
