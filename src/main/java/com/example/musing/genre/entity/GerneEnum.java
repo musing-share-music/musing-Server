@@ -2,6 +2,9 @@ package com.example.musing.genre.entity;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+
+import java.util.Arrays;
+
 @RequiredArgsConstructor
 @Getter
 public enum GerneEnum {
@@ -29,4 +32,11 @@ public enum GerneEnum {
     SHOEGAZING("슈게이징");
 
     private final String key;
+
+    public static GerneEnum find(String key) {
+        return Arrays.stream(values())
+                .filter(genre -> genre.key.equals(key))
+                .findAny()
+                .orElseThrow(() -> new IllegalArgumentException("No enum constant with key " + key));
+    }
 }

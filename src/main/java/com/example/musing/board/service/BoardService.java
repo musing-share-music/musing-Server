@@ -1,6 +1,7 @@
 package com.example.musing.board.service;
 
 import com.example.musing.board.dto.*;
+import com.example.musing.genre.entity.GerneEnum;
 import com.example.musing.main.dto.MainPageBoardDto;
 import org.springframework.data.domain.Page;
 

@@ -2,6 +2,7 @@ package com.example.musing.board.service;
 
 import com.example.musing.board.entity.Board;
 import com.example.musing.genre.entity.Genre_Music;
+import com.example.musing.genre.entity.GerneEnum;
 import com.example.musing.music.entity.Music;
 import jakarta.persistence.criteria.Join;
 import org.springframework.data.jpa.domain.Specification;
@@ -15,7 +16,10 @@ public class BoardSpecificaion {
             Join<Music, Genre_Music> genreJoin = musicJoin.join("genreMusics");
 
             // 장르 이름을 기준으로 필터링
-            return criteriaBuilder.equal(genreJoin.get("genre").get("genreName"), genre);
+            GerneEnum gerneEnum = GerneEnum.find(genre);
+            System.out.println("gerne: " +gerneEnum);
+            System.out.println("gerne: " +gerneEnum.name());
+            return criteriaBuilder.equal(genreJoin.get("genre").get("genreName"), gerneEnum.name());
         };
     }
 
