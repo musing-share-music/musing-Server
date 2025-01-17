@@ -19,7 +19,7 @@ public class Artist_Music {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id", nullable = false)
+    @JoinColumn(name = "artistid", nullable = false)
     private Artist artist;
 
     @ManyToOne(fetch = FetchType.LAZY)

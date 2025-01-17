@@ -25,7 +25,7 @@ public class Artist {
     private String name;
 
     @OneToMany(mappedBy = "artist" , cascade = CascadeType.ALL, orphanRemoval = true )
-    private List<Music> musicList = new ArrayList<Music>();
+    private List<Artist_Music> artistMusics = new ArrayList<>();
 
 
     @Builder

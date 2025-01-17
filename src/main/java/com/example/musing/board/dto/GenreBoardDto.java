@@ -1,7 +1,10 @@
 package com.example.musing.board.dto;
 
+import com.example.musing.artist.dto.ArtistDto;
 import com.example.musing.board.entity.Board;
+import com.example.musing.music.entity.Music;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
 import lombok.Builder;
 
 @Builder
@@ -10,16 +13,21 @@ public record GenreBoardDto(
         long id,
         @Schema(description = "노래 제목", example = "Back In Black")
         String musicName,
-        @Schema(description = "아티스트 명", example = "AC/DC")
-        String artist,
+        @Schema(description = "아티스트 Id 및 이름")
+        List<ArtistDto> artists,
         @Schema(description = "유튜브 썸네일 사진 링크", example = "https://img.youtube.com/vi/pAgnJDJN4VA/maxresdefault.jpg")
         String thumbNailLink) { //메인 페이지 장르 추천에 쓰임
     public static GenreBoardDto toDto(Board board){
         return GenreBoardDto.builder()
                 .id(board.getId())
                 .musicName(board.getMusic().getName())
-                .artist(board.getMusic().getArtist().getName())
+                .artists(toDtoArtistList(board.getMusic()))
                 .thumbNailLink(board.getMusic().getThumbNailLink())
                 .build();
+    }
+    private static List<ArtistDto> toDtoArtistList(Music music){
+        return music.getArtists().stream()
+            .map(musicArtist -> ArtistDto.toDto(musicArtist.getArtist()))
+            .toList();
     }
 }

@@ -1,8 +1,10 @@
 package com.example.musing.board.dto;
 
+import com.example.musing.artist.dto.ArtistDto;
 import com.example.musing.board.entity.Board;
 import com.example.musing.genre.dto.GenreDto;
 import com.example.musing.mood.dto.MoodDto;
+import com.example.musing.music.entity.Music;
 import lombok.Builder;
 
 import java.time.LocalDateTime;
@@ -13,7 +15,7 @@ public class BoardRequestDto {
     public record BoardDto(
             String title,
             String musicName,
-            String artistName,
+            List<ArtistDto> artists,
             float rating,
             String username,
             LocalDateTime createAt,
@@ -30,7 +32,7 @@ public class BoardRequestDto {
             return BoardDto.builder()
                     .title(board.getTitle())
                     .musicName(board.getMusic().getName())
-                    .artistName(board.getMusic().getArtists())
+                    .artists(toDtoArtistList(board.getMusic()))
                     .rating(board.getRating())
                     .username(board.getUser().getUsername())
                     .createAt(board.getCreatedAt())
@@ -44,5 +46,10 @@ public class BoardRequestDto {
                     .moodList(moodList)
                     .build();
         }
+    }
+    private static List<ArtistDto> toDtoArtistList(Music music){
+        return music.getArtists().stream()
+            .map(musicArtist -> ArtistDto.toDto(musicArtist.getArtist()))
+            .toList();
     }
 }

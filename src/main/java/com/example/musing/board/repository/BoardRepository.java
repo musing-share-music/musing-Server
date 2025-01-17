@@ -4,6 +4,7 @@ import com.example.musing.board.entity.Board;
 import com.example.musing.music.entity.Music;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -24,7 +25,8 @@ public interface BoardRepository extends JpaRepository<Board, Long>, JpaSpecific
     String getActiveCheckQuery = "WHERE b.activeCheck = false ";
     String getDescQuery = "ORDER BY b.createdAt DESC";
 
-    @Query(getFetchBoardQuery + getFetchUserQuery + getActiveCheckQuery + "AND b.id = :boardId")
+    @EntityGraph(attributePaths = {"music", "music.artist", "user"})
+    @Query("SELECT b FROM Board b WHERE b.activeCheck = false AND b.id = :boardId")
     Optional<Board> findById(@Param("boardId") long boardId);
 
     @Query("SELECT b FROM Board b JOIN FETCH b.music m WHERE m IN :musicList")

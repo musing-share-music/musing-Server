@@ -1,4 +1,4 @@
-package com.example.musing.artist.entity;
+/*package com.example.musing.artist.entity;
 
 import com.example.musing.genre.entity.Genre;
 import com.example.musing.genre.entity.Genre_Music;
@@ -35,4 +35,4 @@ public class Artist_User {
                 .user(user)
                 .build();
     }
-}
+}*/

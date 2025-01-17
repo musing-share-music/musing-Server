@@ -1,8 +1,11 @@
 package com.example.musing.main.dto;
 
+import com.example.musing.artist.dto.ArtistDto;
 import com.example.musing.board.entity.Board;
+import com.example.musing.music.entity.Music;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.Builder;
 import org.springframework.cglib.core.Local;
 
@@ -25,8 +28,8 @@ public record MainPageBoardDto(
         int viewCount,
         @Schema(description = "노래 제목", example = "Smooth Criminal - Live in Munich 1997")
         String musicName,
-        @Schema(description = "아티스트 명", example = "Michael Jackson")
-        String artist,
+        @Schema(description = "아티스트 Id 및 이름")
+        List<ArtistDto> artists,
         @Schema(description = "유튜브 썸네일 사진 링크", example = "https://img.youtube.com/vi/4Aa9GwWaRv0/maxresdefault.jpg")
         String thumbNailLink) { //메인 페이지에 사용할 음악 추천 게시판 최신순5개
     public static MainPageBoardDto toDto(Board board) {
@@ -39,8 +42,14 @@ public record MainPageBoardDto(
                 .recommendCount(board.getRecommendCount())
                 .viewCount(board.getViewCount())
                 .musicName(board.getMusic().getName())
-                .artist(board.getMusic().getArtist().getName())
+                .artists(toDtoArtistList(board.getMusic()))
                 .thumbNailLink(board.getMusic().getThumbNailLink())
                 .build();
+    }
+
+    private static List<ArtistDto> toDtoArtistList(Music music){
+        return music.getArtists().stream()
+            .map(musicArtist -> ArtistDto.toDto(musicArtist.getArtist()))
+            .toList();
     }
 }

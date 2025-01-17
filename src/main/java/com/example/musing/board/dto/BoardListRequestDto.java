@@ -1,7 +1,9 @@
 package com.example.musing.board.dto;
 
+import com.example.musing.artist.dto.ArtistDto;
 import com.example.musing.artist.entity.Artist;
 import com.example.musing.board.entity.Board;
+import com.example.musing.music.entity.Music;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -19,7 +21,7 @@ public class BoardListRequestDto {
         String title,
         String content,
         String musicName,
-        List<Artist> artists,
+        List<ArtistDto> artists,
         float rating,
         String thumbNailLink
     ) {
@@ -28,7 +30,7 @@ public class BoardListRequestDto {
                 .title(board.getTitle())
                 .content(board.getContent())
                 .musicName(board.getMusic().getName())
-                .artists(board.getMusic().getArtists())
+                .artists(toDtoArtistList(board.getMusic()))
                 .rating(board.getRating())
                 .thumbNailLink(board.getMusic().getThumbNailLink())
                 .build();
@@ -39,7 +41,7 @@ public class BoardListRequestDto {
     public record RecommendBoardDto(
         String title,
         String musicName,
-        String artistName,
+        List<ArtistDto> artists,
         String thumbNailLink,
         LocalDateTime createAt
     ) {
@@ -47,7 +49,7 @@ public class BoardListRequestDto {
             return RecommendBoardDto.builder()
                 .title(board.getTitle())
                 .musicName(board.getMusic().getName())
-                .artistName(board.getMusic().getArtist().getName())
+                .artists(toDtoArtistList(board.getMusic()))
                 .thumbNailLink(board.getMusic().getThumbNailLink())
                 .createAt(board.getCreatedAt())
                 .build();
@@ -58,7 +60,7 @@ public class BoardListRequestDto {
     public record BoardDto(
         String title,
         String musicName,
-        String artistName,
+        List<ArtistDto> artists,
         float rating,
         int replyCount,
         String thumbNailLink,
@@ -69,7 +71,7 @@ public class BoardListRequestDto {
             return BoardDto.builder()
                 .title(board.getTitle())
                 .musicName(board.getMusic().getName())
-                .artistName(board.getMusic().getArtist().getName())
+                .artists(toDtoArtistList(board.getMusic()))
                 .rating(board.getRating())
                 .replyCount(board.getReplyCount())
                 .thumbNailLink(board.getMusic().getThumbNailLink())
@@ -102,5 +104,11 @@ public class BoardListRequestDto {
                     .boardDtos(boardDtos)
                     .build();
         }
+    }
+
+    private static List<ArtistDto> toDtoArtistList(Music music){
+        return music.getArtists().stream()
+            .map(musicArtist -> ArtistDto.toDto(musicArtist.getArtist()))
+            .toList();
     }
 }

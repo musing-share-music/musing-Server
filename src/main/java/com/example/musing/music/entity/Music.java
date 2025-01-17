@@ -1,6 +1,6 @@
 package com.example.musing.music.entity;
 
-import com.example.musing.artist.entity.Artist_User;
+import com.example.musing.artist.entity.Artist_Music;
 import com.example.musing.board.entity.Board;
 import com.example.musing.genre.entity.Genre_Music;
 import com.example.musing.hashtag.entity.HashTag;
@@ -47,7 +47,7 @@ public class Music {
     private List<Genre_Music> genreMusics = new ArrayList<>();
 
     @OneToMany(mappedBy = "music", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Artist_User> artists = new ArrayList<>();
+    private List<Artist_Music> artists = new ArrayList<>();
 
     // 음악과 게시판 일대다 관계 매핑
     @OneToMany(mappedBy = "music", cascade = CascadeType.ALL, orphanRemoval = true)
