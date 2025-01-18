@@ -10,7 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@RestController
+@RestController("/musing/boards")
 public class YoutubeController {
 
 
@@ -31,8 +31,8 @@ public class YoutubeController {
 //        return youTubeService.searchMusic(query);
 //    }
 
-    @PostMapping("/getVideoInfo")
-    public ResponseDto<YouTubeVideoResponse> getVideoInfo(@RequestBody String videoUrl) {
+    @GetMapping("/getVideoInfo")
+    public ResponseDto<YouTubeVideoResponse> getVideoInfo(@RequestParam("videoUrl") String videoUrl) {
 
         if (!YouTubeUrlValidator.isValidYouTubeUrl(videoUrl)) {
             return ResponseDto.of(null,"유효하지않은 URL입니다.");
