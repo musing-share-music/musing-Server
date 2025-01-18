@@ -28,7 +28,7 @@ public class BoardController {
 
 
     @PostMapping(value ="/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseDto<Board> createPost(@RequestBody @Valid CreateBoardRequest request) {
+    public ResponseDto<Board> createPost(@ModelAttribute @Valid CreateBoardRequest request) {
         boardService.createBoard(request); // DTO를 Service로 전달
         return ResponseDto.of(null,"성공적으로 글이 작성되었습니다.");
     }
@@ -36,8 +36,9 @@ public class BoardController {
 
     @GetMapping(value ="/selectAll", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<List<CreateBoardResponse>> getAllBoards() {
-        List<CreateBoardResponse> responseList = boardService.getAllBoards();
-        return ResponseEntity.ok(responseList);
+//        List<CreateBoardResponse> responseList = boardService.getAllBoards();
+//        return ResponseEntity.ok(responseList);
+        return null;
     }
 
     @PutMapping(value ="/updatePost", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
