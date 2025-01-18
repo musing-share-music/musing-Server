@@ -23,11 +23,12 @@ public enum ErrorCode {
     // 리뷰 관련 예외처리
     EXIST_REPLY(CONFLICT, "이미 작성한 리뷰가 있습니다."),
     NOT_FOUND_REPLY(NOT_FOUND, "리뷰를 확인할 수 없습니다."),
-    NOT_MATCHED_REPLY_AND_USER(CONFLICT, "유저와 리뷰 작성자가 일치하지 않습니다."),
+    NOT_MATCHED_REPLY_AND_USER(CONFLICT, "해당 유저와 작성자가 일치하지 않습니다."),
     BAD_REQUEST_REPLY_PAGE(BAD_REQUEST, "해당 페이지는 존재하지 않습니다."),
 
     // 게시판 관련 예외처리
-    NOT_FOUND_BOARDID(NOT_FOUND, "해당 게시글을 불러올 수 없습니다.")
+    NOT_FOUND_BOARDID(NOT_FOUND, "해당 게시글을 불러올 수 없습니다."),
+    NOT_FOUND_KEYWORD(NOT_FOUND, "해당 키워드로 검색할 수 없습니다.")
     ;
     private final HttpStatus httpStatus;
     private final String message;

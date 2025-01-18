@@ -52,7 +52,4 @@ public class CreateBoardResponse {
 
     @Schema(description = "게시글 수정 시간", example = "2025-01-01T14:00:00")
     private LocalDateTime updatedAt;
-
-
-
 }

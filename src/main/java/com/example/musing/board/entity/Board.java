@@ -43,6 +43,14 @@ public class Board extends BaseEntity {
     @Column(nullable = false)
     private int viewCount;
 
+    @ColumnDefault("0")
+    @Column(nullable = false)
+    private float rating;
+
+    @ColumnDefault("0")
+    @Column(nullable = false)
+    private int replyCount;
+
     @Column(nullable = false)
     private boolean activeCheck;
 
