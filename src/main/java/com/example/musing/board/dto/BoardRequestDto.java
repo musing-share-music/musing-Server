@@ -15,7 +15,6 @@ public class BoardRequestDto {
     public record BoardDto(
             String title,
             String musicName,
-            List<ArtistDto> artists,
             float rating,
             String username,
             LocalDateTime createAt,
@@ -25,14 +24,16 @@ public class BoardRequestDto {
             String thumbNailLink,
             String content,
             String imageUrl,
+            List<ArtistDto> artists,
             List<GenreDto> genreList,
             List<MoodDto> moodList
     ) {
-        public static BoardRequestDto.BoardDto toDto(Board board , List<GenreDto> genreList, List<MoodDto> moodList) {
+        public static BoardRequestDto.BoardDto toDto(Board board ,List<ArtistDto> artists,
+                                                     List<GenreDto> genreList, List<MoodDto> moodList) {
             return BoardDto.builder()
                     .title(board.getTitle())
                     .musicName(board.getMusic().getName())
-                    .artists(toDtoArtistList(board.getMusic()))
+                    .artists(artists)
                     .rating(board.getRating())
                     .username(board.getUser().getUsername())
                     .createAt(board.getCreatedAt())
@@ -46,10 +47,5 @@ public class BoardRequestDto {
                     .moodList(moodList)
                     .build();
         }
-    }
-    private static List<ArtistDto> toDtoArtistList(Music music){
-        return music.getArtists().stream()
-            .map(musicArtist -> ArtistDto.toDto(musicArtist.getArtist()))
-            .toList();
     }
 }

@@ -25,12 +25,12 @@ public class BoardListRequestDto {
         float rating,
         String thumbNailLink
     ) {
-        public static RecommendBoardFirstDto toDto(Board board) {
+        public static RecommendBoardFirstDto toDto(Board board, List<ArtistDto> artists) {
             return RecommendBoardFirstDto.builder()
                 .title(board.getTitle())
                 .content(board.getContent())
                 .musicName(board.getMusic().getName())
-                .artists(toDtoArtistList(board.getMusic()))
+                .artists(artists)
                 .rating(board.getRating())
                 .thumbNailLink(board.getMusic().getThumbNailLink())
                 .build();
@@ -45,11 +45,11 @@ public class BoardListRequestDto {
         String thumbNailLink,
         LocalDateTime createAt
     ) {
-        public static RecommendBoardDto toDto(Board board) {
+        public static RecommendBoardDto toDto(Board board, List<ArtistDto> artists) {
             return RecommendBoardDto.builder()
                 .title(board.getTitle())
                 .musicName(board.getMusic().getName())
-                .artists(toDtoArtistList(board.getMusic()))
+                .artists(artists)
                 .thumbNailLink(board.getMusic().getThumbNailLink())
                 .createAt(board.getCreatedAt())
                 .build();
@@ -67,11 +67,11 @@ public class BoardListRequestDto {
         List<GenreDto> genreList,
         List<MoodDto> moodList
     ) {
-        public static BoardDto toDto(Board board , List<GenreDto> genreList, List<MoodDto> moodList) {
+        public static BoardDto toDto(Board board , List<GenreDto> genreList, List<MoodDto> moodList, List<ArtistDto> artists) {
             return BoardDto.builder()
                 .title(board.getTitle())
                 .musicName(board.getMusic().getName())
-                .artists(toDtoArtistList(board.getMusic()))
+                .artists(artists)
                 .rating(board.getRating())
                 .replyCount(board.getReplyCount())
                 .thumbNailLink(board.getMusic().getThumbNailLink())
@@ -104,11 +104,5 @@ public class BoardListRequestDto {
                     .boardDtos(boardDtos)
                     .build();
         }
-    }
-
-    private static List<ArtistDto> toDtoArtistList(Music music){
-        return music.getArtists().stream()
-            .map(musicArtist -> ArtistDto.toDto(musicArtist.getArtist()))
-            .toList();
     }
 }

@@ -17,17 +17,12 @@ public record GenreBoardDto(
         List<ArtistDto> artists,
         @Schema(description = "유튜브 썸네일 사진 링크", example = "https://img.youtube.com/vi/pAgnJDJN4VA/maxresdefault.jpg")
         String thumbNailLink) { //메인 페이지 장르 추천에 쓰임
-    public static GenreBoardDto toDto(Board board){
+    public static GenreBoardDto toDto(Board board, List<ArtistDto> artists){
         return GenreBoardDto.builder()
                 .id(board.getId())
                 .musicName(board.getMusic().getName())
-                .artists(toDtoArtistList(board.getMusic()))
+                .artists(artists)
                 .thumbNailLink(board.getMusic().getThumbNailLink())
                 .build();
-    }
-    private static List<ArtistDto> toDtoArtistList(Music music){
-        return music.getArtists().stream()
-            .map(musicArtist -> ArtistDto.toDto(musicArtist.getArtist()))
-            .toList();
     }
 }
