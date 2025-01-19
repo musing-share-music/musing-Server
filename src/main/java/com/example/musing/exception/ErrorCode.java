@@ -32,7 +32,9 @@ public enum ErrorCode {
 
     // 음악 관련 예외처리
     NOT_FOUND_MUSIC(NOT_FOUND, "해당 노래를 찾을 수 없습니다"),
-    NOT_FOUND_GENRE(NOT_FOUND, "해당 장르를 찾을 수 없습니다")
+    NOT_FOUND_GENRE(NOT_FOUND, "해당 장르를 찾을 수 없습니다"),
+    NOT_FOUND_MOOD(NOT_FOUND, "해당 분위기를 찾을 수 없습니다"),
+    NOT_FOUND_ARTIST(NOT_FOUND, "해당 아티스트를 찾을 수 없습니다"),
     ;
     private final HttpStatus httpStatus;
     private final String message;

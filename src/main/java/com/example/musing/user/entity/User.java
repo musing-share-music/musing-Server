@@ -49,28 +49,21 @@ public class User { //https://developers.google.com/identity/openid-connect/open
     @Column(nullable = true)
     private Boolean activated; //null허용을 위해 웨퍼클래스 타입 적용
 
-    @Column
-    private String likegenre; //자신이 좋아하는 장르
-
-    @Column
-    private String likemood; //자신이 좋아하는 분위기
-
-    @Column
-    private String likeartists; //자신이 좋아하는 아티스트들
-
     //게시판 일대다 매핑
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Board> boards = new ArrayList<>();
     //플레이 리스트 일대다 매핑
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PlayList> playLists = new ArrayList<>();
-    /*    //유저가 선호하는 장르 및 분위기
-        @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-        private List<Mood_Music> moods = new ArrayList<>();
-        @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-        private List<Genre_Music> genres = new ArrayList<>();
-        @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-        private List<Artist_User> artists = new ArrayList<>();*/
+
+    //유저가 선호하는 장르 및 분위기
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<User_LikeMood> moods = new ArrayList<>();
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<User_LikeGenre> genres = new ArrayList<>();
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<User_LikeArtist> artists = new ArrayList<>();
+
     //답글 리스트와 일대다 매핑
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Reply> replyList = new ArrayList<>();
@@ -91,17 +84,4 @@ public class User { //https://developers.google.com/identity/openid-connect/open
         this.username = username;
         this.profile = profile;
     }
-
-    public void updateGenre(String genre) {
-        this.likegenre = genre.replaceAll(" ", "");
-    }
-
-    public void updateMood(String mood) {
-        this.likemood = mood;
-    }
-
-    public void updateArtists(String artists) {
-        this.likeartists = artists;
-    }
-
 }

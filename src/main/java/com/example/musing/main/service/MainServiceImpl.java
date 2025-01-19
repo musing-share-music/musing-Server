@@ -10,6 +10,7 @@ import com.example.musing.main.dto.MainPageBoardDto;
 import com.example.musing.main.dto.NotLoginMainPageDto;
 import com.example.musing.notice.dto.NoticeDto;
 import com.example.musing.notice.service.NoticeService;
+import com.example.musing.user.entity.User_LikeGenre;
 import com.example.musing.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -49,9 +50,11 @@ public class MainServiceImpl implements MainService {
 
         NoticeDto noticeDto = noticeService.findNotice(); //최신 공지사항 가져오기
 
-        String likeGenreStr = userService.findById(userId).getLikegenre(); //좋아하는 장르
-        // 문자열에서 불필요한 대괄호 제거 및 나누기
-        List<String> likeGenre = toList(likeGenreStr);
+        List<GenreDto> likeGenre = userService.findById(userId).getGenres()
+                .stream()
+                .map(User_LikeGenre::getGenre)
+                .map(GenreDto::toDto)
+                .toList(); //좋아하는 장르
 
         //좋아요한 음악
         List<GenreBoardDto> likeMusic = boardService.findBy10LikeMusics(userId);
@@ -72,15 +75,5 @@ public class MainServiceImpl implements MainService {
     @Override
     public List<GenreBoardDto> selcetGenre(String genre) {
         return boardService.findBy5GenreBoard(genre);
-    }
-
-
-    private List<String> toList(String string) {
-        return Arrays.asList(
-                string.replace("[", "") // 왼쪽 대괄호 제거
-                        .replace("]", "") // 오른쪽 대괄호 제거
-                        .replace("\"", "") // 큰따옴표 제거
-                        .split(", ")       // 쉼표 기준으로 나누기
-        );
     }
 }

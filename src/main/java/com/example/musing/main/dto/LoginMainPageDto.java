@@ -16,7 +16,7 @@ public record LoginMainPageDto(
         @Schema(description = "최신 공지사항 1개")
         NoticeDto noticeDto,
         @Schema(description = "내가 좋아하는 장르의 태그", example = "[\"블루스\", \"락\", \"발라드\"]")
-        List<String> likeGenre,
+        List<GenreDto> likeGenre,
         @Schema(description = "좋아요한 음악 10개, 아래 Dto에 한개 이상으로 있습니다.")
         List<GenreBoardDto> likeMusicDtos,
         @Schema(description = "랜덤 장르 이름.")
@@ -31,7 +31,7 @@ public record LoginMainPageDto(
         String modalCheck
 ) {
     public static LoginMainPageDto of(NoticeDto noticeDto,
-                                      List<String> likeGenre,
+                                      List<GenreDto> likeGenre,
                                       List<GenreBoardDto> likeMusicDtos,
                                       GenreDto recommendGenre, List<GenreBoardDto> recommendGenres,
                                       HotBoardDto hotMusicBoard,

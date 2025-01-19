@@ -78,10 +78,10 @@ public class MainController {
                     "적어도 1개 이상의 버튼을 클릭하여 저장하여야 합니다." +
                     "DB에 그대로 저장했다가 백엔드에서 클라이언트로 보내줄 때 특정 기호및 띄어쓰기부분 제거 후 리스트로 만들어 반환할 예정입니다.<br>" +
                     "해당 도메인 다음 musing/modal/like/moods로 이동하면 됩니다.")
-    public ResponseDto<String> selectModalGenre(@RequestBody String selectGenres) { //로그인 접속한 유저의 장르선택 저장
+    public ResponseDto<String> selectModalGenre(@RequestBody List<Long> selectGenres) { //로그인 접속한 유저의 장르선택 저장
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         userService.saveGenres(userId, selectGenres);
-        return ResponseDto.of(selectGenres, "장르 선택 모달창");
+        return ResponseDto.of("", "장르 선택 모달창 완료");
     }
 
     @PostMapping("/modal/like/moods")
@@ -90,10 +90,10 @@ public class MainController {
                     "적어도 1개 이상의 버튼을 클릭하여 저장하여야 합니다." +
                     "DB에 그대로 저장했다가 백엔드에서 클라이언트로 보내줄 때 특정 기호및 띄어쓰기부분 제거 후 리스트로 만들어 반환할 예정입니다.<br>" +
                     "해당 도메인 다음 musing/modal/like/artists 이동하면 됩니다.")
-    public ResponseDto<String> selectModalMood(@RequestBody String selectMoods) { //로그인 접속한 유저의 장르선택 저장
+    public ResponseDto<String> selectModalMood(@RequestBody List<Long> selectMoods) { //로그인 접속한 유저의 장르선택 저장
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         userService.saveMoods(userId, selectMoods);
-        return ResponseDto.of(selectMoods, "장르 선택 모달창");
+        return ResponseDto.of("", "장르 선택 모달창 완료");
     }
 
     @PostMapping("/modal/like/artists")
@@ -102,11 +102,11 @@ public class MainController {
                     "아무것도 입력하지 않았을 때에는 null 값으로 보내주어야하며, 하나의 아티스트 작성 이후는 띄어쓰기를 제외한 하나의 단어로 리스트 형태의 문자열로 저장하여 보내주면 됩니다.<br>" +
                     "DB에 그대로 저장했다가 백엔드에서 클라이언트로 보내줄 때 특정 기호및 띄어쓰기부분 제거 후 리스트로 만들어 반환할 예정입니다.<br>" +
                     "해당 도메인 다음 musing/main을 다시 이동하면 됩니다.")
-    public ResponseDto<String> selectModalArtists(@RequestBody(required = false) String selectArtists) { //로그인 접속한 유저의 장르선택 저장
+    public ResponseDto<String> selectModalArtists(@RequestBody(required = false) List<Long> selectArtists) { //로그인 접속한 유저의 장르선택 저장
         //null값 허용을 위해 required 설정 false
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         userService.saveArtists(userId, selectArtists);
-        return ResponseDto.of(selectArtists, "아티스트 선택 모달창");
+        return ResponseDto.of("selectArtists", "아티스트 선택 모달창 완료");
     }
 
     private boolean checkRole() { //로그인했는지와 유저인지 확인

@@ -1,9 +1,6 @@
-/*package com.example.musing.artist.entity;
+package com.example.musing.user.entity;
 
 import com.example.musing.genre.entity.Genre;
-import com.example.musing.genre.entity.Genre_Music;
-import com.example.musing.music.entity.Music;
-import com.example.musing.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,25 +11,25 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "artist_user")
+@Table(name = "user_likegenre")
 @Entity
-public class Artist_User {
+public class User_LikeGenre {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id", nullable = false)
-    private Artist artist;
+    @JoinColumn(name = "genreid", nullable = false)
+    private Genre genre;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "userid", nullable = false)
     private User user;
 
-
-    public static Artist_User of(Artist artist, User user) {
-        return Artist_User.builder()
-                .artist(artist)
+    public static User_LikeGenre of(Genre genre, User user) {
+        return User_LikeGenre.builder()
+                .genre(genre)
                 .user(user)
                 .build();
     }
-}*/
+}
