@@ -8,6 +8,7 @@ import com.example.musing.reply.entity.Reply;
 import com.example.musing.report.entity.Report;
 import com.example.musing.user.entity.User;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -83,13 +84,15 @@ public class Board extends BaseEntity {
         return PostDto.fromEntity(board);
     }
     @Builder
-    public Board(String title, String content,boolean activeCheck,String image,int recommendCount, int viewCount, boolean permitRegister) {
+    public Board(Music music,User user,String title, String content,boolean activeCheck,String image,int recommendCount, int viewCount, boolean permitRegister) {
         this.title = title;
         this.content = content;
         this.recommendCount = 0; // 기본값 설정
         this.viewCount = 0; // 기본값 설정
         this.activeCheck = activeCheck;
         this.image = image;
+        this.user = user;
+        this.music = music;
     }
 }
 

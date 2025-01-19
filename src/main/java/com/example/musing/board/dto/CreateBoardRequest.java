@@ -9,13 +9,12 @@ import java.util.List;
 @Data
 public class CreateBoardRequest {
 
-    private String userEmail;
+
     private String title;
     private String musicTitle;
     private String artist;
     private String youtubeLink;
     private List<String> hashtags;
     private String genre;
-    private MultipartFile image;
     private String content;
 }

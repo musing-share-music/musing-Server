@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Getter // Lombok 어노테이션 : 클래스 내 모든 필드의 Getter 메소드 자동 생성
@@ -20,9 +21,10 @@ import java.util.stream.Collectors;
 @Table(name="music")
 public class Music {
 
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="musicid")
+    @Column(name="musicId")
     private long id;
 
     @Column(nullable = false)
@@ -31,19 +33,20 @@ public class Music {
     @Column(nullable = false)
     private String genre;
 
-    @Column(nullable = false)
+    @Column
     private String playtime;
 
-    @Column(nullable = true)
+
     private String albumName;
 
-    @Column(nullable = false)
+    @Column
     private String mood;
+
 
     @Column(nullable = false)
     private String songLink;
 
-    @Column(nullable = false)
+    @Column
     private String thumbNailLink;
 
     // 음악과 게시판 일대다 관계 매핑
@@ -58,21 +61,20 @@ public class Music {
     private List<Like_Music> preferMusics = new ArrayList<Like_Music>();
 
     //아티스트와 관계 매핑
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "artist", nullable = false)
     private Artist artist;
 
 
     @Builder
-    public Music(long id,String name,String artist,String genre,String mood,String playtime,String albumName,String songLink,String thumbNailLink) {
-        this.id = id;
+    public Music(String name,Artist artist,String genre,String mood,String playtime,String albumName,String songLink,String thumbNailLink) {
         this.name = name;
-        this.artist = Artist.builder().name(artist).build();
+        this.artist = artist;
         this.genre = genre;
-        this.mood = mood;
         this.playtime = playtime;
         this.albumName = albumName;
         this.songLink = songLink;
+        this.mood = mood;
     }
 
     // 해시태그 추가 메서드
@@ -111,4 +113,30 @@ public class Music {
         return Arrays.stream(str.replaceAll("[\\[\\]\\s]", "").split(","))
                 .collect(Collectors.toList());
     }
+
+   //엘범 null 삽입 방지
+    @PrePersist
+    private void prePersist() {
+
+
+        if (this.albumName == null) {
+            this.albumName = "Unknown";
+        }
+
+
+        if(this.mood == null) {
+            this.mood = "N/A";
+        }
+
+        if(this.playtime == null) {
+            this.playtime = "N/A";
+        }
+
+        if(this.thumbNailLink == null) {
+            this.thumbNailLink = "NoImage";
+        }
+    }
+
+
+
 }

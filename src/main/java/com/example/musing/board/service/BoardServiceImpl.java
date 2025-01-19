@@ -1,10 +1,12 @@
 package com.example.musing.board.service;
 
+import com.example.musing.artist.entity.Artist;
 import com.example.musing.artist.repository.ArtistRepository;
 import com.example.musing.board.dto.*;
 import com.example.musing.board.entity.Board;
 import com.example.musing.board.repository.BoardRepository;
 import com.example.musing.exception.CustomException;
+import com.example.musing.exception.ErrorCode;
 import com.example.musing.hashtag.entity.HashTag;
 import com.example.musing.like_music.entity.Like_Music;
 import com.example.musing.like_music.repository.Like_MusicRepository;
@@ -13,14 +15,15 @@ import com.example.musing.music.entity.Music;
 import com.example.musing.music.repository.MusicRepository;
 import com.example.musing.reply.dto.ReplyDto;
 import com.example.musing.reply.service.ReplyService;
+import com.example.musing.user.entity.User;
 import com.example.musing.user.repository.UserRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -97,22 +100,68 @@ public class BoardServiceImpl implements BoardService {
 
     /// 메인 페이지까지 쓰는 부분
 
-    //게시판 등록 로직
     @Transactional
     @Override
-    public void createBoard(CreateBoardRequest request) {
+    public void createBoard(CreateBoardRequest request, List<MultipartFile> images) {
 
-        String fileName = UUID.randomUUID() + "_" + request.getImage().getOriginalFilename();
+        //유저명 저장
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
 
+        //  파일명 리스트 생성
+        List<String> fileNames = new ArrayList<>();
+        if (images == null || images.isEmpty()) {
+            fileNames.add("이미지 없음");
+        } else {
+            // 이미지가 있는 경우 파일명 생성
+            for (MultipartFile file : images) {
+                String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+                // 파일 저장 로직 작성 필요함(서버나 S3에 저장)
+                fileNames.add(fileName);
+            }
+        }
+
+        // Artist 저장
+        Artist artist = Artist.builder()
+                .name(request.getArtist()) // request.getArtist()는 Artist의 이름(String)이라고 가정
+                .build();
+        artistRepository.save(artist); // 영속화
+
+        // Music 저장
+        Music music = Music.builder()
+                .name(request.getMusicTitle())
+                .artist(artist) // 영속화된 Artist 객체 설정
+                .genre(request.getGenre())
+                .songLink(request.getYoutubeLink())
+                .build();
+
+        musicRepository.save(music);
+
+        Long musicId = music.getId();
+        if (musicId != null) {
+            System.out.println("자동 생성된 Music ID: " + musicId);
+        } else {
+            System.out.println("Music ID가 자동으로 생성되지 않았습니다.");
+        }
+
+        User user = userRepository.findById(SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName()).orElseThrow(() -> new CustomException(NOT_FOUND_USER));
+
+
+
+        // Board 저장
         Board board = Board.builder()
+                .user(user)
+                .music(music)
                 .title(request.getTitle())
                 .content(request.getContent())
-                .image(fileName)
+                .image(String.join(",", fileNames)) // 파일명은 ,로 구분 지어 저장
                 .activeCheck(false)
                 .recommendCount(0)
                 .viewCount(0)
                 .build();
-        boardRepository.save(board);
+        boardRepository.save(board); // 영속화
     }
 
     //음악 추천 게시판 전체 리스트

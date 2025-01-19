@@ -72,14 +72,14 @@ public class YoutubeServiceImpl implements YoutubeService {
 
 
     @Override
-    public List<PlayList> getUserPlaylists(String accessToken) {
+    public List<PlayList> getUserPlaylists(String id) {
         try {
             // YouTube API 요청 URL
             String apiUrl = "https://www.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails&mine=true&maxResults=10";
 
             HttpURLConnection connection = (HttpURLConnection) new URL(apiUrl).openConnection();
             connection.setRequestMethod("GET");
-            connection.setRequestProperty("Authorization", "Bearer " + accessToken); // Access Token 설정
+            connection.setRequestProperty("Authorization", "Bearer " + id); // Access Token 설정
 
             InputStreamReader reader = new InputStreamReader(connection.getInputStream());
             JsonObject response = JsonParser.parseReader(reader).getAsJsonObject();

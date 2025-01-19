@@ -12,7 +12,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -28,8 +30,14 @@ public class BoardController {
 
 
     @PostMapping(value ="/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseDto<Board> createPost(@ModelAttribute @Valid CreateBoardRequest request) {
-        boardService.createBoard(request); // DTO를 Service로 전달
+    public ResponseDto<Board> createPost(@ModelAttribute @Valid CreateBoardRequest request,
+                                         @RequestPart(value = "image", required = false) List<MultipartFile> images) {
+
+        if (images == null || images.isEmpty()) {
+            images = new ArrayList<>();  // 이미지 없음으로 처리하거나, 기본값 설정
+        }
+
+        boardService.createBoard(request,images); // DTO를 Service로 전달
         return ResponseDto.of(null,"성공적으로 글이 작성되었습니다.");
     }
 

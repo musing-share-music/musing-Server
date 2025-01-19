@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -25,18 +26,13 @@ public class PlaylistController {
         this.playListRepository = playListRepository;
     }
 
-    @GetMapping(value ="/getMyPlaylist", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseDto<PlayList> getAllBoards() {
-//        List<CreateBoardResponse> responseList = boardService.getAllBoards();
-        return ResponseDto.of(null,"성공적으로 리스트를 불러왔습니다.");
 
-    }
     @GetMapping("/getMyPlaylists")
-    public ResponseDto<List<PlayList>> getMyPlaylists(@RequestHeader("Authorization") String bearerToken) {
-        String accessToken = bearerToken.replace("Bearer ", ""); // Bearer 토큰에서 Access Token 추출
+    public ResponseDto<List<PlayList>> getMyPlaylists(@RequestParam("id") String id) {
+
 
         // YouTube API 호출 및 재생목록 가져오기
-        List<PlayList> playlists = youtubeService.getUserPlaylists(accessToken);
+        List<PlayList> playlists = youtubeService.getUserPlaylists(id);
 
         // 데이터베이스에 저장
         playlists.forEach(playList -> {
