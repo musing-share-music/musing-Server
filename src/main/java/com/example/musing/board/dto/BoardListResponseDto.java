@@ -9,6 +9,7 @@ import java.util.List;
 
 import com.example.musing.genre.dto.GenreDto;
 import com.example.musing.mood.dto.MoodDto;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import org.springframework.data.domain.Page;
 
@@ -60,11 +61,16 @@ public class BoardListResponseDto {
 
     @Builder
     public record BoardDto(
+        @Schema(description = "게시글 제목", example = "추천하는 오늘의 노래")
         String title,
+        @Schema(description = "노래 제목", example = "For the Love of God")
         String musicName,
         List<ArtistDto> artists,
+        @Schema(description = "별점", example = "4.5")
         float rating,
+        @Schema(description = "댓글 수", example = "11")
         int replyCount,
+        @Schema(description = "유튜브 영상 썸네일 링크")
         String thumbNailLink,
         List<GenreDto> genreList,
         List<MoodDto> moodList
