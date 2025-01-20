@@ -11,4 +11,6 @@ import java.util.List;
 public interface Like_MusicRepository extends JpaRepository<Like_Music, Long> {
     @Query("SELECT lm FROM Like_Music lm WHERE lm.user.id = :id ORDER BY lm.id DESC")
     List<Like_Music> findTop10ByUserOrderByIdDesc(@Param("id") String userId);
+
+    int countByUser(User user);
 }

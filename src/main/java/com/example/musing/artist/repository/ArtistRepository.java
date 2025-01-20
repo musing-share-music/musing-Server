@@ -10,8 +10,5 @@ import java.util.Optional;
 
 
 public interface ArtistRepository extends JpaRepository<Artist, Long>, JpaSpecificationExecutor<Board> {
-
     Optional<Artist> findByName(String name);
-
-
 }

@@ -1,20 +1,28 @@
 package com.example.musing.board.service;
 
+import com.example.musing.artist.dto.ArtistDto;
+import com.example.musing.artist.entity.Artist_Music;
 import com.example.musing.artist.repository.ArtistRepository;
+import com.example.musing.artist.repository.Artist_MusicRepository;
 import com.example.musing.board.dto.*;
 import com.example.musing.board.entity.Board;
 import com.example.musing.board.repository.BoardRepository;
 import com.example.musing.exception.CustomException;
+import com.example.musing.genre.dto.GenreDto;
+import com.example.musing.genre.entity.Genre_Music;
+import com.example.musing.genre.repository.Genre_MusicRepository;
 import com.example.musing.hashtag.entity.HashTag;
 import com.example.musing.like_music.entity.Like_Music;
 import com.example.musing.like_music.repository.Like_MusicRepository;
-import com.example.musing.main.dto.MainPageBoardDto;
+import com.example.musing.main.dto.RecommendBoardRight;
+import com.example.musing.mood.dto.MoodDto;
+import com.example.musing.mood.entity.Mood_Music;
+import com.example.musing.mood.repository.Mood_MusicRepository;
 import com.example.musing.music.entity.Music;
 import com.example.musing.music.repository.MusicRepository;
 import com.example.musing.reply.dto.ReplyDto;
 import com.example.musing.reply.service.ReplyService;
 import com.example.musing.user.repository.UserRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,7 +35,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
 
 import static com.example.musing.exception.ErrorCode.*;
 
@@ -47,21 +54,26 @@ public class BoardServiceImpl implements BoardService {
     private final MusicRepository musicRepository;
     private final ReplyService replyService;
 
+    private final Artist_MusicRepository artist_musicRepository;
+    private final Genre_MusicRepository genre_musicRepository;
+    private final Mood_MusicRepository mood_musicRepository;
+
     @Override
     public List<GenreBoardDto> findBy5GenreBoard(String genre) { //장르로 검색한 게시글들을 엔티티에서 Dto로 전환
         Specification<Board> spec = Specification.where(BoardSpecificaion.hasGenre(genre))
-                .and(BoardSpecificaion.isActiveCheckFalse());
+                .and(BoardSpecificaion.isActiveCheckTrue());
 
         List<Board> boards = findBySpecBoard(spec, pageRequestOrderBy);
 
-        return boards.stream().map(this::entityToGenreDto).collect(Collectors.toList());
+        return boards.stream().map(board -> entityToGenreDto(board, getArtistMusicListDto(board)))
+                .collect(Collectors.toList());
     }
 
     @Override
-    public HotBoardDto findHotMusicBoard() {
+    public RecommendBoardLeft findHotMusicBoard() {
         //한달이내 생성이 되었고, 추천수가 제일 많으며, 삭제 처리가 되지않음을 확인
         Specification<Board> spec = Specification.where(BoardSpecificaion.isCreateAtAfterMonth())
-                .and(BoardSpecificaion.isActiveCheckFalse()).and(BoardSpecificaion.orderByRecommendCountDesc());
+                .and(BoardSpecificaion.isActiveCheckTrue()).and(BoardSpecificaion.orderByRecommendCountDesc());
 
         List<Board> boards = findBySpecBoard(spec, pageRequest);
 
@@ -70,9 +82,9 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public List<MainPageBoardDto> findBy5Board() {
+    public List<RecommendBoardRight> findBy5Board() {
         //삭제 처리가 되지않은 게시글
-        Specification<Board> spec = Specification.where(BoardSpecificaion.isActiveCheckFalse());
+        Specification<Board> spec = Specification.where(BoardSpecificaion.isActiveCheckTrue());
 
         List<Board> boards = findBySpecBoard(spec, pageRequestOrderBy); //해당 장르의 게시글 5개를 최신순으로 가져옴
 
@@ -92,7 +104,8 @@ public class BoardServiceImpl implements BoardService {
         // fetch join을 사용하여 해당 음악에 관련된 게시글을 가져옵니다.
         List<Board> boards = boardRepository.findBoardsByMusicList(musicList);
 
-        return boards.stream().map(this::entityToGenreDto).collect(Collectors.toList());
+        return boards.stream().map(board -> entityToGenreDto(board, getArtistMusicListDto(board)))
+                .collect(Collectors.toList());
     }
 
     /// 메인 페이지까지 쓰는 부분
@@ -131,23 +144,19 @@ public class BoardServiceImpl implements BoardService {
             throw new CustomException(BAD_REQUEST_REPLY_PAGE);
         }
 
-        Specification<Board> spec = Specification.where(BoardSpecificaion.isActiveCheckFalse())
-                .and(BoardSpecificaion.findBoardsWithAtLeastTenRecommend());
-
         Pageable pageable = PageRequest.of(page - 1, PAGESIZE);
-
         Page<Board> boards = boardRepository.findActiveBoardPage(pageable);
 
         int totalPages = boards.getTotalPages();
-
-        if (page -1 > totalPages) {
+        if (page - 1 > totalPages) {
             throw new CustomException(BAD_REQUEST_REPLY_PAGE);
         }
 
         return boards.map(board -> {
-            List<String> genreList = board.getMusic().getGenreList();
-            List<String> moodList = board.getMusic().getMoodList();
-            return BoardListRequestDto.BoardDto.toDto(board, genreList, moodList);
+            List<GenreDto> genreList = getGenreMusicListDto(board);
+            List<MoodDto> moodList = getMoodMusicListDto(board);
+            List<ArtistDto> artistList = getArtistMusicListDto(board);
+            return BoardListRequestDto.BoardDto.toDto(board, genreList, moodList, artistList);
         });
     }
 
@@ -165,14 +174,15 @@ public class BoardServiceImpl implements BoardService {
 
         int totalPages = boards.getTotalPages();
 
-        if (page -1 > totalPages) {
+        if (page - 1 > totalPages) {
             throw new CustomException(BAD_REQUEST_REPLY_PAGE);
         }
 
         return boards.map(board -> {
-            List<String> genreList = board.getMusic().getGenreList();
-            List<String> moodList = board.getMusic().getMoodList();
-            return BoardListRequestDto.BoardDto.toDto(board, genreList, moodList);
+            List<GenreDto> genreList = getGenreMusicListDto(board);
+            List<MoodDto> moodList = getMoodMusicListDto(board);
+            List<ArtistDto> artistList = getArtistMusicListDto(board);
+            return BoardListRequestDto.BoardDto.toDto(board, genreList, moodList, artistList);
         });
     }
 
@@ -200,10 +210,10 @@ public class BoardServiceImpl implements BoardService {
         if (updateRequest.getMusicTitle() != null) {
             board.getMusic().builder().name(updateRequest.getMusicTitle()).build();
         }
-
+/*
         if (updateRequest.getArtist() != null) {
             board.getMusic().getArtist().builder().name(updateRequest.getArtist()).build();
-        }
+        }*/
         if (updateRequest.getYoutubeLink() != null) {
             board.getMusic().builder().songLink(updateRequest.getYoutubeLink()).build();
         }
@@ -228,14 +238,14 @@ public class BoardServiceImpl implements BoardService {
             });
         }
         if (imgList != null) {
-            for(MultipartFile file : imgList) {
+            for (MultipartFile file : imgList) {
                 String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
             }
         }
 
-        if (updateRequest.getGenre() != null) {
+/*        if (updateRequest.getGenre() != null) {
             board.getMusic().builder().genre(updateRequest.getGenre());
-        }
+        }*/
     }
 
     // 음악 추천 게시판 상세페이지 (리뷰 포함)
@@ -247,21 +257,54 @@ public class BoardServiceImpl implements BoardService {
         return BoardAndReplyPageDto.of(boardDto, replyDtos);
     }
 
+
     //게시글 상세 정보
     private BoardRequestDto.BoardDto findBoard(long boardId) {
-        Optional<Board> board = boardRepository.findById(boardId);
-        if (board.isEmpty()) {
-            throw new CustomException(NOT_FOUND_BOARDID);
-        }
-        List<String> genreList = board.get().getMusic().getGenreList();
-        List<String> moodList = board.get().getMusic().getMoodList();
-        return BoardRequestDto.BoardDto.toDto(board.get(), genreList, moodList);
+        Board board = boardRepository.findById(boardId).orElseThrow(() -> new CustomException(NOT_FOUND_BOARDID));
+
+/*        List<Artist> artistList = artist_musicRepository.findByMusic(board.getMusic()).stream()
+                .map(Artist_Music::getArtist)
+                .toList();
+        List<Genre> genres = genre_musicRepository.findByMusic(board.getMusic()).stream()
+                .map(Genre_Music::getGenre)
+                .toList();
+        List<Mood> moods = mood_musicRepository.findByMusic(board.getMusic()).stream()
+                .map(Mood_Music::getMood)
+                .toList();*/ // 동작 확인하고 지울 주석
+
+        return BoardRequestDto.BoardDto.toDto(board, getArtistMusicListDto(board),
+                getGenreMusicListDto(board), getMoodMusicListDto(board));
+    }
+
+
+    //게시글의 음악에 포함된 장르를 Dto로 담아 리스트로 반환
+    private List<GenreDto> getGenreMusicListDto(Board board) {
+        return board.getMusic().getGenreMusics().stream()
+                .map(Genre_Music::getGenre)
+                .map(GenreDto::toDto)
+                .collect(Collectors.toList());
+    }
+
+    //게시글의 음악에 포함된 분위기를 Dto로 담아 리스트로 반환
+    private List<MoodDto> getMoodMusicListDto(Board board) {
+        return board.getMusic().getMoodMusics().stream()
+                .map(Mood_Music::getMood)
+                .map(MoodDto::toDto)
+                .collect(Collectors.toList());
+    }
+
+    //게시글의 음악에 포함된 아티스트를 Dto로 담아 리스트로 반환
+    private List<ArtistDto> getArtistMusicListDto(Board board) {
+        return board.getMusic().getArtists().stream()
+                .map(Artist_Music::getArtist)
+                .map(ArtistDto::toDto)
+                .collect(Collectors.toList());
     }
 
     // 음악 추천 게시판 상단
     private BoardListRequestDto.BoardPopUpDto findBoardPopUp() {
         Specification<Board> spec = Specification.where(BoardSpecificaion.isCreateAtAfterWeek())
-                .and(BoardSpecificaion.isActiveCheckFalse()).and(BoardSpecificaion.findBoardsWithAtLeastTenRecommend());
+                .and(BoardSpecificaion.isActiveCheckTrue()).and(BoardSpecificaion.findBoardsWithAtLeastTenRecommend());
 
         List<Board> boards = findBySpecBoard(spec);
 
@@ -326,24 +369,24 @@ public class BoardServiceImpl implements BoardService {
 
     private BoardListRequestDto.RecommendBoardFirstDto findBoardListPopUpFirst(List<Board> boards) {
         Board selectBoard = boards.get(0);
-        return BoardListRequestDto.RecommendBoardFirstDto.toDto(selectBoard);
+        return BoardListRequestDto.RecommendBoardFirstDto.toDto(selectBoard, getArtistMusicListDto(selectBoard));
     }
 
     private BoardListRequestDto.RecommendBoardDto findBoardListPopUp(List<Board> boards, int indexNum) {
         Board selectBoard = boards.get(indexNum);
-        return BoardListRequestDto.RecommendBoardDto.toDto(selectBoard);
+        return BoardListRequestDto.RecommendBoardDto.toDto(selectBoard, getArtistMusicListDto(selectBoard));
     }
 
-    private GenreBoardDto entityToGenreDto(Board board) { //장르로 검색한 게시글 엔티티를 Dto로 전환
-        return GenreBoardDto.toDto(board);
+    private GenreBoardDto entityToGenreDto(Board board, List<ArtistDto> artists) { //장르로 검색한 게시글 엔티티를 Dto로 전환
+        return GenreBoardDto.toDto(board, artists);
     }
 
-    private HotBoardDto entityToBoardDto(Board board) { //핫한 게시글을 엔티티에서 Dto로 전환
-        return HotBoardDto.toDto(board);
+    private RecommendBoardLeft entityToBoardDto(Board board) { //핫한 게시글을 엔티티에서 Dto로 전환
+        return RecommendBoardLeft.toDto(board);
     }
 
-    private MainPageBoardDto entityToMainDto(Board board) { //게시글을 엔티티에서 Dto로 전환
-        return MainPageBoardDto.toDto(board);
+    private RecommendBoardRight entityToMainDto(Board board) { //게시글을 엔티티에서 Dto로 전환
+        return RecommendBoardRight.toDto(board);
     }
 }
 
