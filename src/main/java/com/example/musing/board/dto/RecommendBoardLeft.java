@@ -8,7 +8,7 @@ import java.util.List;
 import lombok.Builder;
 
 @Builder
-public record HotBoardDto(
+public record RecommendBoardLeft(
         @Schema(description = "음악 추천 게시판 고유 ID", example = "1")
         long id,
         @Schema(description = "음악 추천 게시판 제목", example = "진짜 이노래는 꼭 들어봐야함.")
@@ -20,8 +20,8 @@ public record HotBoardDto(
         @Schema(description = "유튜브 썸네일 사진 링크", example = "https://img.youtube.com/vi/-KG2O5PSCSs/maxresdefault.jpg")
         String thumbNailLink) { //메인 페이지 음악 추천 게시판 인기곡 부분과 좋아요한 음악
 
-    public static HotBoardDto toDto(Board board) {
-        return HotBoardDto.builder()
+    public static RecommendBoardLeft toDto(Board board) {
+        return RecommendBoardLeft.builder()
                 .id(board.getId())
                 .title(board.getTitle())
                 .musicName(board.getMusic().getName())

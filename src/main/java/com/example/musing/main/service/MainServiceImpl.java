@@ -1,24 +1,24 @@
 package com.example.musing.main.service;
 
-import com.example.musing.board.dto.HotBoardDto;
 import com.example.musing.board.dto.GenreBoardDto;
+import com.example.musing.board.dto.RecommendBoardLeft;
 import com.example.musing.board.service.BoardService;
 import com.example.musing.genre.dto.GenreDto;
 import com.example.musing.genre.service.GenreService;
 import com.example.musing.main.dto.LoginMainPageDto;
-import com.example.musing.main.dto.MainPageBoardDto;
+import com.example.musing.main.dto.RecommendBoardRight;
 import com.example.musing.main.dto.NotLoginMainPageDto;
 import com.example.musing.notice.dto.NoticeDto;
 import com.example.musing.notice.service.NoticeService;
+import com.example.musing.user.Dto.UserResponseDto;
 import com.example.musing.user.entity.User_LikeGenre;
 import com.example.musing.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
+
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service
@@ -27,6 +27,7 @@ public class MainServiceImpl implements MainService {
     private final BoardService boardService;
     private final UserService userService;
     private final GenreService genreService;
+
     @Override
     public NotLoginMainPageDto notLoginMainPage(String modalCheck) { //로그인 하지않는 메인페이지
 
@@ -36,17 +37,19 @@ public class MainServiceImpl implements MainService {
         GenreDto recommendGenre = genreService.getRandomGenre();
         List<GenreBoardDto> genreBoardDtos = boardService.findBy5GenreBoard(recommendGenre.genreName());
 
-        HotBoardDto hotBoardDto = boardService.findHotMusicBoard(); //핫한 게시글
+        RecommendBoardLeft recommendBoardLeft = boardService.findHotMusicBoard(); //핫한 게시글
 
 
         //최신 게시글 5개 가져오기
-        List<MainPageBoardDto> mainPageBoardDtos = boardService.findBy5Board();
+        List<RecommendBoardRight> recommendBoardRights = boardService.findBy5Board();
 
-        return NotLoginMainPageDto.of(noticeDto, recommendGenre, genreBoardDtos, hotBoardDto, mainPageBoardDtos, modalCheck);
+        return NotLoginMainPageDto.of(noticeDto, recommendGenre, genreBoardDtos, recommendBoardLeft, recommendBoardRights, modalCheck);
     }
 
     @Override
     public LoginMainPageDto LoginMainPage(String userId, String modalCheck) {
+
+        UserResponseDto.UserInfoDto userInfoDto = userService.getUserInfo(userId);
 
         NoticeDto noticeDto = noticeService.findNotice(); //최신 공지사항 가져오기
 
@@ -63,13 +66,13 @@ public class MainServiceImpl implements MainService {
         GenreDto recommendGenre = genreService.getRandomGenre();
         List<GenreBoardDto> genreBoardDtos = boardService.findBy5GenreBoard(recommendGenre.genreName());
 
-        HotBoardDto hotBoardDto = boardService.findHotMusicBoard(); //핫한 게시글
+        RecommendBoardLeft recommendBoardLeft = boardService.findHotMusicBoard(); //핫한 게시글
 
         //최신 게시글 5개 가져오기
-        List<MainPageBoardDto> mainPageBoardDtos = boardService.findBy5Board();
+        List<RecommendBoardRight> recommendBoardRights = boardService.findBy5Board();
 
-        return LoginMainPageDto.of(noticeDto,likeGenre,likeMusic,
-                recommendGenre,genreBoardDtos,hotBoardDto,mainPageBoardDtos ,modalCheck);
+        return LoginMainPageDto.of(userInfoDto, noticeDto, likeGenre, likeMusic,
+                recommendGenre, genreBoardDtos, recommendBoardLeft, recommendBoardRights, modalCheck);
     }
 
     @Override

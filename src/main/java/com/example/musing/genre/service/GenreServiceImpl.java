@@ -50,6 +50,15 @@ public class GenreServiceImpl implements GenreService {
         }
     }
 
+    @Override
+    public List<GenreDto> getGenreDtos(){
+        return findAll().stream().map(GenreDto::toDto).toList();
+    }
+
+    private List<Genre> findAll(){
+        return genreRepository.findAll();
+    }
+
     private Genre_Music createGenre_Music(Music music, Genre genre) {
         Genre_Music genreMusic = Genre_Music.of(music, genre);
 

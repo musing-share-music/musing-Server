@@ -6,7 +6,9 @@ import com.example.musing.exception.ErrorCode;
 import com.example.musing.genre.entity.Genre;
 import com.example.musing.genre.entity.GerneEnum;
 import com.example.musing.genre.repository.GenreRepository;
+import com.example.musing.like_music.repository.Like_MusicRepository;
 import com.example.musing.mood.repository.MoodRepository;
+import com.example.musing.user.Dto.UserResponseDto;
 import com.example.musing.user.entity.User;
 import com.example.musing.user.entity.User_LikeArtist;
 import com.example.musing.user.entity.User_LikeGenre;
@@ -31,6 +33,7 @@ public class UserServiceImpl implements UserService{
     private final GenreRepository genreRepository;
     private final MoodRepository moodRepository;
     private final ArtistRepository artistRepository;
+    private final Like_MusicRepository likeMusicRepository;
     private final User_LikeGenreRepository userLikeGenreRepository;
     private final User_LikeMoodRepository userLikeMoodRepository;
     private final User_LikeArtistRepository userLikeArtistRepository;
@@ -88,5 +91,15 @@ public class UserServiceImpl implements UserService{
     @Override
     public User findById(String userId) {
         return userRepository.findById(userId).orElseThrow(() -> new CustomException(NOT_FOUND_USER));
+    }
+
+    @Override
+    public UserResponseDto.UserInfoDto getUserInfo(String userId){
+        User user = findById(userId);
+        return UserResponseDto.UserInfoDto.of(user, likeMusicCount(user), 0); //playList아직 없어서 0 임시값
+    }
+
+    private int likeMusicCount(User user){
+        return likeMusicRepository.countByUser(user);
     }
 }

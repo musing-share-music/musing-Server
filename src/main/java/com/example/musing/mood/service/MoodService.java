@@ -1,6 +1,10 @@
 package com.example.musing.mood.service;
 
+import com.example.musing.mood.dto.MoodDto;
+
+import java.util.List;
+
 public interface MoodService {
 
-    // Override 할수 있게 선언해주기
+    List<MoodDto> getMoodDtos();
 }

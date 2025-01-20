@@ -14,7 +14,7 @@ import com.example.musing.genre.repository.Genre_MusicRepository;
 import com.example.musing.hashtag.entity.HashTag;
 import com.example.musing.like_music.entity.Like_Music;
 import com.example.musing.like_music.repository.Like_MusicRepository;
-import com.example.musing.main.dto.MainPageBoardDto;
+import com.example.musing.main.dto.RecommendBoardRight;
 import com.example.musing.mood.dto.MoodDto;
 import com.example.musing.mood.entity.Mood_Music;
 import com.example.musing.mood.repository.Mood_MusicRepository;
@@ -70,7 +70,7 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public HotBoardDto findHotMusicBoard() {
+    public RecommendBoardLeft findHotMusicBoard() {
         //한달이내 생성이 되었고, 추천수가 제일 많으며, 삭제 처리가 되지않음을 확인
         Specification<Board> spec = Specification.where(BoardSpecificaion.isCreateAtAfterMonth())
                 .and(BoardSpecificaion.isActiveCheckTrue()).and(BoardSpecificaion.orderByRecommendCountDesc());
@@ -82,7 +82,7 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public List<MainPageBoardDto> findBy5Board() {
+    public List<RecommendBoardRight> findBy5Board() {
         //삭제 처리가 되지않은 게시글
         Specification<Board> spec = Specification.where(BoardSpecificaion.isActiveCheckTrue());
 
@@ -381,12 +381,12 @@ public class BoardServiceImpl implements BoardService {
         return GenreBoardDto.toDto(board, artists);
     }
 
-    private HotBoardDto entityToBoardDto(Board board) { //핫한 게시글을 엔티티에서 Dto로 전환
-        return HotBoardDto.toDto(board);
+    private RecommendBoardLeft entityToBoardDto(Board board) { //핫한 게시글을 엔티티에서 Dto로 전환
+        return RecommendBoardLeft.toDto(board);
     }
 
-    private MainPageBoardDto entityToMainDto(Board board) { //게시글을 엔티티에서 Dto로 전환
-        return MainPageBoardDto.toDto(board);
+    private RecommendBoardRight entityToMainDto(Board board) { //게시글을 엔티티에서 Dto로 전환
+        return RecommendBoardRight.toDto(board);
     }
 }
 

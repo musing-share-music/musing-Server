@@ -7,4 +7,6 @@ import java.util.List;
 public interface GenreService {
     GenreDto getRandomGenre();
     void modifyGenre_Music(long musicId, List<Long> genreList);
+
+    List<GenreDto> getGenreDtos();
 }
