@@ -4,6 +4,7 @@ import com.example.musing.board.dto.GenreBoardDto;
 import com.example.musing.board.dto.RecommendBoardLeft;
 import com.example.musing.board.service.BoardService;
 import com.example.musing.genre.dto.GenreDto;
+import com.example.musing.genre.entity.Genre;
 import com.example.musing.genre.service.GenreService;
 import com.example.musing.main.dto.LoginMainPageDto;
 import com.example.musing.main.dto.RecommendBoardRight;
@@ -39,7 +40,6 @@ public class MainServiceImpl implements MainService {
 
         RecommendBoardLeft recommendBoardLeft = boardService.findHotMusicBoard(); //핫한 게시글
 
-
         //최신 게시글 5개 가져오기
         List<RecommendBoardRight> recommendBoardRights = boardService.findBy5Board();
 
@@ -53,11 +53,9 @@ public class MainServiceImpl implements MainService {
 
         NoticeDto noticeDto = noticeService.findNotice(); //최신 공지사항 가져오기
 
-        List<GenreDto> likeGenre = userService.findById(userId).getGenres()
-                .stream()
-                .map(User_LikeGenre::getGenre)
-                .map(GenreDto::toDto)
-                .toList(); //좋아하는 장르
+        List<GenreDto> likeGenre = getLikeGenres(userId); //좋아하는 장르
+
+        List<GenreBoardDto> genreMusics = selcetGenre(getFirstLikeGenre(userId));
 
         //좋아요한 음악
         List<GenreBoardDto> likeMusic = boardService.findBy10LikeMusics(userId);
@@ -71,12 +69,25 @@ public class MainServiceImpl implements MainService {
         //최신 게시글 5개 가져오기
         List<RecommendBoardRight> recommendBoardRights = boardService.findBy5Board();
 
-        return LoginMainPageDto.of(userInfoDto, noticeDto, likeGenre, likeMusic,
+        return LoginMainPageDto.of(userInfoDto, noticeDto, likeGenre, genreMusics, likeMusic,
                 recommendGenre, genreBoardDtos, recommendBoardLeft, recommendBoardRights, modalCheck);
     }
 
     @Override
     public List<GenreBoardDto> selcetGenre(String genre) {
         return boardService.findBy5GenreBoard(genre);
+    }
+
+    private List<GenreDto> getLikeGenres(String userId){
+        return userService.findById(userId).getGenres()
+                .stream()
+                .map(User_LikeGenre::getGenre)
+                .map(GenreDto::toDto)
+                .toList();
+    }
+
+    private String getFirstLikeGenre(String userId){
+        return userService.findById(userId).getGenres()
+                .stream().findFirst().map(User_LikeGenre::getGenre).map(Genre::getGenreName).get().name();
     }
 }

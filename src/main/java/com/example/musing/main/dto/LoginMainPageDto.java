@@ -20,6 +20,8 @@ public record LoginMainPageDto(
         NoticeDto noticeDto,
         @Schema(description = "내가 좋아하는 장르의 태그", example = "[\"블루스\", \"락\", \"발라드\"]")
         List<GenreDto> likeGenre,
+        @Schema(description = "내가 좋아하는 장르의 노래, 최대 5개", example = "[\"블루스\", \"락\", \"발라드\"]")
+        List<GenreBoardDto> genreMusics,
         @Schema(description = "좋아요한 음악 10개, 아래 Dto에 한개 이상으로 있습니다.")
         List<GenreBoardDto> likeMusicDtos,
         @Schema(description = "랜덤 장르 이름.")
@@ -31,26 +33,28 @@ public record LoginMainPageDto(
         @Schema(description = "최신순 음악 추천 게시글 최대 5개, 아래 Dto에 한개 이상으로 있습니다.")
         List<RecommendBoardRight> recentBoard,
         @Schema(description = "최초 로그인 이후 모달창 입력을 다 맞췄는지 확인합니다.")
-        String modalCheck
+        String passModal
 ) {
     public static LoginMainPageDto of(UserResponseDto.UserInfoDto userInfoDto,
                                       NoticeDto noticeDto,
                                       List<GenreDto> likeGenre,
+                                      List<GenreBoardDto> genreMusics,
                                       List<GenreBoardDto> likeMusicDtos,
                                       GenreDto recommendGenre, List<GenreBoardDto> recommendGenres,
                                       RecommendBoardLeft hotMusicBoard,
                                       List<RecommendBoardRight> recentBoard,
-                                      String modalCheck) {
+                                      String passModal) {
         return LoginMainPageDto.builder()
                 .userInfoDto(userInfoDto)
                 .noticeDto(noticeDto)
                 .likeGenre(likeGenre)
+                .genreMusics(genreMusics)
                 .likeMusicDtos(likeMusicDtos)
                 .recommendGenre(recommendGenre)
                 .recommendGenres(recommendGenres)
                 .hotMusicBoard(hotMusicBoard)
                 .recentBoard(recentBoard)
-                .modalCheck(modalCheck)
+                .passModal(passModal)
                 .build();
     }
 }
