@@ -35,9 +35,7 @@ public class MainController {
     private final GenreService genreService;
     private final MoodService moodService;
     
-   
-    @GetMapping("main")
-    @Operation(summary = "메인 페이지 이동", description = "메인페이지로 이동할 때 접근한 사용자의 로그인 정보에 따라 전송하는 DTO 다르게 할 예정<br>" +
+    @Operation(summary = "메인 페이지", description = "메인페이지로 이동할 때 접근한 사용자의 로그인 정보에 따라 전송하는 DTO 다르게 할 예정<br>" +
             "비로그인 : 음악 추천 게시판 및 공지사항 정보<br>" +
             "로그인 : 음악 추천 게시판 및 공지사항, 곡 추천, 좋아요한 음악, 자신의 태그 정보<br>" +
             "<b>반환 타입이 두가지 이니 Example Value 말고 schema도 확인해주세요</b>", responses = {
@@ -127,7 +125,7 @@ public class MainController {
         System.out.println("checkRole:" + auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_USER")));
         System.out.println("유저 등급 확인: "+ auth.getAuthorities().stream().findFirst());
 
-        return auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_USER"));
+        return auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_USER"));
     }
 
 }
