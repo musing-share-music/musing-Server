@@ -46,7 +46,7 @@ public class MainController {
             )
     })
     @GetMapping("main")
-    public ResponseDto<Object> mainPage(Principal principal) {//비로그인 기준 Dto와 로그인 기준 Dto파일을 다르게 보내기 위해 와일드카드 사용
+    public ResponseDto<Object> mainPage(Principal principal) {
         //메인페이지 로그인 전에 시큐리티 권한확인하여 로그인상태를 구분,[ROLE_USER, ROLE_ADMIN, ROLE_ANONYMOUS]로 구분
         String modalCheck = "notLogIn";
         if (checkRole()) { //로그인 여부 체크
@@ -121,11 +121,10 @@ public class MainController {
 
     private boolean checkRole() { //로그인했는지와 유저인지 확인
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println(auth);
-        if (auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_USER"))) {
-            return true;
-        }
-        return false;
+        //로그 확인용
+        System.out.println("checkRole:" + auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_USER")));
+
+        return auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_USER"));
     }
 
 }

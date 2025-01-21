@@ -8,6 +8,7 @@ public class UserResponseDto {
     public record UserInfoDto(
         String email,
         String name,
+        String authority,
         int likeMusicCount,
         int myPlaylistCount
     ){
@@ -15,6 +16,7 @@ public class UserResponseDto {
             return UserInfoDto.builder()
                     .email(user.getEmail())
                     .name(user.getUsername())
+                    .authority(user.getRole().name())
                     .likeMusicCount(likeMusicCount)
                     .myPlaylistCount(myPlaylistCount)
                     .build();
