@@ -72,7 +72,9 @@ public class BoardListResponseDto {
         int replyCount,
         @Schema(description = "유튜브 영상 썸네일 링크")
         String thumbNailLink,
+        @Schema(description = "게시글의 장르")
         List<GenreDto> genreList,
+        @Schema(description = "게시글의 분위기")
         List<MoodDto> moodList
     ) {
         public static BoardDto toDto(Board board , List<GenreDto> genreList, List<MoodDto> moodList, List<ArtistDto> artists) {
