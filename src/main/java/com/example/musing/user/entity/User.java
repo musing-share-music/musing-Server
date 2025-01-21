@@ -114,4 +114,7 @@ public class User { //https://developers.google.com/identity/openid-connect/open
     public void updateactivated(Boolean activated){
         this.activated = activated;
     }
+    public void updateactivated(Boolean activated){
+        this.activated = activated;
+    }
 }
