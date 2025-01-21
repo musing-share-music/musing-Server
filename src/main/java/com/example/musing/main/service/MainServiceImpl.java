@@ -40,7 +40,6 @@ public class MainServiceImpl implements MainService {
 
         RecommendBoardLeft recommendBoardLeft = boardService.findHotMusicBoard(); //핫한 게시글
 
-
         //최신 게시글 5개 가져오기
         List<RecommendBoardRight> recommendBoardRights = boardService.findBy5Board();
 
@@ -54,15 +53,9 @@ public class MainServiceImpl implements MainService {
 
         NoticeDto noticeDto = noticeService.findNotice(); //최신 공지사항 가져오기
 
-        List<GenreDto> likeGenre = userService.findById(userId).getGenres()
-                .stream()
-                .map(User_LikeGenre::getGenre)
-                .map(GenreDto::toDto)
-                .toList(); //좋아하는 장르
+        List<GenreDto> likeGenre = getLikeGenres(userId); //좋아하는 장르
 
-
-        List<GenreBoardDto> genreMusics = selcetGenre(userService.findById(userId).getGenres()
-                .stream().findFirst().map(User_LikeGenre::getGenre).map(Genre::getGenreName).get().name());
+        List<GenreBoardDto> genreMusics = selcetGenre(getFirstLikeGenre(userId));
 
         //좋아요한 음악
         List<GenreBoardDto> likeMusic = boardService.findBy10LikeMusics(userId);
@@ -83,5 +76,18 @@ public class MainServiceImpl implements MainService {
     @Override
     public List<GenreBoardDto> selcetGenre(String genre) {
         return boardService.findBy5GenreBoard(genre);
+    }
+
+    private List<GenreDto> getLikeGenres(String userId){
+        return userService.findById(userId).getGenres()
+                .stream()
+                .map(User_LikeGenre::getGenre)
+                .map(GenreDto::toDto)
+                .toList();
+    }
+
+    private String getFirstLikeGenre(String userId){
+        return userService.findById(userId).getGenres()
+                .stream().findFirst().map(User_LikeGenre::getGenre).map(Genre::getGenreName).get().name();
     }
 }
