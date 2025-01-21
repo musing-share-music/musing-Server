@@ -17,8 +17,7 @@ public class BoardSpecificaion {
 
             // 장르 이름을 기준으로 필터링
             GerneEnum gerneEnum = GerneEnum.fromKey(genre);
-            System.out.println("gerne: " +gerneEnum);
-            System.out.println("gerne: " +gerneEnum.name());
+
             return criteriaBuilder.equal(genreJoin.get("genre").get("genreName"), gerneEnum.name());
         };
     }
