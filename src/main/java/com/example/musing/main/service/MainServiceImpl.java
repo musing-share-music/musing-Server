@@ -3,6 +3,8 @@ package com.example.musing.main.service;
 import com.example.musing.board.dto.GenreBoardDto;
 import com.example.musing.board.dto.RecommendBoardLeft;
 import com.example.musing.board.service.BoardService;
+import com.example.musing.exception.CustomException;
+import com.example.musing.exception.ErrorCode;
 import com.example.musing.genre.dto.GenreDto;
 import com.example.musing.genre.entity.Genre;
 import com.example.musing.genre.service.GenreService;
@@ -12,6 +14,7 @@ import com.example.musing.main.dto.NotLoginMainPageDto;
 import com.example.musing.notice.dto.NoticeDto;
 import com.example.musing.notice.service.NoticeService;
 import com.example.musing.user.Dto.UserResponseDto;
+import com.example.musing.user.entity.User;
 import com.example.musing.user.entity.User_LikeGenre;
 import com.example.musing.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +22,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+
+import static com.example.musing.exception.ErrorCode.NOT_FOUND_USER;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -87,7 +92,11 @@ public class MainServiceImpl implements MainService {
     }
 
     private String getFirstLikeGenre(String userId){
-        return userService.findById(userId).getGenres()
-                .stream().findFirst().map(User_LikeGenre::getGenre).map(Genre::getGenreName).get().name();
+        User user = userService.findById(userId);
+        if(user.getActivated()==null || !user.getActivated()){
+            throw new CustomException(NOT_FOUND_USER);
+        }
+        return user.getGenres()
+                .stream().findFirst().map(User_LikeGenre::getGenre).map(genre ->  genre.getGenreName().getKey()).get();
     }
 }

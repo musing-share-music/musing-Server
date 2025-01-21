@@ -84,4 +84,7 @@ public class User { //https://developers.google.com/identity/openid-connect/open
         this.username = username;
         this.profile = profile;
     }
+    public void updateactivated(Boolean activated){
+        this.activated = activated;
+    }
 }

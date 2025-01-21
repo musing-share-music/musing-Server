@@ -72,24 +72,25 @@ public class UserServiceImpl implements UserService{
                             return User_LikeArtist.of(newArtist, user);
                         }))
                 .forEach(userLikeArtistRepository::save);
+        user.updateactivated(true);
     }
 
     @Override
     @Transactional
     public String checkInputTags(String userId) {
         User user = findById(userId);
-        if(user.getActivated() == null){
-            //장르, 분위기 ,아티스트 순서로 갈 예정
-            if(!userLikeGenreRepository.existsByUser(user)){
-                return "genre";
-            }
-            if (!userLikeMoodRepository.existsByUser(user)){
-                return "mood";
-            }else{
-                return "artists";
-            }
+        System.out.println("check: "+ user.getActivated());
+        if(user.getActivated() != null) {
+            return "pass";
         }
-        return "pass";
+        //장르, 분위기 ,아티스트 순서로 갈 예정
+        if(!userLikeGenreRepository.existsByUser(user)){
+            return "genre";
+        }
+        if (!userLikeMoodRepository.existsByUser(user)){
+            return "mood";
+        }
+        return "artists";
     }
 
     @Override
