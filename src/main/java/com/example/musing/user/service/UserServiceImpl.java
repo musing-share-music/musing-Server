@@ -1,5 +1,6 @@
 package com.example.musing.user.service;
 
+import com.example.musing.artist.entity.Artist;
 import com.example.musing.artist.repository.ArtistRepository;
 import com.example.musing.exception.CustomException;
 import com.example.musing.exception.ErrorCode;
@@ -61,12 +62,15 @@ public class UserServiceImpl implements UserService{
 
     @Override
     @Transactional
-    public void saveArtists(String userId, List<Long> artists) {
+    public void saveArtists(String userId, List<String> artists) {
         User user = findById(userId);
         artists.stream()
-                .map(id -> artistRepository.findById(id)
-                        .orElseThrow(() -> new CustomException(NOT_FOUND_ARTIST)))
-                .map(artist -> User_LikeArtist.of(artist, user))
+                .map(name -> artistRepository.findByName(name)
+                        .map(artist -> User_LikeArtist.of(artist, user))
+                        .orElseGet(() -> {
+                            Artist newArtist = artistRepository.save(Artist.of(name));
+                            return User_LikeArtist.of(newArtist, user);
+                        }))
                 .forEach(userLikeArtistRepository::save);
     }
 

@@ -31,7 +31,12 @@ public class Artist {
     @Builder
     public Artist(String name) {
         this.name = name;
+    }
 
+    public static Artist of(String name){
+        return Artist.builder()
+                .name(name)
+                .build();
     }
 
 }

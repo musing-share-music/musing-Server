@@ -10,7 +10,7 @@ public interface UserService {
     User findById(String userId);
     void saveGenres(String userid, List<Long> genres);
     void saveMoods(String userid, List<Long> moods);
-    void saveArtists(String userid, List<Long> artists);
+    void saveArtists(String userid, List<String> artists);
 
     UserResponseDto.UserInfoDto getUserInfo(String userId);
 }
