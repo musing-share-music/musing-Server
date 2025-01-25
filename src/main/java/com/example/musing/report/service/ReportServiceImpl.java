@@ -3,7 +3,6 @@ package com.example.musing.report.service;
 import com.example.musing.board.entity.Board;
 import com.example.musing.board.repository.BoardRepository;
 import com.example.musing.exception.CustomException;
-import com.example.musing.exception.ErrorCode;
 import com.example.musing.reply.entity.Reply;
 import com.example.musing.reply.repository.ReplyRepository;
 import com.example.musing.report.dto.ReportRequestDto;
@@ -55,7 +54,7 @@ public class ReportServiceImpl implements ReportService{
     }
 
     private Board getBoard(long boardId){
-        return boardRepository.findById(boardId).orElseThrow(() -> new CustomException(NOT_FOUND_BOARDID));
+        return boardRepository.findById(boardId).orElseThrow(() -> new CustomException(NOT_FOUND_BOARD));
     }
 
     private Reply getReply(long replyId){
