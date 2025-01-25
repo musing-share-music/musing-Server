@@ -1,8 +1,14 @@
 package com.example.musing.board.dto;
 
+import com.example.musing.artist.dto.ArtistDto;
+import com.example.musing.artist.entity.Artist;
 import com.example.musing.board.entity.Board;
+import com.example.musing.music.entity.Music;
 import java.time.LocalDateTime;
 import java.util.List;
+
+import com.example.musing.genre.dto.GenreDto;
+import com.example.musing.mood.dto.MoodDto;
 import lombok.Builder;
 import org.springframework.data.domain.Page;
 
@@ -15,16 +21,16 @@ public class BoardListRequestDto {
         String title,
         String content,
         String musicName,
-        String artistName,
+        List<ArtistDto> artists,
         float rating,
         String thumbNailLink
     ) {
-        public static RecommendBoardFirstDto toDto(Board board) {
+        public static RecommendBoardFirstDto toDto(Board board, List<ArtistDto> artists) {
             return RecommendBoardFirstDto.builder()
                 .title(board.getTitle())
                 .content(board.getContent())
                 .musicName(board.getMusic().getName())
-                .artistName(board.getMusic().getArtist().getName())
+                .artists(artists)
                 .rating(board.getRating())
                 .thumbNailLink(board.getMusic().getThumbNailLink())
                 .build();
@@ -35,15 +41,15 @@ public class BoardListRequestDto {
     public record RecommendBoardDto(
         String title,
         String musicName,
-        String artistName,
+        List<ArtistDto> artists,
         String thumbNailLink,
         LocalDateTime createAt
     ) {
-        public static RecommendBoardDto toDto(Board board) {
+        public static RecommendBoardDto toDto(Board board, List<ArtistDto> artists) {
             return RecommendBoardDto.builder()
                 .title(board.getTitle())
                 .musicName(board.getMusic().getName())
-                .artistName(board.getMusic().getArtist().getName())
+                .artists(artists)
                 .thumbNailLink(board.getMusic().getThumbNailLink())
                 .createAt(board.getCreatedAt())
                 .build();
@@ -54,18 +60,18 @@ public class BoardListRequestDto {
     public record BoardDto(
         String title,
         String musicName,
-        String artistName,
+        List<ArtistDto> artists,
         float rating,
         int replyCount,
         String thumbNailLink,
-        List<String> genreList,
-        List<String> moodList
+        List<GenreDto> genreList,
+        List<MoodDto> moodList
     ) {
-        public static BoardDto toDto(Board board , List<String> genreList, List<String> moodList) {
+        public static BoardDto toDto(Board board , List<GenreDto> genreList, List<MoodDto> moodList, List<ArtistDto> artists) {
             return BoardDto.builder()
                 .title(board.getTitle())
                 .musicName(board.getMusic().getName())
-                .artistName(board.getMusic().getArtist().getName())
+                .artists(artists)
                 .rating(board.getRating())
                 .replyCount(board.getReplyCount())
                 .thumbNailLink(board.getMusic().getThumbNailLink())

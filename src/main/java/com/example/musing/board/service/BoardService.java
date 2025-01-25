@@ -1,7 +1,7 @@
 package com.example.musing.board.service;
 
 import com.example.musing.board.dto.*;
-import com.example.musing.main.dto.MainPageBoardDto;
+import com.example.musing.main.dto.RecommendBoardRight;
 import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -10,9 +10,9 @@ import java.util.List;
 public interface BoardService {
     List<GenreBoardDto> findBy5GenreBoard(String genre);
 
-    HotBoardDto findHotMusicBoard();
+    RecommendBoardLeft findHotMusicBoard();
 
-    List<MainPageBoardDto> findBy5Board();
+    List<RecommendBoardRight> findBy5Board();
 
     List<GenreBoardDto> findBy10LikeMusics(String userId);
 

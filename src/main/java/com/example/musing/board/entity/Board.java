@@ -2,6 +2,7 @@ package com.example.musing.board.entity;
 
 import com.example.musing.board.dto.PostDto;
 import com.example.musing.common.jpa.BaseEntity;
+import com.example.musing.genre.entity.Genre;
 import com.example.musing.music.entity.Music;
 import com.example.musing.reply.dto.ReplyDto;
 import com.example.musing.reply.entity.Reply;

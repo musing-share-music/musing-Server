@@ -4,6 +4,7 @@ import com.example.musing.board.entity.Board;
 import com.example.musing.music.entity.Music;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -19,38 +20,57 @@ public interface BoardRepository extends JpaRepository<Board, Long>, JpaSpecific
     String getFetchBoardQuery =
             "SELECT b FROM Board b " + "JOIN FETCH b.music m " +
                     "JOIN FETCH m.artist a ";
-    String getFetchUserQuery =
-            "JOIN FETCH b.user u ";
     String getActiveCheckQuery = "WHERE b.activeCheck = false ";
     String getDescQuery = "ORDER BY b.createdAt DESC";
 
-    @Query(getFetchBoardQuery + getFetchUserQuery + getActiveCheckQuery + "AND b.id = :boardId")
+    @EntityGraph(attributePaths = {"music", "user"})
+    @Query("SELECT b FROM Board b WHERE b.activeCheck = true AND b.id = :boardId")
     Optional<Board> findById(@Param("boardId") long boardId);
 
-    @Query("SELECT b FROM Board b JOIN FETCH b.music m WHERE m IN :musicList")
+    @EntityGraph(attributePaths = {"user"})
+    @Query("SELECT b FROM Board b JOIN FETCH b.music m WHERE b.activeCheck = true AND m IN :musicList")
     List<Board> findBoardsByMusicList(@Param("musicList") List<Music> musicList);
 
-
-    @Query(value = getFetchBoardQuery + getActiveCheckQuery + getDescQuery)
+    @EntityGraph(attributePaths = {"music", "user"})
+    @Query("SELECT b FROM Board b WHERE b.activeCheck = true ORDER BY b.createdAt DESC")
     Page<Board> findActiveBoardPage(Pageable pageable);
 
-    @Query(value = getFetchBoardQuery + getActiveCheckQuery + "AND b.user.username LIKE %:username% " +
-            getDescQuery)
+    @EntityGraph(attributePaths = {"music", "user"})
+    @Query("SELECT b FROM Board b WHERE b.activeCheck = true AND b.user.username LIKE %:username% ORDER BY b.createdAt DESC")
     Page<Board> findActiveBoardsByUsername(@Param("username") String username, Pageable pageable);
 
-    @Query(value = getFetchBoardQuery + getActiveCheckQuery + "AND b.title LIKE %:title% " +
-            getDescQuery)
+    @EntityGraph(attributePaths = {"music", "user"})
+    @Query("SELECT b FROM Board b WHERE b.activeCheck = true AND b.title LIKE %:title% ORDER BY b.createdAt DESC")
     Page<Board> findActiveBoardsByTitle(@Param("title") String title, Pageable pageable);
 
-    @Query(value = getFetchBoardQuery + getActiveCheckQuery + "AND m.artist.name LIKE %:artist% " +
-            getDescQuery)
-    Page<Board> findActiveBoardsByArtist(@Param("artist") String artist, Pageable pageable);
+    @Query("SELECT b FROM Board b " +
+            "JOIN FETCH b.music m " +
+            "JOIN Artist_Music am ON am.music.id = m.id " +
+            "WHERE am.artist.name = :artistName AND b.activeCheck = true " +
+            "ORDER BY b.createdAt DESC")
+    Page<Board> findActiveBoardsByArtist(@Param("artistName") String artistName, Pageable pageable);
 
-    @Query(value = getFetchBoardQuery + getActiveCheckQuery + "AND m.genre LIKE %:genre% " +
-            getDescQuery)
-    Page<Board> findActiveBoardsByGenre(@Param("genre") String genre, Pageable pageable);
+/*    @Query("SELECT b FROM Board b " +
+            "JOIN b.music m " +
+            "JOIN Genre_Music gm ON m.id = gm.music.id " +
+            "JOIN Genre g ON gm.genre.id = g.id " +
+            "WHERE g.genreName = :genre AND b.activeCheck = false")*/
+    @Query("SELECT b FROM Board b " +
+            "JOIN FETCH b.music m " +
+            "JOIN Genre_Music gm ON m.id = gm.music.id " +
+            "WHERE gm.genre.genreName = :genreName AND b.activeCheck = true " +
+            "ORDER BY b.createdAt DESC")
+    Page<Board> findActiveBoardsByGenre(@Param("genreName") String genreName, Pageable pageable);
 
-    @Query(value = getFetchBoardQuery + getActiveCheckQuery + "AND m.mood LIKE %:mood% " +
-            getDescQuery)
-    Page<Board> findActiveBoardsByMood(@Param("mood") String mood, Pageable pageable);
+/*    @Query("SELECT b FROM Board b " +
+            "JOIN b.music m " +
+            "JOIN Mood_Music mm ON m.id = mm.music.id " +
+            "JOIN Mood mo ON mm.mood.id = mo.id " +
+            "WHERE mo.moodName = :mood AND b.activeCheck = false")*/
+@Query("SELECT b FROM Board b " +
+        "JOIN FETCH b.music m " +
+        "JOIN Mood_Music mm ON m.id = mm.music.id " +
+        "WHERE mm.mood.moodName = :moodName AND b.activeCheck = true " +
+        "ORDER BY b.createdAt DESC")
+    Page<Board> findActiveBoardsByMood(@Param("moodName") String moodName, Pageable pageable);
 }

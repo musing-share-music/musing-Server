@@ -18,7 +18,7 @@ public class NoticeServiceImpl implements NoticeService {
 
     @Override
     public NoticeDto findNotice() {
-        Optional<Notice> notice = noticeRepository.findFirstByActiveCheckFalseOrderByCreatedAtDesc();
+        Optional<Notice> notice = noticeRepository.findFirstByActiveCheckTrueOrderByCreatedAtDesc();
         return notice.map(this::entityToDto).orElse(null);
     }
 
