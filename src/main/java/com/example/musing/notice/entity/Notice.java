@@ -3,7 +3,6 @@ package com.example.musing.notice.entity;
 import com.example.musing.board.entity.Board;
 import com.example.musing.music.entity.Music;
 import com.example.musing.reply.entity.Reply;
-import com.example.musing.report.entity.Report;
 import com.example.musing.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
