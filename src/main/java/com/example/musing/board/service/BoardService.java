@@ -29,5 +29,5 @@ public interface BoardService {
     // 글 삭제
     void deleteBoard(Long boardId);
     //글 수정
-    void updateBoard(Long boardId,UpdateBoardRequestDto updateRequest);
+    void updateBoard(List<MultipartFile> images,UpdateBoardRequestDto updateRequest);
 }

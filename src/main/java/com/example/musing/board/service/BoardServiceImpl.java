@@ -235,11 +235,11 @@ public class BoardServiceImpl implements BoardService {
 
     @Transactional
     @Override
-    public void updateBoard(Long boardId, UpdateBoardRequestDto updateRequest) {
-        Board board = boardRepository.findById(boardId)
-                .orElseThrow(() -> new CustomException(NOT_FOUND_BOARDID, "Board does not exist  id is" + boardId));
+    public void updateBoard(List<MultipartFile> images,UpdateBoardRequestDto updateRequest) {
+        Board board = boardRepository.findById(updateRequest.getBoardId())
+                .orElseThrow(() -> new CustomException(NOT_FOUND_BOARDID, "Board does not exist  id is" + updateRequest.getBoardId()));
 
-        List<MultipartFile> imgList = updateRequest.getImage();
+
 
         // 2. 업데이트 요청에 따라 필드 수정
         if (updateRequest.getTitle() != null) {
@@ -276,8 +276,8 @@ public class BoardServiceImpl implements BoardService {
                 board.getMusic().addHashTag(newHashTag);
             });
         }
-        if (imgList != null) {
-            for(MultipartFile file : imgList) {
+        if (images != null) {
+            for(MultipartFile file : images) {
                 String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
             }
         }
