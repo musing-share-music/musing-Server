@@ -63,7 +63,7 @@ public class ReportServiceImpl implements ReportService{
 
     private User getUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        return userRepository.findByEmail(authentication.getName()).orElseThrow(() -> new CustomException(NOT_FOUND_USER));
+        System.out.println("email: "+ authentication.getName());
+        return userRepository.findById(authentication.getName()).orElseThrow(() -> new CustomException(NOT_FOUND_USER));
     }
 }
