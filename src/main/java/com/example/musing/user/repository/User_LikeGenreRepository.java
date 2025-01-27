@@ -1,6 +1,5 @@
 package com.example.musing.user.repository;
 
-import com.example.musing.genre.entity.Genre;
 import com.example.musing.user.entity.User;
 import com.example.musing.user.entity.User_LikeGenre;
 import org.springframework.data.jpa.repository.JpaRepository;

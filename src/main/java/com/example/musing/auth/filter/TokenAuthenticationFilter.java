@@ -36,7 +36,6 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
         //이 필터는 애초에 토큰이 있다는 가정하에 아래단이 시작됨
         String accessToken = resolveToken(request);
-
         if (accessToken == null) {
             filterChain.doFilter(request, response);
             return;
@@ -48,7 +47,6 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             // 만료되었을 경우 accessToken 재발급
             //reissueAccessToken에 리프래시토큰 만료상태 확인 로직있음
             String reissueAccessToken = tokenProvider.reissueAccessToken(accessToken);
-            logger.info("토큰값" + reissueAccessToken);
             if (StringUtils.hasText(reissueAccessToken)) {//재발급이 성공했다면
                 setAuthentication(reissueAccessToken);//시큐리티 콘텍스트 추가
 

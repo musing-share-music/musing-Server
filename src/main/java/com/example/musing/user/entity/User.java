@@ -4,6 +4,8 @@ import com.example.musing.board.entity.Board;
 import com.example.musing.like_music.entity.Like_Music;
 import com.example.musing.playlist.entity.PlayList;
 import com.example.musing.reply.entity.Reply;
+import com.example.musing.report.entity.ReportBoard;
+import com.example.musing.report.entity.ReportReply;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -70,6 +72,12 @@ public class User { //https://developers.google.com/identity/openid-connect/open
     //유저가 음악에 좋아요를 눌렀을때의 관계
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Like_Music> likes = new ArrayList<>();
+
+    //유저의 신고관련 일대다 매핑
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReportBoard> reportBoards = new ArrayList<>();
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReportReply> reportReplies = new ArrayList<>();
 
     @Builder
     public User(String id, String username, String email, String profile) {

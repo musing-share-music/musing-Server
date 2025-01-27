@@ -40,7 +40,7 @@ public class ReplyServiceImpl implements ReplyService {
                 .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
 
         Board board = boardRepository.findById(boardId)
-                .orElseThrow(() -> new CustomException(NOT_FOUND_BOARDID));
+                .orElseThrow(() -> new CustomException(NOT_FOUND_BOARD));
 
         boolean replyExist = replyRepository.existsByBoard_IdAndUser_Email(boardId, email);
 

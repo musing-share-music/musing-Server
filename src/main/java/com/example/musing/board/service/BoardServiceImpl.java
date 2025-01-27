@@ -189,7 +189,7 @@ public class BoardServiceImpl implements BoardService {
     public void deleteBoard(Long boardId) {
 
         if (!boardRepository.existsById(boardId)) {
-            throw new CustomException(NOT_FOUND_BOARDID, "Board does not exist");
+            throw new CustomException(NOT_FOUND_BOARD, "Board does not exist");
         }
         boardRepository.deleteById(boardId);
     }
@@ -198,7 +198,7 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public void updateBoard(Long boardId, UpdateBoardRequestDto updateRequest) {
         Board board = boardRepository.findById(boardId)
-                .orElseThrow(() -> new CustomException(NOT_FOUND_BOARDID, "Board does not exist  id is" + boardId));
+                .orElseThrow(() -> new CustomException(NOT_FOUND_BOARD, "Board does not exist  id is" + boardId));
 
         List<MultipartFile> imgList = updateRequest.getImage();
 
@@ -260,7 +260,7 @@ public class BoardServiceImpl implements BoardService {
 
     //게시글 상세 정보
     private BoardRequestDto.BoardDto findBoard(long boardId) {
-        Board board = boardRepository.findById(boardId).orElseThrow(() -> new CustomException(NOT_FOUND_BOARDID));
+        Board board = boardRepository.findById(boardId).orElseThrow(() -> new CustomException(NOT_FOUND_BOARD));
 
 /*        List<Artist> artistList = artist_musicRepository.findByMusic(board.getMusic()).stream()
                 .map(Artist_Music::getArtist)

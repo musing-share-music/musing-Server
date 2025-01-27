@@ -2,11 +2,9 @@ package com.example.musing.board.entity;
 
 import com.example.musing.board.dto.PostDto;
 import com.example.musing.common.jpa.BaseEntity;
-import com.example.musing.genre.entity.Genre;
 import com.example.musing.music.entity.Music;
-import com.example.musing.reply.dto.ReplyDto;
 import com.example.musing.reply.entity.Reply;
-import com.example.musing.report.entity.Report;
+import com.example.musing.report.entity.ReportBoard;
 import com.example.musing.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Builder;
@@ -14,7 +12,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +23,7 @@ public class Board extends BaseEntity {
     //글번호(자동증가)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="boardid")
+    @Column(name = "boardid")
     private long id;
     //글 제목
     @Column(nullable = false, length = 100)
@@ -78,19 +75,20 @@ public class Board extends BaseEntity {
 
     //신고내역과 일대다관계 매핑
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Report> Reports = new ArrayList<>();
+    private List<ReportBoard> Reports = new ArrayList<>();
 
-    public static PostDto toDto(Board board){
-        return PostDto.fromEntity(board);
-    }
     @Builder
-    public Board(String title, String content,boolean activeCheck,String image,int recommendCount, int viewCount, boolean permitRegister) {
+    public Board(String title, String content, boolean activeCheck, String image, int recommendCount, int viewCount, boolean permitRegister) {
         this.title = title;
         this.content = content;
         this.recommendCount = 0; // 기본값 설정
         this.viewCount = 0; // 기본값 설정
         this.activeCheck = activeCheck;
         this.image = image;
+    }
+
+    public static PostDto toDto(Board board) {
+        return PostDto.fromEntity(board);
     }
 }
 

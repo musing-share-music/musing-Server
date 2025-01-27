@@ -3,7 +3,7 @@ package com.example.musing.reply.entity;
 import com.example.musing.board.entity.Board;
 import com.example.musing.common.jpa.BaseEntity;
 import com.example.musing.reply.dto.ReplyDto;
-import com.example.musing.report.entity.Report;
+import com.example.musing.report.entity.ReportReply;
 import com.example.musing.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Builder;
@@ -43,7 +43,7 @@ public class Reply extends BaseEntity {
 
     //일대다 관계로 신고테이블과 메핑
     @OneToMany(mappedBy = "reply", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Report> reportList = new ArrayList<Report>();
+    private List<ReportReply> reportList = new ArrayList<>();
 
     @Builder
     public Reply(long starScore, String content, User user, Board board) {

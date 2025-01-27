@@ -1,7 +1,5 @@
 package com.example.musing.mood.entity;
 
-import com.example.musing.genre.entity.Genre;
-import com.example.musing.genre.entity.Genre_Music;
 import com.example.musing.music.entity.Music;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
