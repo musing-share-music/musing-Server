@@ -1,10 +1,6 @@
 package com.example.musing.notice.service;
 
-import com.example.musing.artist.dto.ArtistDto;
-import com.example.musing.board.dto.BoardListRequestDto;
 import com.example.musing.exception.CustomException;
-import com.example.musing.genre.dto.GenreDto;
-import com.example.musing.mood.dto.MoodDto;
 import com.example.musing.notice.dto.NoticeDto;
 import com.example.musing.notice.entity.Notice;
 import com.example.musing.notice.repository.NoticeRepository;
@@ -15,7 +11,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
 
 import static com.example.musing.exception.ErrorCode.BAD_REQUEST_REPLY_PAGE;
@@ -26,8 +21,9 @@ import static com.example.musing.exception.ErrorCode.NOT_FOUND_NOTICE;
 @Service
 public class NoticeServiceImpl implements NoticeService {
 
-    private final NoticeRepository noticeRepository;
     private static int PAGESIZE = 10;
+    private final NoticeRepository noticeRepository;
+
     @Override
     public NoticeDto findNotice() {
         Optional<Notice> notice = noticeRepository.findFirstByActiveCheckTrueOrderByCreatedAtDesc();
@@ -49,7 +45,7 @@ public class NoticeServiceImpl implements NoticeService {
         return notices.map(this::entityToDto);
     }
 
-    public NoticeDto getNotice(long noticeId){
+    public NoticeDto getNotice(long noticeId) {
         Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new CustomException(NOT_FOUND_NOTICE));
         return entityToDto(notice);
     }

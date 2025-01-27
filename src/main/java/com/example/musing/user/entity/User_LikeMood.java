@@ -1,8 +1,6 @@
 package com.example.musing.user.entity;
 
-import com.example.musing.artist.entity.Artist;
 import com.example.musing.mood.entity.Mood;
-import com.example.musing.music.entity.Music;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
