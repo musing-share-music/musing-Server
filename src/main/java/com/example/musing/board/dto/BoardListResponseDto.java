@@ -19,11 +19,17 @@ public class BoardListResponseDto {
 
     @Builder
     public record RecommendBoardFirstDto(
+        @Schema(description = "게시글의 제목")
         String title,
+        @Schema(description = "게시글의 내용")
         String content,
+        @Schema(description = "게시글의 음악")
         String musicName,
+        @Schema(description = "게시글의 아티스트 리스트")
         List<ArtistDto> artists,
+        @Schema(description = "평균 별점")
         float rating,
+        @Schema(description = "게시글의 분위기")
         String thumbNailLink
     ) {
         public static RecommendBoardFirstDto toDto(Board board, List<ArtistDto> artists) {
@@ -40,10 +46,15 @@ public class BoardListResponseDto {
 
     @Builder
     public record BoardRecapDto(
+        @Schema(description = "게시글의 제목")
         String title,
+        @Schema(description = "게시글의 음악")
         String musicName,
+        @Schema(description = "게시글의 아티스트 리스트")
         List<ArtistDto> artists,
+        @Schema(description = "게시글 썸네일 링크")
         String thumbNailLink,
+        @Schema(description = "게시글 작성일자")
         LocalDateTime createAt
     ) {
         public static BoardRecapDto toDto(Board board) {
