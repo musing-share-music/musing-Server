@@ -14,13 +14,13 @@ import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/board")
+@RequestMapping("/musing/board")
 public class BoardController {
 
     private final BoardService boardService;
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseDto<Board> createPost(@RequestBody @Valid CreateBoardRequest request) {
+    public ResponseDto<Board> createPost(@RequestBody @Valid CreateBoardRequest request,) {
         boardService.createBoard(request); // DTO를 Service로 전달
         return ResponseDto.of(null, "성공적으로 글이 작성되었습니다.");
     }
