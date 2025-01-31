@@ -36,7 +36,6 @@ public class ReportBoard {
     @JoinColumn(name="userid")
     private User user;
 
-
     //관계설정 게시판에 관한 외래키 보유 주인테이블
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="boardid")
