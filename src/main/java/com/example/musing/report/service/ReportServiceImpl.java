@@ -32,9 +32,9 @@ public class ReportServiceImpl implements ReportService{
     private final UserRepository userRepository;
     @Override
     @Transactional
-    public void reportBoard(ReportRequestDto.ReportBoardRequestDto reportBoardRequestDto){
+    public void reportBoard(long boardId,ReportRequestDto.ReportBoardRequestDto reportBoardRequestDto){
         ReportBoard reportBoard = ReportBoard.builder()
-                .board(getBoard(reportBoardRequestDto.boardId()))
+                .board(getBoard(boardId))
                 .content(reportBoardRequestDto.content())
                 .user(getUser())
                 .build();
@@ -43,9 +43,9 @@ public class ReportServiceImpl implements ReportService{
     }
     @Override
     @Transactional
-    public void reportReply(ReportRequestDto.ReportReplyRequestDto reportReplyRequestDto){
+    public void reportReply(long replyId, ReportRequestDto.ReportReplyRequestDto reportReplyRequestDto){
         ReportReply reportReply = ReportReply.builder()
-                .reply(getReply(reportReplyRequestDto.replyId()))
+                .reply(getReply(replyId))
                 .content(reportReplyRequestDto.content())
                 .user(getUser())
                 .build();
