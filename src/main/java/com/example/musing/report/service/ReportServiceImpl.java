@@ -69,7 +69,7 @@ public class ReportServiceImpl implements ReportService {
         }
 
         Pageable pageable = PageRequest.of(page - 1, PAGESIZE);
-        Page<ReportBoard> boards = reportBoardRepository.findAll(pageable);
+        Page<ReportBoard> boards = reportBoardRepository.findAllByIsDeleteFalse(pageable);
 
         int totalPages = boards.getTotalPages();
 
@@ -87,7 +87,7 @@ public class ReportServiceImpl implements ReportService {
         }
 
         Pageable pageable = PageRequest.of(page - 1, PAGESIZE);
-        Page<ReportReply> replies = reportReplyRepository.findAll(pageable);
+        Page<ReportReply> replies = reportReplyRepository.findAllByIsDeleteFalse(pageable);
 
         int totalPages = replies.getTotalPages();
 

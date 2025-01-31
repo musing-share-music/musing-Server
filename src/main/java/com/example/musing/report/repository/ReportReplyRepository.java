@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface ReportReplyRepository extends JpaRepository<ReportReply, Long> {
     @EntityGraph(attributePaths = {"user", "reply"})
-    Page<ReportReply> findAll(Pageable pageable);
+    Page<ReportReply> findAllByIsDeleteFalse(Pageable pageable);
 
     @EntityGraph(attributePaths = {"reply"})
     List<ReportReply> findByReply_Id(Long replyId);
