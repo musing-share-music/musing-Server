@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -41,10 +42,18 @@ public class ReportBoard {
     @JoinColumn(name="boardid")
     private Board board;
 
+    @Column
+    @ColumnDefault("false")
+    private boolean isDelete;
+
     @Builder
     public ReportBoard(String content, Board board, User user){
         this.content = content;
         this.board = board;
         this.user = user;
+    }
+
+    public void delete() {
+        this.isDelete = true;
     }
 }

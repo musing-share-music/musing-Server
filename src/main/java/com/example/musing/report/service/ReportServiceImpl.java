@@ -3,8 +3,6 @@ package com.example.musing.report.service;
 import com.example.musing.board.entity.Board;
 import com.example.musing.board.repository.BoardRepository;
 import com.example.musing.exception.CustomException;
-import com.example.musing.notice.dto.NoticeDto;
-import com.example.musing.notice.entity.Notice;
 import com.example.musing.reply.entity.Reply;
 import com.example.musing.reply.repository.ReplyRepository;
 import com.example.musing.report.dto.ReportRequestDto;
@@ -24,24 +22,25 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 import static com.example.musing.exception.ErrorCode.*;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service
-public class ReportServiceImpl implements ReportService{
+public class ReportServiceImpl implements ReportService {
 
+    private static int PAGESIZE = 10;
     private final ReportBoardRepository reportBoardRepository;
     private final ReportReplyRepository reportReplyRepository;
     private final BoardRepository boardRepository;
     private final ReplyRepository replyRepository;
     private final UserRepository userRepository;
 
-    private static int PAGESIZE = 10;
-
     @Override
     @Transactional
-    public void reportBoard(long boardId,ReportRequestDto.ReportBoardRequestDto reportBoardRequestDto){
+    public void reportBoard(long boardId, ReportRequestDto.ReportBoardRequestDto reportBoardRequestDto) {
         ReportBoard reportBoard = ReportBoard.builder()
                 .board(getBoard(boardId))
                 .content(reportBoardRequestDto.content())
@@ -50,9 +49,10 @@ public class ReportServiceImpl implements ReportService{
 
         reportBoardRepository.save(reportBoard);
     }
+
     @Override
     @Transactional
-    public void reportReply(long replyId, ReportRequestDto.ReportReplyRequestDto reportReplyRequestDto){
+    public void reportReply(long replyId, ReportRequestDto.ReportReplyRequestDto reportReplyRequestDto) {
         ReportReply reportReply = ReportReply.builder()
                 .reply(getReply(replyId))
                 .content(reportReplyRequestDto.content())
@@ -98,17 +98,49 @@ public class ReportServiceImpl implements ReportService{
         return replies.map(this::entityToDto);
     }
 
-    private Board getBoard(long boardId){
+    @Override
+    @Transactional
+    public void deleteBoard(long boardId) {
+        deleteBoardReports(boardId);
+
+        Board board = boardRepository.findById(boardId).orElseThrow(() -> new CustomException(NOT_FOUND_BOARD));
+        board.delete();
+    }
+
+    @Override
+    @Transactional
+    public void deleteReply(long replyId) {
+        deleteReplyReports(replyId);
+
+        Reply reply = replyRepository.findById(replyId).orElseThrow(() -> new CustomException(NOT_FOUND_REPLY));
+        replyRepository.delete(reply);
+    }
+
+    private void deleteBoardReports(long boardId) {
+        List<ReportBoard> reports = reportBoardRepository.findByBoard_Id(boardId);
+        reports.forEach(ReportBoard::delete);
+
+        reportBoardRepository.saveAll(reports);
+    }
+
+    private void deleteReplyReports(long replyId) {
+        List<ReportReply> reports = reportReplyRepository.findByReply_Id(replyId);
+        reports.forEach(ReportReply::delete);
+
+        reportReplyRepository.saveAll(reports);
+    }
+
+    private Board getBoard(long boardId) {
         return boardRepository.findById(boardId).orElseThrow(() -> new CustomException(NOT_FOUND_BOARD));
     }
 
-    private Reply getReply(long replyId){
+    private Reply getReply(long replyId) {
         return replyRepository.findById(replyId).orElseThrow(() -> new CustomException(NOT_FOUND_REPLY));
     }
 
     private User getUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println("email: "+ authentication.getName());
+        System.out.println("email: " + authentication.getName());
         return userRepository.findById(authentication.getName()).orElseThrow(() -> new CustomException(NOT_FOUND_USER));
     }
 

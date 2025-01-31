@@ -40,10 +40,18 @@ public class ReportReply {
     @JoinColumn(name="replyid")
     private Reply reply;
 
+    @Column
+    @ColumnDefault("false")
+    private boolean isDelete;
+
     @Builder
     public ReportReply(String content, Reply reply, User user){
         this.content = content;
         this.reply = reply;
         this.user = user;
+    }
+
+    public void delete() {
+        this.isDelete = true;
     }
 }

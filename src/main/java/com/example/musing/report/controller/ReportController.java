@@ -28,17 +28,30 @@ public class ReportController {
         return ResponseDto.of("","게시글을 신고했습니다.");
     }
 
-    @GetMapping("/report/board/list")
+    @GetMapping("/admin/report/board/list")
     public ResponseDto<Page<ReportResponseDto.ReportBoardResponseDto>> reportBoardList(
             @RequestParam(name = "page", defaultValue = "1") int page){
         Page<ReportResponseDto.ReportBoardResponseDto> reportBoardList = reportService.getReportBoardList(page);
         return ResponseDto.of(reportBoardList);
     }
 
-    @GetMapping("/report/reply/list")
+    @GetMapping("/admin/report/reply/list")
     public ResponseDto<Page<ReportResponseDto.ReportReplyResponseDto>> reportReplyList(
             @RequestParam(name = "page", defaultValue = "1") int page){
         Page<ReportResponseDto.ReportReplyResponseDto> reportReplyList = reportService.getReportReplyList(page);
         return ResponseDto.of(reportReplyList);
+    }
+
+    @PutMapping("/admin/report/board")
+    public ResponseDto<String> deleteBoard(@RequestParam long boardId){
+        reportService.deleteBoard(boardId);
+        return ResponseDto.of("","성공적으로 게시글을 삭제했습니다.");
+    }
+
+    //삭제와 수정이 섞여있어 Put으로 사용
+    @PutMapping("/admin/report/reply")
+    public ResponseDto<String> deleteReply(@RequestParam long replyId){
+        reportService.deleteReply(replyId);
+        return ResponseDto.of("","성공적으로 댓글을 삭제했습니다.");
     }
 }

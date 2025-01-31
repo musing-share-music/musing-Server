@@ -13,5 +13,7 @@ public interface ReportService {
 
     Page<ReportResponseDto.ReportReplyResponseDto> getReportReplyList(int page);
 
+    void deleteBoard(long boardId);
 
+    void deleteReply(long replyId);
 }
