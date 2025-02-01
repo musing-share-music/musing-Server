@@ -13,12 +13,16 @@ import java.util.List;
 public class UpdateBoardRequestDto {
 
     //업데이트 리퀘스트 dto
-    private long boardId;
+    private Long boardId;
     private String title;
     private String musicTitle;
     private String artist;
     private String youtubeLink;
     private List<String> hashtags;
-    private String genre;
+    private Long genre;
     private String content;
+    private String playtime;
+    private String songLink;
+    private String albumName;
+    private String thumbNailLink;
 }

@@ -78,13 +78,15 @@ public class Board extends BaseEntity {
     private List<ReportBoard> Reports = new ArrayList<>();
 
     @Builder
-    public Board(String title, String content, boolean activeCheck, String image, int recommendCount, int viewCount, boolean permitRegister) {
+    public Board(String title, String content, boolean activeCheck, String image, int recommendCount, int viewCount, boolean permitRegister,User user,Music music) {
         this.title = title;
         this.content = content;
         this.recommendCount = 0; // 기본값 설정
         this.viewCount = 0; // 기본값 설정
         this.activeCheck = activeCheck;
         this.image = image;
+        this.user = user;
+        this.music = music;
     }
 
     public static PostDto toDto(Board board) {

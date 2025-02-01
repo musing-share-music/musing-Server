@@ -29,7 +29,9 @@ public enum GerneEnum {
     CCM("CCM"),
     MUSICAL("뮤지컬"),
     EDM("EDM"),
-    SHOEGAZING("슈게이징");
+    SHOEGAZING("슈게이징"),
+    Unknown("알수없음");
+
 
     private final String key;
 

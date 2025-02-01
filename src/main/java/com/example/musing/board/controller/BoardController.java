@@ -64,7 +64,7 @@ public class BoardController {
         if(images == null || images.isEmpty()) {
             images = new ArrayList<>();
         }
-        boardService.updateBoard(images,updateRequest);
+        boardService.updateBoard(updateRequest,images);
         return ResponseDto.of(null,"성공적으로 글이 수정되었습니다.");
     }
 

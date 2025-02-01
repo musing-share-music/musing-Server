@@ -1,6 +1,7 @@
 package com.example.musing.board.service;
 
 import com.example.musing.artist.dto.ArtistDto;
+import com.example.musing.artist.entity.Artist;
 import com.example.musing.artist.entity.Artist_Music;
 import com.example.musing.artist.repository.ArtistRepository;
 import com.example.musing.artist.repository.Artist_MusicRepository;
@@ -9,9 +10,11 @@ import com.example.musing.board.entity.Board;
 import com.example.musing.board.repository.BoardRepository;
 import com.example.musing.exception.CustomException;
 import com.example.musing.genre.dto.GenreDto;
+import com.example.musing.genre.entity.Genre;
 import com.example.musing.genre.entity.Genre_Music;
+import com.example.musing.genre.entity.GerneEnum;
+import com.example.musing.genre.repository.GenreRepository;
 import com.example.musing.genre.repository.Genre_MusicRepository;
-import com.example.musing.hashtag.entity.HashTag;
 import com.example.musing.like_music.entity.Like_Music;
 import com.example.musing.like_music.repository.Like_MusicRepository;
 import com.example.musing.main.dto.RecommendBoardRight;
@@ -22,6 +25,7 @@ import com.example.musing.music.entity.Music;
 import com.example.musing.music.repository.MusicRepository;
 import com.example.musing.reply.dto.ReplyDto;
 import com.example.musing.reply.service.ReplyService;
+import com.example.musing.user.entity.User;
 import com.example.musing.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -29,6 +33,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -53,10 +58,11 @@ public class BoardServiceImpl implements BoardService {
     private final Like_MusicRepository likeMusicRepository;
     private final MusicRepository musicRepository;
     private final ReplyService replyService;
-
+    private final GenreRepository genreRepository;
     private final Artist_MusicRepository artist_musicRepository;
     private final Genre_MusicRepository genre_musicRepository;
     private final Mood_MusicRepository mood_musicRepository;
+
 
     @Override
     public List<GenreBoardDto> findBy5GenreBoard(String genre) { //장르로 검색한 게시글들을 엔티티에서 Dto로 전환
@@ -111,22 +117,95 @@ public class BoardServiceImpl implements BoardService {
     /// 메인 페이지까지 쓰는 부분
 
     //게시판 등록 로직
-    @Transactional
+
     @Override
-    public void createBoard(CreateBoardRequest request) {
+    @Transactional
+    public void createBoard(CreateBoardRequest request, List<MultipartFile> images) {
+        // 유저명 저장
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        String fileName = UUID.randomUUID() + "_" + request.getImage().getOriginalFilename();
+        // 파일명 리스트 생성
+        List<String> fileNames = new ArrayList<>();
+        if (images == null || images.isEmpty()) {
+            fileNames.add("이미지 없음");
+        } else {
+            // 이미지가 있는 경우 파일명 생성
+            for (MultipartFile file : images) {
+                String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+                // 파일 저장 로직 작성 필요함(서버나 S3에 저장)
+                fileNames.add(fileName);
+            }
+        }
 
+        // Artist 저장
+        Artist artist = Artist.builder()
+                .name(request.getArtist()) // request.getArtist()는 Artist의 이름(String)이라고 가정
+                .build();
+
+        // Music 저장
+        Music music = Music.builder()
+                .name(request.getMusicTitle())
+                .playtime(request.getPlaytime())
+                .albumName(request.getAlbumName())
+                .songLink(request.getSongLink())
+                .thumbNailLink(request.getThumbNailLink())
+                .build();
+
+        Artist_Music artistMusic = Artist_Music.of(artist,music);
+
+
+        Long genreId = request.getGenre();
+        if (genreId == null || genreId <= 0) {
+            throw new CustomException(NOT_FOUND_GENRE);
+        }
+
+
+        Genre genre = genreRepository.findById(genreId).orElseThrow(() -> new CustomException(NOT_FOUND_GENRE));
+
+        // Music과 Genre를 중간 테이블을 통해 연결
+        Genre_Music musicGenre = Genre_Music.of(music, genre);
+
+        artistRepository.save(artist); // Artist 먼저 저장
+        musicRepository.save(music);
+
+
+
+        genre_musicRepository.save(musicGenre); // Genre_Music 저장 (중간 테이블)
+        artist_musicRepository.save(artistMusic);
+
+
+
+        Long musicId = music.getId();
+        if (musicId != null) {
+            System.out.println("자동 생성된 Music ID: " + musicId);
+        } else {
+            System.out.println("Music ID가 자동으로 생성되지 않았습니다.");
+        }
+
+
+
+
+
+
+        User user = userRepository.findById(SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName()).orElseThrow(() -> new CustomException(NOT_FOUND_USER));
+
+        // Board 저장
         Board board = Board.builder()
+                .user(user)
+                .music(music)
                 .title(request.getTitle())
                 .content(request.getContent())
-                .image(fileName)
+                .image(String.join(",", fileNames)) // 파일명은 ,로 구분 지어 저장
                 .activeCheck(false)
                 .recommendCount(0)
                 .viewCount(0)
                 .build();
-        boardRepository.save(board);
+        boardRepository.save(board); // Board 저장 (최종적으로 Board를 저장)
     }
+
 
     //음악 추천 게시판 전체 리스트
     @Override
@@ -194,59 +273,83 @@ public class BoardServiceImpl implements BoardService {
         boardRepository.deleteById(boardId);
     }
 
-    @Transactional
     @Override
-    public void updateBoard(Long boardId, UpdateBoardRequestDto updateRequest) {
-        Board board = boardRepository.findById(boardId)
-                .orElseThrow(() -> new CustomException(NOT_FOUND_BOARD, "Board does not exist  id is" + boardId));
+    @Transactional
+    public void updateBoard(UpdateBoardRequestDto request, List<MultipartFile> images) {
+        // 유저명 저장
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        List<MultipartFile> imgList = updateRequest.getImage();
 
-        // 2. 업데이트 요청에 따라 필드 수정
-        if (updateRequest.getTitle() != null) {
-            board.builder().title(updateRequest.getTitle()).build();
-        }
+        // 기존 Board 객체를 찾기
+        Board board = boardRepository.findById(request.getBoardId())
+                .orElseThrow(() -> new CustomException(NOT_FOUND_BOARD));
 
-        if (updateRequest.getMusicTitle() != null) {
-            board.getMusic().builder().name(updateRequest.getMusicTitle()).build();
-        }
-/*
-        if (updateRequest.getArtist() != null) {
-            board.getMusic().getArtist().builder().name(updateRequest.getArtist()).build();
-        }*/
-        if (updateRequest.getYoutubeLink() != null) {
-            board.getMusic().builder().songLink(updateRequest.getYoutubeLink()).build();
-        }
-        if (updateRequest.getContent() != null) {
-            board.builder().content(updateRequest.getContent());
-        }
+        // Board에 관련된 Music 객체를 찾기
+        Music music = board.getMusic();
 
-        if (updateRequest.getHashtags() != null && !updateRequest.getHashtags().isEmpty()) {
-            // 기존 해시태그를 제거
-            board.getMusic().getHashTagList().clear();
-
-            // 새로운 해시태그 추가
-            updateRequest.getHashtags().forEach(tag -> {
-                // 각 해시태그 엔티티 생성 및 관계 설정
-                HashTag newHashTag = HashTag.builder()
-                        .hashtag(tag)
-                        .music(board.getMusic()) // Music 객체 설정
-                        .build();
-
-                // Music 객체에 해시태그 추가
-                board.getMusic().addHashTag(newHashTag);
-            });
-        }
-        if (imgList != null) {
-            for (MultipartFile file : imgList) {
+        // 파일명 리스트 생성
+        List<String> fileNames = new ArrayList<>();
+        if (images == null || images.isEmpty()) {
+            fileNames.add("이미지 없음");
+        } else {
+            // 이미지가 있는 경우 파일명 생성
+            for (MultipartFile file : images) {
                 String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+                // 파일 저장 로직 작성 필요함(서버나 S3에 저장)
+                fileNames.add(fileName);
             }
         }
 
-/*        if (updateRequest.getGenre() != null) {
-            board.getMusic().builder().genre(updateRequest.getGenre());
-        }*/
+        // Artist 업데이트 또는 새로 생성
+        Artist artist = artistRepository.findByName(request.getArtist())
+                .orElseGet(() -> Artist.builder()
+                        .name(request.getArtist())
+                        .build());
+        artistRepository.save(artist);
+
+        // Music 정보 업데이트 (빌더 사용)
+        music =  Music.builder()// Music 객체를 빌더로 변환하여 업데이트
+                .name(request.getMusicTitle())
+                .playtime(request.getPlaytime())
+                .songLink(request.getSongLink())
+                .albumName(request.getAlbumName())
+                .thumbNailLink(request.getThumbNailLink())
+                .build();
+
+        musicRepository.save(music);
+
+        // 기존 중간 테이블에 저장된 Artist와 Music 관계 업데이트 (이전 관계를 삭제 후 새로 저장)
+        artist_musicRepository.deleteByMusic(music); // 기존 관계 삭제
+        Artist_Music artistMusic = Artist_Music.of(artist, music);
+        artist_musicRepository.save(artistMusic); // 새 관계 저장
+
+        // Genre 업데이트 (장르가 존재하면 이를 Music과 연결)
+        Genre genre = genreRepository.getById(request.getGenre());
+
+        // 기존 중간 테이블에 저장된 Genre와 Music 관계 업데이트 (이전 관계를 삭제 후 새로 저장)
+        genre_musicRepository.deleteByMusic(music);// 기존 관계 삭제
+        Genre_Music musicGenre = Genre_Music.of(music, genre);
+        genre_musicRepository.save(musicGenre); // 새 관계 저장
+
+        // Board 정보 업데이트 (빌더 사용)
+        board = Board.builder() // Board 객체를 빌더로 변환하여 업데이트
+                .user(userRepository.findById(userId)
+                        .orElseThrow(() -> new CustomException(NOT_FOUND_USER)))
+                .music(music)
+                .title(request.getTitle())
+                .content(request.getContent())
+                .image(String.join(",", fileNames)) // 파일명은 ,로 구분 지어 저장
+                .activeCheck(false) // 필요한 경우 수정 가능
+                .recommendCount(board.getRecommendCount()) // 기존 추천 수 유지
+                .viewCount(board.getViewCount()) // 기존 조회 수 유지
+                .build();
+
+        // Board 업데이트 저장
+        boardRepository.save(board); // 영속화
     }
+
+
+
 
     // 음악 추천 게시판 상세페이지 (리뷰 포함)
     @Override
