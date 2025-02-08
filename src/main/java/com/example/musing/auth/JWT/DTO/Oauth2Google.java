@@ -12,7 +12,9 @@ public record Oauth2Google (
     String id,
     String name,
     String email,
-    String profile){ //프로필 사진 링크
+    String profile,
+    String youtubeId
+    ){ //프로필 사진 링크
 
     //나중에 유튜브 계정 id랑 구글 sub일치하는지 확인해보고 빌더해서 값 저장할듯함, GeneratedValue 대신
     
@@ -21,7 +23,9 @@ public record Oauth2Google (
                 .id((String) attributes.get("sub"))
                 .name((String) attributes.get("name"))
                 .email((String) attributes.get("email"))
-                .profile((String) attributes.get("picture")).build();
+                .profile((String) attributes.get("picture"))
+                .youtubeId((String) attributes.get("youtubeChannelId"))
+                .build();
 
         //이름,이메일,프로필 이미지 링크
     }
@@ -31,7 +35,9 @@ public record Oauth2Google (
                 .id(id)
                 .profile(profile)
                 .username(name)
-                .email(email).build();
+                .email(email)
+                .youtubeId(youtubeId)
+                .build();
     }
 }
 
