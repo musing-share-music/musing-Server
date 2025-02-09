@@ -19,6 +19,7 @@ import com.example.musing.like_music.entity.Like_Music;
 import com.example.musing.like_music.repository.Like_MusicRepository;
 import com.example.musing.main.dto.RecommendBoardRight;
 import com.example.musing.mood.dto.MoodDto;
+import com.example.musing.mood.entity.MoodEnum;
 import com.example.musing.mood.entity.Mood_Music;
 import com.example.musing.mood.repository.Mood_MusicRepository;
 import com.example.musing.music.entity.Music;
@@ -453,7 +454,7 @@ public class BoardServiceImpl implements BoardService {
 
     // 음악 추천 게시판 상단
     private BoardListRequestDto.BoardPopUpDto findBoardPopUp() {
-        Specification<Board> spec = Specification.where(BoardSpecificaion.isCreateAtAfterWeek())
+        Specification<Board> spec = Specification.where(BoardSpecificaion.isCreateAtAfterMonth())
                 .and(BoardSpecificaion.isActiveCheckTrue()).and(BoardSpecificaion.findBoardsWithAtLeastTenRecommend());
 
         List<Board> boards = findBySpecBoard(spec);
@@ -483,9 +484,11 @@ public class BoardServiceImpl implements BoardService {
             case "artist":
                 return boardRepository.findActiveBoardsByArtist(keyword, pageable);
             case "genre":
-                return boardRepository.findActiveBoardsByGenre(keyword, pageable);
+                GerneEnum gerneEnum = GerneEnum.fromKey(keyword);
+                return boardRepository.findActiveBoardsByGenre(gerneEnum, pageable);
             case "mood":
-                return boardRepository.findActiveBoardsByMood(keyword, pageable);
+                MoodEnum moodEnum = MoodEnum.fromKey(keyword);
+                return boardRepository.findActiveBoardsByMood(moodEnum, pageable);
             default:
                 throw new CustomException(NOT_FOUND_KEYWORD);
         }

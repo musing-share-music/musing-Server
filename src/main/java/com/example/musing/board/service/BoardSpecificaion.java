@@ -16,7 +16,7 @@ public class BoardSpecificaion {
             Join<Music, Genre_Music> genreJoin = musicJoin.join("genreMusics");
 
             // 장르 이름을 기준으로 필터링
-            GerneEnum gerneEnum = GerneEnum.find(genre);
+            GerneEnum gerneEnum = GerneEnum.fromKey(genre);
             System.out.println("gerne: " +gerneEnum);
             System.out.println("gerne: " +gerneEnum.name());
             return criteriaBuilder.equal(genreJoin.get("genre").get("genreName"), gerneEnum.name());
@@ -26,12 +26,6 @@ public class BoardSpecificaion {
     public static Specification<Board> isActiveCheckTrue() { //삭제 여부 확인
         return (root, query, criteriaBuilder) ->
                 criteriaBuilder.isTrue(root.get("activeCheck"));
-    }
-
-    public static Specification<Board> isCreateAtAfterWeek() { //생성일자가 1주이내인지 체크
-        LocalDateTime oneWeekAgo = LocalDateTime.now().minusWeeks(1);
-        return (root, query, criteriaBuilder) ->
-                criteriaBuilder.greaterThanOrEqualTo(root.get("createdAt"), oneWeekAgo);
     }
 
     public static Specification<Board> isCreateAtAfterMonth() { //생성일자가 한달이내인지 체크

@@ -3,6 +3,11 @@ package com.example.musing.mood.entity;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Arrays;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 @RequiredArgsConstructor
 @Getter
 public enum MoodEnum {
@@ -21,4 +26,11 @@ public enum MoodEnum {
     OLD_FASHIONED("올드한");
 
     private final String key;
+
+    private static final Map<String, MoodEnum> KEY_TO_ENUM_MAP = Arrays.stream(values())
+            .collect(Collectors.toMap(MoodEnum::getKey, Function.identity()));
+
+    public static MoodEnum fromKey(String key) {
+        return KEY_TO_ENUM_MAP.get(key);
+    }
 }

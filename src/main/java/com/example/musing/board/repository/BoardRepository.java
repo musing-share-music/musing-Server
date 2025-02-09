@@ -1,6 +1,8 @@
 package com.example.musing.board.repository;
 
 import com.example.musing.board.entity.Board;
+import com.example.musing.genre.entity.GerneEnum;
+import com.example.musing.mood.entity.MoodEnum;
 import com.example.musing.music.entity.Music;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -47,12 +49,12 @@ public interface BoardRepository extends JpaRepository<Board, Long>, JpaSpecific
             "JOIN Genre_Music gm ON m.id = gm.music.id " +
             "WHERE gm.genre.genreName = :genreName AND b.activeCheck = true " +
             "ORDER BY b.createdAt DESC")
-    Page<Board> findActiveBoardsByGenre(@Param("genreName") String genreName, Pageable pageable);
+    Page<Board> findActiveBoardsByGenre(@Param("genreName") GerneEnum genreName, Pageable pageable);
 
-    @Query("SELECT b FROM Board b " +
-            "JOIN FETCH b.music m " +
-            "JOIN Mood_Music mm ON m.id = mm.music.id " +
-            "WHERE mm.mood.moodName = :moodName AND b.activeCheck = true " +
-            "ORDER BY b.createdAt DESC")
-    Page<Board> findActiveBoardsByMood(@Param("moodName") String moodName, Pageable pageable);
+	@Query("SELECT b FROM Board b " +
+ 	       "JOIN FETCH b.music m " +
+ 	       "JOIN Mood_Music mm ON m.id = mm.music.id " +
+ 	       "WHERE mm.mood.moodName = :moodName AND b.activeCheck = true " +
+ 	       "ORDER BY b.createdAt DESC")
+ 	Page<Board> findActiveBoardsByMood(@Param("moodName") MoodEnum moodName, Pageable pageable);
 }
