@@ -10,7 +10,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@RestController("/musing/boards")
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+@RestController("/musing/check")
 public class YoutubeController {
 
 
@@ -24,12 +29,13 @@ public class YoutubeController {
     @Operation(summary = "음악 링크 등록 테스트용" ,
             description = "localhost:8090 기준 http://localhost:8090/youtube/search 로 접근<br>")
 
-    //임시 보류 기능(검색어로 비디오 검색)
-//    @GetMapping("/youtube/search")
-//    public String search(@RequestParam("query") String query) {
-//
-//        return youTubeService.searchMusic(query);
-//    }
+
+
+    @GetMapping("/checkURL")
+    public String validateYouTubeUrl(@RequestParam String url) {
+        return youTubeService.checkUrl(url);
+    }
+
 
     @GetMapping("/getVideoInfo")
     public ResponseDto<YouTubeVideoResponse> getVideoInfo(@RequestParam("videoUrl") String videoUrl) {
@@ -39,7 +45,7 @@ public class YoutubeController {
         }
 
         // URL에서 Video ID 추출
-        String videoId = youTubeService.extractVideoIdFromUrl(videoUrl);
+        String videoId = youTubeService.checkUrl(videoUrl);
 
         //null값이면 알림 전송
         if (videoId == null) {
@@ -50,6 +56,15 @@ public class YoutubeController {
         YouTubeVideoResponse videoResponse = youTubeService.getVideoInfo(videoId);
 
         return ResponseDto.of(videoResponse,"유효한 URL입니다.");
+    }
+
+    @GetMapping("/validate-key")
+    public Map<String, Object> validateApiKey() {
+        boolean isValid = youTubeService.isApiKeyValid();
+        Map<String, Object> response = new HashMap<>();
+        response.put("valid", isValid);
+        response.put("message", isValid ? "✅ API 키가 유효합니다." : "❌ API 키가 유효하지 않습니다.");
+        return response;
     }
 
 

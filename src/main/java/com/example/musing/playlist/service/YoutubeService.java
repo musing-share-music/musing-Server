@@ -10,7 +10,8 @@ public interface YoutubeService {
 
     YouTubeVideoResponse getVideoInfo(String videoId);
 
-    String extractVideoIdFromUrl(String url);
+    String checkUrl(String url);
 
     List<PlayList> getUserPlaylists(String accessToken);
+    boolean  isApiKeyValid();
 }
