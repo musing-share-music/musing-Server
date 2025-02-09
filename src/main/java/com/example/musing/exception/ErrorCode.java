@@ -38,6 +38,9 @@ public enum ErrorCode {
     
     //공지사항 관련 예외처리
     NOT_FOUND_NOTICE(NOT_FOUND, "해당 공지사항을 찾을 수 없습니다"),
+
+    //신고 관련 예외처리
+    BAD_REQUEST_REPORT_PAGE(BAD_REQUEST, "해당 페이지는 존재하지 않습니다."),
     ;
     private final HttpStatus httpStatus;
     private final String message;

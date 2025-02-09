@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -39,10 +40,18 @@ public class ReportReply {
     @JoinColumn(name="replyid")
     private Reply reply;
 
+    @Column
+    @ColumnDefault("false")
+    private boolean isDelete;
+
     @Builder
     public ReportReply(String content, Reply reply, User user){
         this.content = content;
         this.reply = reply;
         this.user = user;
+    }
+
+    public void delete() {
+        this.isDelete = true;
     }
 }
