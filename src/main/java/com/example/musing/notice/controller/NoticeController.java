@@ -45,8 +45,7 @@ public class NoticeController {
 
     @Operation(summary = "공지사항 게시글 작성",
             description = "공지사항 게시글 작성으로 Dto를 title, content를 포함하여 JSON 타입('application/json')으로 받습니다<br>" +
-                    "이미지를 업로드할 수 있도록 이 API는 'Content-Type': 'multipart/form-data'입니다. " +
-                    "keyword는 검색창에 입력한 단어입니다.")
+                    "이미지를 업로드할 수 있도록 이 API는 'Content-Type': 'multipart/form-data'입니다. ")
     @PostMapping(value = "/admin/notice", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseDto<String> createNotice(@RequestPart NoticeRequestDto requestDto,
                                             @RequestPart(required = false) List<MultipartFile> files) {
