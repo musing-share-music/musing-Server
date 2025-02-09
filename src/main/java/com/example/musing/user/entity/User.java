@@ -6,21 +6,15 @@ import com.example.musing.playlist.entity.PlayList;
 import com.example.musing.reply.entity.Reply;
 import com.example.musing.report.entity.ReportBoard;
 import com.example.musing.report.entity.ReportReply;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-import java.util.ArrayList;
-import java.util.List;
+import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter // Lombok 어노테이션 : 클래스 내 모든 필드의 Getter 메소드 자동 생성
 @NoArgsConstructor // Lombok 어노테이션 : 기본 생성자 자동 추가
@@ -41,7 +35,10 @@ public class User { //https://developers.google.com/identity/openid-connect/open
     private String email; // 이메일 (유니크)
 
     @Column(nullable = false)
-    private String profile; //구글 프로필 url저장소 (로그인테스트로 넣은 컬럼,사용 여부 미확정), 사진만 url가져오는걸로 바꿔야겠다
+    private String profile; //구글 프로필 url저장소
+
+    @Column(nullable = false)
+    private String youtubeId; //유튜브 id
 
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
@@ -80,19 +77,22 @@ public class User { //https://developers.google.com/identity/openid-connect/open
     private List<ReportReply> reportReplies = new ArrayList<>();
 
     @Builder
-    public User(String id, String username, String email, String profile) {
+    public User(String id, String username, String email, String profile, String youtubeId) {
         this.id = id;
         this.username = username;
         this.email = email;
         this.profile = profile;
+        this.youtubeId = youtubeId;
         this.role = Role.USER;
     }
 
-    public void updateGoogleInfo(String username, String profile) {
+    public void updateGoogleInfo(String username, String profile, String youtubeId) {
         this.username = username;
         this.profile = profile;
+        this.youtubeId = youtubeId;
     }
-    public void updateactivated(Boolean activated){
+
+    public void updateactivated(Boolean activated) {
         this.activated = activated;
     }
 }

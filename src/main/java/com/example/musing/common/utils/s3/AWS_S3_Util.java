@@ -1,4 +1,4 @@
-package com.example.musing.utils;
+package com.example.musing.common.utils.s3;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
