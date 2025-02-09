@@ -344,10 +344,7 @@ public class BoardServiceImpl implements BoardService {
 
     public DetailResponse selectDetail(long boardId) {
 
-        Board board = boardRepository.findBoardWithMusicAndArtist(boardId);
-        if (!boardRepository.existsById(boardId)) {
-            throw new CustomException(NOT_FOUND_BOARD);
-        }
+        Board board = boardRepository.findById(boardId).orElseThrow(() -> new CustomException(NOT_FOUND_BOARD));
 
         // 첫 번째 Music 정보 가져오기
         Music music = board.getMusic();
