@@ -11,6 +11,7 @@ public interface NoticeService {
     NoticeDto findNotice();
 
     Page<NoticeDto> getNoticeList(int page);
+    Page<NoticeDto> search(int page, String keyword);
 
     NoticeDto getNotice(long noticeId);
 

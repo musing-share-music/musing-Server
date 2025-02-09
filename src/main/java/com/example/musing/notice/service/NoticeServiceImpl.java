@@ -1,7 +1,12 @@
 package com.example.musing.notice.service;
 
+import com.example.musing.artist.dto.ArtistDto;
+import com.example.musing.board.dto.BoardListRequestDto;
+import com.example.musing.board.entity.Board;
 import com.example.musing.common.utils.s3.AWS_S3_Util;
 import com.example.musing.exception.CustomException;
+import com.example.musing.genre.dto.GenreDto;
+import com.example.musing.mood.dto.MoodDto;
 import com.example.musing.notice.dto.NoticeDto;
 import com.example.musing.notice.dto.NoticeRequestDto;
 import com.example.musing.notice.entity.Notice;
@@ -40,6 +45,7 @@ public class NoticeServiceImpl implements NoticeService {
         return notice.map(this::entityToDto).orElse(null);
     }
 
+    @Override
     public Page<NoticeDto> getNoticeList(int page) {
         if (page < 1) { // 잘못된 접근으로 throw할때 쿼리문 실행을 안하기 위해 나눠서 체크
             throw new CustomException(BAD_REQUEST_REPLY_PAGE);
@@ -55,11 +61,31 @@ public class NoticeServiceImpl implements NoticeService {
         return notices.map(this::entityToDto);
     }
 
+    @Override
+    public Page<NoticeDto> search(int page, String keyword) {
+        if (page < 1) { // 잘못된 접근으로 throw할때 쿼리문 실행을 안하기 위해 나눠서 체크
+            throw new CustomException(BAD_REQUEST_REPLY_PAGE);
+        }
+
+        Pageable pageable = PageRequest.of(page - 1, PAGESIZE);
+
+        Page<Notice> notices = noticeRepository.findByTitle(keyword, pageable);
+
+        int totalPages = notices.getTotalPages();
+
+        if (page - 1 > totalPages) {
+            throw new CustomException(BAD_REQUEST_BOARD_PAGE);
+        }
+
+        return notices.map(this::entityToDto);
+    }
+    @Override
     public NoticeDto getNotice(long noticeId) {
         Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new CustomException(NOT_FOUND_NOTICE));
         return entityToDto(notice);
     }
 
+    @Override
     public void writeNotice(NoticeRequestDto requestDto, List<MultipartFile> files) {
         Notice notice = Notice.builder()
                 .title(requestDto.title())
