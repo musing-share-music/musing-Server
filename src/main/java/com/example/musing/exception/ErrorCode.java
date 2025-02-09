@@ -30,6 +30,7 @@ public enum ErrorCode {
     // 게시판 관련 예외처리
     NOT_FOUND_BOARD(NOT_FOUND, "해당 게시글을 불러올 수 없습니다."),
     NOT_FOUND_KEYWORD(NOT_FOUND, "해당 키워드로 검색할 수 없습니다."),
+    BAD_REQUEST_BOARD_PAGE(BAD_REQUEST, "해당 페이지는 존재하지 않습니다."),
 
 
     // 음악 관련 예외처리

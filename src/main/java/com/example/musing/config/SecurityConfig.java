@@ -70,7 +70,7 @@ public class SecurityConfig {
                         .requestMatchers("/musing/notice/**").permitAll()
                         .requestMatchers("/musing/rec-music-list/**").permitAll()
                         //관리자 전용 도메인 허용
-                        .requestMatchers("/musing/register/**").hasRole("Admin")
+                        .requestMatchers("/musing/admin/**").hasRole("Admin")
                         //나머지 도메인 허용 필요(회원,관리자)
                         .anyRequest().authenticated())
 
