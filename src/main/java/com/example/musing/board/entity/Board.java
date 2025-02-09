@@ -92,6 +92,10 @@ public class Board extends BaseEntity {
     public static PostDto toDto(Board board) {
         return PostDto.fromEntity(board);
     }
+
+    public void delete() {
+        this.activeCheck = false;
+    }
 }
 
 

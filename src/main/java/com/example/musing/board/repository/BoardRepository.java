@@ -15,14 +15,6 @@ import java.util.Optional;
 
 
 public interface BoardRepository extends JpaRepository<Board, Long>, JpaSpecificationExecutor<Board> {
-
-    //Specification 복잡한 쿼리 사용에 제약 많아서 QueryDsl 쓰는거로 알아봐야함 <- 우선 JPQL로 구현
-    String getFetchBoardQuery =
-            "SELECT b FROM Board b " + "JOIN FETCH b.music m " +
-                    "JOIN FETCH m.artist a ";
-    String getActiveCheckQuery = "WHERE b.activeCheck = false ";
-    String getDescQuery = "ORDER BY b.createdAt DESC";
-
     @EntityGraph(attributePaths = {"music", "user"})
     @Query("SELECT b FROM Board b WHERE b.activeCheck = true AND b.id = :boardId")
     Optional<Board> findById(@Param("boardId") long boardId);
@@ -50,11 +42,6 @@ public interface BoardRepository extends JpaRepository<Board, Long>, JpaSpecific
             "ORDER BY b.createdAt DESC")
     Page<Board> findActiveBoardsByArtist(@Param("artistName") String artistName, Pageable pageable);
 
-/*    @Query("SELECT b FROM Board b " +
-            "JOIN b.music m " +
-            "JOIN Genre_Music gm ON m.id = gm.music.id " +
-            "JOIN Genre g ON gm.genre.id = g.id " +
-            "WHERE g.genreName = :genre AND b.activeCheck = false")*/
     @Query("SELECT b FROM Board b " +
             "JOIN FETCH b.music m " +
             "JOIN Genre_Music gm ON m.id = gm.music.id " +
@@ -62,21 +49,10 @@ public interface BoardRepository extends JpaRepository<Board, Long>, JpaSpecific
             "ORDER BY b.createdAt DESC")
     Page<Board> findActiveBoardsByGenre(@Param("genreName") String genreName, Pageable pageable);
 
-/*    @Query("SELECT b FROM Board b " +
-            "JOIN b.music m " +
-            "JOIN Mood_Music mm ON m.id = mm.music.id " +
-            "JOIN Mood mo ON mm.mood.id = mo.id " +
-            "WHERE mo.moodName = :mood AND b.activeCheck = false")*/
     @Query("SELECT b FROM Board b " +
             "JOIN FETCH b.music m " +
             "JOIN Mood_Music mm ON m.id = mm.music.id " +
             "WHERE mm.mood.moodName = :moodName AND b.activeCheck = true " +
             "ORDER BY b.createdAt DESC")
-        Page<Board> findActiveBoardsByMood(@Param("moodName") String moodName, Pageable pageable);
-
-    @Query("SELECT DISTINCT b FROM Board b " +
-            "JOIN FETCH b.music m " +
-            "JOIN FETCH m.artists a " +
-            "WHERE b.id = :boardId")
-    Board findBoardWithMusicAndArtist(@Param("boardId") Long boardId);
+    Page<Board> findActiveBoardsByMood(@Param("moodName") String moodName, Pageable pageable);
 }

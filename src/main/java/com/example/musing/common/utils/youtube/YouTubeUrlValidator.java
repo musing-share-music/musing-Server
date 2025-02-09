@@ -1,4 +1,4 @@
-package com.example.musing.common;
+package com.example.musing.common.utils.youtube;
 
 import java.util.regex.*;
 

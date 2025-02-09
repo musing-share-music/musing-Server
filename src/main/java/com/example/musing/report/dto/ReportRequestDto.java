@@ -5,12 +5,10 @@ import lombok.Builder;
 public class ReportRequestDto{
     @Builder
     public record ReportBoardRequestDto(
-            String content,
-            Long boardId
+            String content
     ) {}
     @Builder
     public record ReportReplyRequestDto(
-            String content,
-            Long replyId
+            String content
     ) {}
 }
