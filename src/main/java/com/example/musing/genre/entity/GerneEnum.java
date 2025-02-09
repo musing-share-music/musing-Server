@@ -1,9 +1,13 @@
 package com.example.musing.genre.entity;
 
+import com.example.musing.mood.entity.MoodEnum;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Arrays;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Getter
@@ -33,10 +37,10 @@ public enum GerneEnum {
 
     private final String key;
 
-    public static GerneEnum find(String key) {
-        return Arrays.stream(values())
-                .filter(genre -> genre.key.equals(key))
-                .findAny()
-                .orElseThrow(() -> new IllegalArgumentException("No enum constant with key " + key));
+    private static final Map<String, GerneEnum> KEY_TO_ENUM_MAP = Arrays.stream(values())
+            .collect(Collectors.toMap(GerneEnum::getKey, Function.identity()));
+
+    public static GerneEnum fromKey(String key) {
+        return KEY_TO_ENUM_MAP.get(key);
     }
 }
