@@ -67,10 +67,16 @@ public interface BoardRepository extends JpaRepository<Board, Long>, JpaSpecific
             "JOIN Mood_Music mm ON m.id = mm.music.id " +
             "JOIN Mood mo ON mm.mood.id = mo.id " +
             "WHERE mo.moodName = :mood AND b.activeCheck = false")*/
-@Query("SELECT b FROM Board b " +
-        "JOIN FETCH b.music m " +
-        "JOIN Mood_Music mm ON m.id = mm.music.id " +
-        "WHERE mm.mood.moodName = :moodName AND b.activeCheck = true " +
-        "ORDER BY b.createdAt DESC")
-    Page<Board> findActiveBoardsByMood(@Param("moodName") String moodName, Pageable pageable);
+    @Query("SELECT b FROM Board b " +
+            "JOIN FETCH b.music m " +
+            "JOIN Mood_Music mm ON m.id = mm.music.id " +
+            "WHERE mm.mood.moodName = :moodName AND b.activeCheck = true " +
+            "ORDER BY b.createdAt DESC")
+        Page<Board> findActiveBoardsByMood(@Param("moodName") String moodName, Pageable pageable);
+
+    @Query("SELECT DISTINCT b FROM Board b " +
+            "JOIN FETCH b.music m " +
+            "JOIN FETCH m.artists a " +
+            "WHERE b.id = :boardId")
+    Board findBoardWithMusicAndArtist(@Param("boardId") Long boardId);
 }

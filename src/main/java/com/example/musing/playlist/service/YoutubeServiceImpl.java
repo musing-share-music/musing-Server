@@ -28,11 +28,10 @@ public class YoutubeServiceImpl implements YoutubeService {
     private String apiKey = "AIzaSyAc04gbKGheprJjcXPfnXu4l0tdBuzxowE";
 
 
-    private static final String YOUTUBE_API_URL = "https://www.googleapis.com/youtube/v3/videos?part=status&id=%s&key=%s";
+    private static final String YOUTUBE_PATTERN_STRING = "^(https?://)?(www\\.)?youtube\\.com/watch\\?v=[A-Za-z0-9_-]{11}$";
+    private static final Pattern YOUTUBE_PATTERN = Pattern.compile(YOUTUBE_PATTERN_STRING);
+    private static final String YOUTUBE_API_URL = "https://www.googleapis.com/youtube/v3/videos?id=%s&key=%s";
 
-    private static final String TEST_API_URL = "https://www.googleapis.com/youtube/v3/search?part=snippet&q=테스트&key=";
-    private static final String YOUTUBE_REGEX = "^(https?:\\/\\/)?(www\\.)?(youtube\\.com\\/watch\\?v=|youtu\\.be\\/)([A-Za-z0-9_-]{11})(.*)?$";
-    private static final Pattern YOUTUBE_PATTERN = Pattern.compile(YOUTUBE_REGEX);
 
 
     @Override
@@ -66,20 +65,22 @@ public class YoutubeServiceImpl implements YoutubeService {
     }
 
 
-    @Override
     public String checkUrl(String url) {
         if (url == null || url.trim().isEmpty()) {
             return "❌ URL이 비어 있습니다!";
         }
 
+        // YouTube 영상 URL 패턴 검증
         Matcher matcher = YOUTUBE_PATTERN.matcher(url);
-        if (!matcher.find()) { // matches() 대신 find() 사용
-            return "❌ 유효한 YouTube URL이 아닙니다!";
+        if (!matcher.matches()) {
+            return "❌ 유효한 YouTube 영상 URL이 아닙니다!";
         }
 
         String videoId = extractVideoId(url);
         String apiUrl = String.format(YOUTUBE_API_URL, videoId, apiKey);
         System.out.println("🔗 API 요청 URL: " + apiUrl);
+
+        // RestTemplate을 이용한 API 요청
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<String> response = restTemplate.getForEntity(apiUrl, String.class);
 
@@ -97,10 +98,16 @@ public class YoutubeServiceImpl implements YoutubeService {
         }
 
         return "❌ 영상 정보를 가져올 수 없습니다!";
-
-
     }
 
+    // 영상 ID 추출 (URL에서 ?v= 뒤의 값을 추출)
+    private String extractVideoId(String url) {
+        String[] urlParts = url.split("v=");
+        if (urlParts.length > 1) {
+            return urlParts[1].split("&")[0];  // ?v=VIDEO_ID
+        }
+        return null;
+    }
 
     @Override
     public List<PlayList> getUserPlaylists(String id) {
@@ -139,24 +146,7 @@ public class YoutubeServiceImpl implements YoutubeService {
         }
 
     }
-    private String extractVideoId(String url) {
-        String pattern = "^(?:https?:\\/\\/)?(?:www\\.)?(?:youtube\\.com\\/watch\\?v=|youtu\\.be\\/)([A-Za-z0-9_-]{11}).*$";
-        return url.matches(pattern) ? url.replaceAll(pattern, "$1") : null;
-    }
 
-    public boolean isApiKeyValid() {
-        String url = TEST_API_URL + apiKey;
-        RestTemplate restTemplate = new RestTemplate();
 
-        try {
-            ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
-            if (response.getBody() != null && !response.getBody().containsKey("error")) {
-                return true; // 🔹 API 키가 유효함
-            }
-        } catch (Exception e) {
-            return false; // 🔹 API 키가 유효하지 않음
-        }
-        return false;
-    }
 
 }

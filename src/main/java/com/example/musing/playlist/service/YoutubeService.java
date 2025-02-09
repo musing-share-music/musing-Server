@@ -13,5 +13,5 @@ public interface YoutubeService {
     String checkUrl(String url);
 
     List<PlayList> getUserPlaylists(String accessToken);
-    boolean  isApiKeyValid();
+
 }

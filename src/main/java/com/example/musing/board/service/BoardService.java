@@ -35,4 +35,6 @@ public interface BoardService {
     void deleteBoard(Long boardId);
     //글 수정
      void updateBoard(UpdateBoardRequestDto request, List<MultipartFile> images);
+
+     DetailResponse selectDetail(long boardId);
 }

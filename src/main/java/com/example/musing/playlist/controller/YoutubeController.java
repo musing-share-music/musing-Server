@@ -58,14 +58,14 @@ public class YoutubeController {
         return ResponseDto.of(videoResponse,"유효한 URL입니다.");
     }
 
-    @GetMapping("/validate-key")
-    public Map<String, Object> validateApiKey() {
-        boolean isValid = youTubeService.isApiKeyValid();
-        Map<String, Object> response = new HashMap<>();
-        response.put("valid", isValid);
-        response.put("message", isValid ? "✅ API 키가 유효합니다." : "❌ API 키가 유효하지 않습니다.");
-        return response;
-    }
+//    @GetMapping("/validate-key")
+//    public Map<String, Object> validateApiKey() {
+//        boolean isValid = youTubeService.isApiKeyValid();
+//        Map<String, Object> response = new HashMap<>();
+//        response.put("valid", isValid);
+//        response.put("message", isValid ? "✅ API 키가 유효합니다." : "❌ API 키가 유효하지 않습니다.");
+//        return response;
+//    }
 
 
 }
