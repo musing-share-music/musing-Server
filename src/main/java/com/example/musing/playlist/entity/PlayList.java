@@ -2,6 +2,7 @@ package com.example.musing.playlist.entity;
 
 import com.example.musing.user.entity.User;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -19,8 +20,21 @@ public class PlayList {
     @Column(nullable = false)
     private String listname;
 
+    @Column(nullable = false)
+    private Long itemCount;
+
+    @Column(nullable = false)
+    private String youtubePlaylistId;
     //유저에 관한 외래키 보유 주인테이블
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "userid", nullable = false)
     private User user; // 작성자
+
+    @Builder
+    public PlayList(String listname, Long itemCount, String youtubePlaylistId, User user) {
+        this.listname = listname;
+        this.itemCount = itemCount;
+        this.youtubePlaylistId = youtubePlaylistId;
+        this.user = user;
+    }
 }

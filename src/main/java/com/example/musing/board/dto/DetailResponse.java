@@ -1,19 +1,16 @@
 package com.example.musing.board.dto;
 
-import lombok.AllArgsConstructor;
+
+import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.springframework.web.multipart.MultipartFile;
+
 
 import java.util.List;
 
+@Builder
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class UpdateBoardRequestDto {
+public class DetailResponse {
 
-    //업데이트 리퀘스트 dto
-    private Long boardId;
     private String title;
     private String musicTitle;
     private String artist;
@@ -22,7 +19,9 @@ public class UpdateBoardRequestDto {
     private Long genre;
     private String content;
     private String playtime;
+    private String AlbumName;
     private String songLink;
-    private String albumName;
     private String thumbNailLink;
+
+
 }

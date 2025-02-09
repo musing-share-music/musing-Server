@@ -16,4 +16,6 @@ public class Genre {
 
     @Enumerated(EnumType.STRING)
     private GerneEnum genreName;
+
+
 }

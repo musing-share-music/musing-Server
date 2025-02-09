@@ -76,23 +76,23 @@ public class SecurityConfig {
 
                 //oauth2 인증 관련 코드
                 .oauth2Login(oauth ->
-                                oauth.userInfoEndpoint(c -> c.userService(userService))
-                                        .successHandler(oauth2SuccessHandler)
-                                        .failureHandler(new OAuth2FailureHandler())
-                        )
+                        oauth.userInfoEndpoint(c -> c.userService(userService))
+                                .successHandler(oauth2SuccessHandler)
+                                .failureHandler(new OAuth2FailureHandler())
+                )
                 .logout(auth -> auth
                         .logoutUrl("/musing/logout")
                         .deleteCookies("accessToken")
                         .logoutSuccessUrl(clientHost)
                 )
-                   //JWT 관련 설정, 하단 필터 실행
+                //JWT 관련 설정, 하단 필터 실행
                 .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(new TokenExceptionFilter(), tokenAuthenticationFilter.getClass())
 
                 //인증 관련 커스텀 예외처리 추가하기
-                 .exceptionHandling((exceptions) -> exceptions
-                    .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
-                    .accessDeniedHandler(new CustomAccessDeniedHandler()));
+                .exceptionHandling((exceptions) -> exceptions
+                        .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
+                        .accessDeniedHandler(new CustomAccessDeniedHandler()));
         return http.build();
     }
     @Bean

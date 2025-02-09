@@ -8,4 +8,5 @@ import java.util.Optional;
 
 public interface Genre_MusicRepository extends JpaRepository<Genre_Music, Long> {
     Optional<Genre_Music> findByMusic(Music music);
+    void deleteByMusic(Music music);
 }

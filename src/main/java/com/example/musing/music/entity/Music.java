@@ -28,7 +28,7 @@ public class Music {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String playtime;
 
     @Column(nullable = true)
@@ -63,12 +63,13 @@ public class Music {
     //아티스트와 관계 매핑
     @Builder
     public Music(long id, String name, String playtime,
-                 String albumName, String songLink) {
+                 String albumName, String songLink, String thumbNailLink) {
         this.id = id;
         this.name = name;
         this.playtime = playtime;
         this.albumName = albumName;
         this.songLink = songLink;
+        this.thumbNailLink = thumbNailLink;
     }
 
     // 해시태그 추가 메서드
@@ -90,4 +91,5 @@ public class Music {
         // 새로운 해시태그 추가
         newHashTags.forEach(this::addHashTag);
     }
+
 }
