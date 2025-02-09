@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Builder
 public record NoticeDto(
@@ -17,14 +18,20 @@ public record NoticeDto(
         @Schema(description = "공지사항 생성일자", example = "2024-12-28")
         LocalDateTime createdAt,
         @Schema(description = "공지사항 작성자", example = "관리자")
-        String username) {
-    public static NoticeDto toDto(Notice notice) {
+        String username,
+        @Schema(description = "이미지 경로")
+        List<String> imageUrl
+
+
+) {
+    public static NoticeDto from(Notice notice) {
         return NoticeDto.builder()
                 .id(notice.getId())
                 .title(notice.getTitle())
                 .content(notice.getContent())
                 .createdAt(notice.getCreatedAt())
                 .username(notice.getUser().getUsername())
+                .imageUrl(notice.getImages())
                 .build();
     }
 }
