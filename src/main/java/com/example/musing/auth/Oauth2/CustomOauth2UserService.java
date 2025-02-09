@@ -4,7 +4,7 @@ import com.example.musing.auth.JWT.DTO.Oauth2Google;
 import com.example.musing.auth.JWT.DTO.PrincipalDetails;
 import com.example.musing.user.entity.User;
 import com.example.musing.user.repository.UserRepository;
-import com.example.musing.utils.YoutubeService;
+import com.example.musing.common.utils.youtube.YoutubeService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -1,4 +1,4 @@
-package com.example.musing.utils;
+package com.example.musing.common.utils.youtube;
 
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;

@@ -1,13 +1,10 @@
 package com.example.musing.playlist.controller;
 
-import com.example.musing.common.YouTubeUrlValidator;
+import com.example.musing.common.utils.youtube.YouTubeUrlValidator;
 import com.example.musing.common.dto.ResponseDto;
-import com.example.musing.music.repository.MusicRepository;
 import com.example.musing.playlist.dto.YouTubeVideoResponse;
 import com.example.musing.playlist.service.YoutubeService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
