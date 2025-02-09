@@ -4,6 +4,7 @@ import com.example.musing.common.dto.ResponseDto;
 import com.example.musing.notice.dto.NoticeDto;
 import com.example.musing.notice.dto.NoticeRequestDto;
 import com.example.musing.notice.service.NoticeService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
@@ -18,6 +19,9 @@ import java.util.List;
 public class NoticeController {
     private final NoticeService noticeService;
 
+    @Operation(summary = "공지사항 게시판 리스트에 제목 검색",
+            description = "검색 기능에는 제목만을 키워드로 두고있어 별도의 파라미터를 두지 않았습니다.<br>+" +
+                    "keyword는 검색창에 입력한 단어입니다.")
     @GetMapping("/notice/list/search")
     public ResponseDto<Page<NoticeDto>> getBoardsByKeyword(
             @RequestParam(name = "page", defaultValue = "1") int page,
@@ -26,18 +30,23 @@ public class NoticeController {
         return ResponseDto.of(noticeDtos);
     }
 
+    @Operation(summary = "공지사항 게시판 리스트 조회")
     @GetMapping("/notice/list")
     public ResponseDto<Page<NoticeDto>> noticeList(@RequestParam(name = "page", defaultValue = "1") int page) {
         Page<NoticeDto> noticeDtos = noticeService.getNoticeList(page);
         return ResponseDto.of(noticeDtos);
     }
-
+    @Operation(summary = "공지사항 게시판 상세 페이지 조회")
     @GetMapping("/notice")
     public ResponseDto<NoticeDto> notice(@RequestParam int noticeId) {
         NoticeDto noticeDtos = noticeService.getNotice(noticeId);
         return ResponseDto.of(noticeDtos);
     }
 
+    @Operation(summary = "공지사항 게시글 작성",
+            description = "공지사항 게시글 작성으로 Dto를 title, content를 포함하여 JSON 타입('application/json')으로 받습니다<br>" +
+                    "이미지를 업로드할 수 있도록 이 API는 'Content-Type': 'multipart/form-data'입니다. " +
+                    "keyword는 검색창에 입력한 단어입니다.")
     @PostMapping(value = "/admin/notice", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseDto<String> createNotice(@RequestPart NoticeRequestDto requestDto,
                                             @RequestPart(required = false) List<MultipartFile> files) {
