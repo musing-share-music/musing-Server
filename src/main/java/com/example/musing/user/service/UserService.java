@@ -1,6 +1,6 @@
 package com.example.musing.user.service;
 
-import com.example.musing.user.Dto.UserResponseDto;
+import com.example.musing.user.dto.UserResponseDto;
 import com.example.musing.user.entity.User;
 
 import java.util.List;

@@ -1,6 +1,5 @@
 package com.example.musing.notice.controller;
 
-import com.example.musing.board.dto.BoardListRequestDto;
 import com.example.musing.common.dto.ResponseDto;
 import com.example.musing.notice.dto.NoticeDto;
 import com.example.musing.notice.dto.NoticeRequestDto;

@@ -3,7 +3,6 @@ package com.example.musing.board.service;
 import com.example.musing.board.dto.*;
 import com.example.musing.main.dto.RecommendBoardRight;
 import org.springframework.data.domain.Page;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -24,10 +23,10 @@ public interface BoardService {
 
 
 
-    BoardListRequestDto.BoardListDto findBoardList();
-    Page<BoardListRequestDto.BoardDto> findBoardDto(int page);
+    BoardListResponseDto.BoardListDto findBoardList();
+    Page<BoardListResponseDto.BoardDto> findBoardDto(int page);
 
-    Page<BoardListRequestDto.BoardDto> search(int page, String searchType, String keyword);
+    Page<BoardListResponseDto.BoardDto> search(int page, String searchType, String keyword);
 
     BoardAndReplyPageDto findBoardDetailPage(long boardId);
 
