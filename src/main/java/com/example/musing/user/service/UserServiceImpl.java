@@ -70,37 +70,43 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void saveGenres(String userId, List<Long> genres) {
         User user = findById(userId);
-        genres.stream()
+        List<User_LikeGenre> likeGenreList = genres.stream()
                 .map(id -> genreRepository.findById(id)
                         .orElseThrow(() -> new CustomException(NOT_FOUND_GENRE)))
                 .map(genre -> User_LikeGenre.of(genre, user))
-                .forEach(userLikeGenreRepository::save);
+                .toList();
+
+        userLikeGenreRepository.saveAll(likeGenreList);
     }
 
     @Override
     @Transactional
     public void saveMoods(String userId, List<Long> moods) {
         User user = findById(userId);
-        moods.stream()
+        List<User_LikeMood> likeMoodList = moods.stream()
                 .map(id -> moodRepository.findById(id)
                         .orElseThrow(() -> new CustomException(NOT_FOUND_MOOD)))
                 .map(mood -> User_LikeMood.of(mood, user))
-                .forEach(userLikeMoodRepository::save);
+                .toList();
+
+        userLikeMoodRepository.saveAll(likeMoodList);
     }
 
     @Override
     @Transactional
     public void saveArtists(String userId, List<String> artists) {
         User user = findById(userId);
-        artists.stream()
+        List<User_LikeArtist> likeArtistList = artists.stream()
                 .map(name -> artistRepository.findByName(name)
                         .map(artist -> User_LikeArtist.of(artist, user))
                         .orElseGet(() -> {
                             Artist newArtist = artistRepository.save(Artist.of(name));
                             return User_LikeArtist.of(newArtist, user);
                         }))
-                .forEach(userLikeArtistRepository::save);
+                .toList();
+
         user.updateactivated(true);
+        userLikeArtistRepository.saveAll(likeArtistList);
     }
 
     @Override
