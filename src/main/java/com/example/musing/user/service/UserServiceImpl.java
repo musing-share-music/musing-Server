@@ -27,6 +27,9 @@ import com.example.musing.user.repository.User_LikeArtistRepository;
 import com.example.musing.user.repository.User_LikeGenreRepository;
 import com.example.musing.user.repository.User_LikeMoodRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,6 +52,8 @@ public class UserServiceImpl implements UserService {
     private final User_LikeArtistRepository userLikeArtistRepository;
     private final BoardRepository boardRepository;
     private final ReplyRepository replyRepository;
+
+    private static final Pageable PAGEABLE = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "createdAt"));
 
     @Override
     public UserResponseDto.UserInfoPageDto getUserInfoPage(User user) {
@@ -139,7 +144,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private List<BoardListResponseDto.BoardRecapDto> getMyBoards(String userId) {
-        List<Board> myBoard = boardRepository.findActiveBoardsByUserId(userId);
+        List<Board> myBoard = boardRepository.findActiveBoardsByUserId(userId, PAGEABLE);
 
         List<List<ArtistDto>> artistListDto = myBoard.stream()
                 .map(board -> board.getMusic().getArtists().stream()
@@ -153,7 +158,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private List<ReplyDto> getMyReplies(String userId) {
-        return replyRepository.findByUserId(userId)
+        return replyRepository.findByUserId(userId, PAGEABLE)
                 .stream().map(ReplyDto::from)
                 .toList();
     }

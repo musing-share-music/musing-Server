@@ -65,6 +65,6 @@ public interface BoardRepository extends JpaRepository<Board, Long>, JpaSpecific
     Board findBoardWithMusicAndArtist(@Param("boardId") Long boardId);
 
     @EntityGraph(attributePaths = {"music", "user"})
-    @Query("SELECT b FROM Board b WHERE b.activeCheck = true AND b.user.id LIKE %:id% ORDER BY b.createdAt DESC")
-    List<Board> findActiveBoardsByUserId(@Param("id") String id);
+    @Query("SELECT b FROM Board b WHERE b.activeCheck = true AND b.user.id LIKE %:id%")
+    List<Board> findActiveBoardsByUserId(@Param("id") String id, Pageable pageable);
 }
