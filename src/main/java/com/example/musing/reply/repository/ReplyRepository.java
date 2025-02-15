@@ -14,7 +14,7 @@ public interface ReplyRepository extends JpaRepository<Reply, Long> {
     Optional<Reply> findByIdAndUser_Email(long replyId, String email);
     Optional<Reply>  findByBoard_IdAndUser_Email(long boardId, String email);
 
-    List<Reply> findByUserId(String userId);
+    List<Reply> findByUserId(String userId, Pageable pageable);
 
     boolean existsByBoard_IdAndUser_Email(long boardId, String email);
     boolean existsByIdAndUser_Email(long boardId, String email);
