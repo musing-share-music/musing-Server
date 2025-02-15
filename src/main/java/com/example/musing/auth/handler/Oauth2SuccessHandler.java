@@ -31,6 +31,7 @@ public class Oauth2SuccessHandler implements AuthenticationSuccessHandler {
 
     @Value("${client.host}")
     private String clientHost;
+    private static final String ADMIN_URL = "/admin/notice";
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -68,7 +69,7 @@ public class Oauth2SuccessHandler implements AuthenticationSuccessHandler {
 
         switch (role) {
             case "ROLE_ADMIN":
-                System.out.println("register");
+                response.sendRedirect(clientHost+ADMIN_URL);
                 break;
             case "ROLE_USER":
                 response.sendRedirect(clientHost);

@@ -1,6 +1,6 @@
 package com.example.musing.user.service;
 
-import com.example.musing.user.Dto.UserResponseDto;
+import com.example.musing.user.dto.UserResponseDto;
 import com.example.musing.user.entity.User;
 
 import java.util.List;
@@ -13,4 +13,6 @@ public interface UserService {
     void saveArtists(String userid, List<String> artists);
 
     UserResponseDto.UserInfoDto getUserInfo(String userId);
+
+    UserResponseDto.UserInfoPageDto getUserInfoPage(User user);
 }

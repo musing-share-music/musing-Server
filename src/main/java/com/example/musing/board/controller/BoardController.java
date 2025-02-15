@@ -1,6 +1,6 @@
 package com.example.musing.board.controller;
 
-import com.example.musing.board.dto.BoardListRequestDto;
+import com.example.musing.board.dto.BoardListResponseDto;
 import com.example.musing.board.dto.CreateBoardRequest;
 import com.example.musing.board.dto.DetailResponse;
 import com.example.musing.board.dto.UpdateBoardRequestDto;
@@ -38,24 +38,24 @@ public class BoardController {
 
 
     @GetMapping("/list")
-    public ResponseDto<BoardListRequestDto.BoardListDto> BoardListPage() {
-        BoardListRequestDto.BoardListDto boardList = boardService.findBoardList();
+    public ResponseDto<BoardListResponseDto.BoardListDto> BoardListPage() {
+        BoardListResponseDto.BoardListDto boardList = boardService.findBoardList();
         return ResponseDto.of(boardList);
     }
 
     @GetMapping("/list/page")
-    public ResponseDto<Page<BoardListRequestDto.BoardDto>> getBoards(
+    public ResponseDto<Page<BoardListResponseDto.BoardDto>> getBoards(
             @RequestParam(name = "page", defaultValue = "1") int page) {
-        Page<BoardListRequestDto.BoardDto> responseList = boardService.findBoardDto(page);
+        Page<BoardListResponseDto.BoardDto> responseList = boardService.findBoardDto(page);
         return ResponseDto.of(responseList);
     }
 
     @GetMapping("/list/page/search")
-    public ResponseDto<Page<BoardListRequestDto.BoardDto>> getBoardsByKeyword(
+    public ResponseDto<Page<BoardListResponseDto.BoardDto>> getBoardsByKeyword(
             @RequestParam(name = "page", defaultValue = "1") int page,
             @RequestParam(name = "searchType") String searchType,
             @RequestParam(name = "keyword") String keyword) {
-        Page<BoardListRequestDto.BoardDto> responseList = boardService.search(page, searchType, keyword);
+        Page<BoardListResponseDto.BoardDto> responseList = boardService.search(page, searchType, keyword);
         return ResponseDto.of(responseList);
     }
 

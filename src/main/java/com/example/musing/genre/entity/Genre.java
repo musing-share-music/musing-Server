@@ -1,6 +1,8 @@
 package com.example.musing.genre.entity;
 
+import com.example.musing.genre.dto.GenreDto;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -17,5 +19,8 @@ public class Genre {
     @Enumerated(EnumType.STRING)
     private GerneEnum genreName;
 
-
+    @Builder
+    public static GenreDto from(Genre genre) {
+        return GenreDto.toDto(genre);
+    }
 }

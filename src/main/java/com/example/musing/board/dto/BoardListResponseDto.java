@@ -1,9 +1,8 @@
 package com.example.musing.board.dto;
 
 import com.example.musing.artist.dto.ArtistDto;
-import com.example.musing.artist.entity.Artist;
 import com.example.musing.board.entity.Board;
-import com.example.musing.music.entity.Music;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -14,7 +13,7 @@ import org.springframework.data.domain.Page;
 
 //nested record class 사용
 
-public class BoardListRequestDto {
+public class BoardListResponseDto {
 
     @Builder
     public record RecommendBoardFirstDto(
@@ -38,15 +37,15 @@ public class BoardListRequestDto {
     }
 
     @Builder
-    public record RecommendBoardDto(
+    public record BoardRecapDto(
         String title,
         String musicName,
         List<ArtistDto> artists,
         String thumbNailLink,
         LocalDateTime createAt
     ) {
-        public static RecommendBoardDto toDto(Board board, List<ArtistDto> artists) {
-            return RecommendBoardDto.builder()
+        public static BoardRecapDto toDto(Board board, List<ArtistDto> artists) {
+            return BoardRecapDto.builder()
                 .title(board.getTitle())
                 .musicName(board.getMusic().getName())
                 .artists(artists)
@@ -84,9 +83,9 @@ public class BoardListRequestDto {
     @Builder
     public record BoardPopUpDto(
         RecommendBoardFirstDto recommendBoardFirstDto,
-        List<RecommendBoardDto> recommendBoardListDto
+        List<BoardRecapDto> recommendBoardListDto
     ) {
-        public static BoardPopUpDto of(RecommendBoardFirstDto boardFirstDto, List<RecommendBoardDto> recommendBoardListDto) {
+        public static BoardPopUpDto of(RecommendBoardFirstDto boardFirstDto, List<BoardRecapDto> recommendBoardListDto) {
             return BoardPopUpDto.builder()
                     .recommendBoardFirstDto(boardFirstDto)
                     .recommendBoardListDto(recommendBoardListDto)

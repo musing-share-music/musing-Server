@@ -4,7 +4,7 @@ import com.example.musing.board.dto.GenreBoardDto;
 import com.example.musing.board.dto.RecommendBoardLeft;
 import com.example.musing.genre.dto.GenreDto;
 import com.example.musing.notice.dto.NoticeDto;
-import com.example.musing.user.Dto.UserResponseDto;
+import com.example.musing.user.dto.UserResponseDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
