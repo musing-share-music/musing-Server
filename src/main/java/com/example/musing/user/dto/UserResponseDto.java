@@ -45,16 +45,16 @@ public class UserResponseDto {
             List<BoardListResponseDto.BoardRecapDto> boardDtos,
             List<ReplyDto> replyDtos
     ) {
-        public static UserInfoPageDto of(User user, List<Genre> genres, List<Mood> moods, List<Artist> artists,
-                                         List<BoardListResponseDto.BoardRecapDto> boards, List<Reply> replies) {
+        public static UserInfoPageDto of(User user, List<GenreDto> genres, List<MoodDto> moods, List<ArtistDto> artists,
+                                         List<BoardListResponseDto.BoardRecapDto> boards, List<ReplyDto> replies) {
             return UserInfoPageDto.builder()
                     .email(user.getEmail())
                     .name(user.getUsername())
-                    .likeGenre(genres.stream().map(GenreDto::toDto).toList())
-                    .likeMood(moods.stream().map(MoodDto::toDto).toList())
-                    .likeArtist(artists.stream().map(ArtistDto::toDto).toList())
+                    .likeGenre(genres)
+                    .likeMood(moods)
+                    .likeArtist(artists)
                     .boardDtos(boards)
-                    .replyDtos(replies.stream().map(ReplyDto::from).toList())
+                    .replyDtos(replies)
                     .build();
         }
     }

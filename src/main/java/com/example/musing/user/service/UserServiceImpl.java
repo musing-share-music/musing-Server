@@ -16,6 +16,7 @@ import com.example.musing.mood.dto.MoodDto;
 import com.example.musing.mood.repository.MoodRepository;
 import com.example.musing.reply.dto.ReplyDto;
 import com.example.musing.reply.entity.Reply;
+import com.example.musing.reply.repository.ReplyRepository;
 import com.example.musing.user.dto.UserResponseDto;
 import com.example.musing.user.entity.User;
 import com.example.musing.user.entity.User_LikeArtist;
@@ -47,60 +48,22 @@ public class UserServiceImpl implements UserService {
     private final User_LikeMoodRepository userLikeMoodRepository;
     private final User_LikeArtistRepository userLikeArtistRepository;
     private final BoardRepository boardRepository;
+    private final ReplyRepository replyRepository;
 
-    public ResponseDto<UserResponseDto.UserInfoPageDto> getUserInfoPage(String userId) {
-        User user = findById(userId);
+    @Override
+    public UserResponseDto.UserInfoPageDto getUserInfoPage(User user) {
+        String userId = user.getId();
+
         List<GenreDto> likeGenres = getLikeGenres(userId);
         List<MoodDto> likeMoods = getLikeMoods(userId);
         List<ArtistDto> likeArtists = getLikeArtists(userId);
 
         List<BoardListResponseDto.BoardRecapDto> myBoard = getMyBoards(userId);
-        List<ReplyDto> myReplies =
 
-        UserResponseDto.UserInfoPageDto userInfoPageDto = UserResponseDto.UserInfoPageDto.of(
+        List<ReplyDto> myReplies = getMyReplies(userId);
+
+        return UserResponseDto.UserInfoPageDto.of(
                 user, likeGenres, likeMoods, likeArtists, myBoard, myReplies);
-    }
-
-    private List<BoardListResponseDto.BoardRecapDto> getMyBoards(String userId) {
-        List<Board> myBoard = boardRepository.findActiveBoardsByUserId(userId);
-
-        List<List<ArtistDto>> artistListDto = myBoard.stream()
-                .map(board -> board.getMusic().getArtists().stream()
-                        .map(artistMusic -> ArtistDto.toDto(artistMusic.getArtist()))
-                        .toList())
-                .toList();
-
-        return IntStream.range(0, myBoard.size())
-                        .mapToObj(i -> BoardListResponseDto.BoardRecapDto.toDto(myBoard.get(i), artistListDto.get(i)))
-                        .toList();
-    }
-
-    private List<ReplyDto> getMyReplies(String userId) {
-
-    }
-
-    private List<GenreDto> getLikeGenres(String userId) {
-        return findById(userId).getGenres()
-                .stream()
-                .map(User_LikeGenre::getGenre)
-                .map(GenreDto::toDto)
-                .toList();
-    }
-
-    private List<MoodDto> getLikeMoods(String userId) {
-        return findById(userId).getMoods()
-                .stream()
-                .map(User_LikeMood::getMood)
-                .map(MoodDto::toDto)
-                .toList();
-    }
-
-    private List<ArtistDto> getLikeArtists(String userId) {
-        return findById(userId).getArtists()
-                .stream()
-                .map(User_LikeArtist::getArtist)
-                .map(ArtistDto::toDto)
-                .toList();
     }
 
     @Override
@@ -167,6 +130,50 @@ public class UserServiceImpl implements UserService {
     public UserResponseDto.UserInfoDto getUserInfo(String userId) {
         User user = findById(userId);
         return UserResponseDto.UserInfoDto.of(user, likeMusicCount(user), 0); //playList아직 없어서 0 임시값
+    }
+
+    private List<BoardListResponseDto.BoardRecapDto> getMyBoards(String userId) {
+        List<Board> myBoard = boardRepository.findActiveBoardsByUserId(userId);
+
+        List<List<ArtistDto>> artistListDto = myBoard.stream()
+                .map(board -> board.getMusic().getArtists().stream()
+                        .map(artistMusic -> ArtistDto.toDto(artistMusic.getArtist()))
+                        .toList())
+                .toList();
+
+        return IntStream.range(0, myBoard.size())
+                .mapToObj(i -> BoardListResponseDto.BoardRecapDto.toDto(myBoard.get(i), artistListDto.get(i)))
+                .toList();
+    }
+
+    private List<ReplyDto> getMyReplies(String userId) {
+        return replyRepository.findByUserId(userId)
+                .stream().map(ReplyDto::from)
+                .toList();
+    }
+
+    private List<GenreDto> getLikeGenres(String userId) {
+        return findById(userId).getGenres()
+                .stream()
+                .map(User_LikeGenre::getGenre)
+                .map(GenreDto::toDto)
+                .toList();
+    }
+
+    private List<MoodDto> getLikeMoods(String userId) {
+        return findById(userId).getMoods()
+                .stream()
+                .map(User_LikeMood::getMood)
+                .map(MoodDto::toDto)
+                .toList();
+    }
+
+    private List<ArtistDto> getLikeArtists(String userId) {
+        return findById(userId).getArtists()
+                .stream()
+                .map(User_LikeArtist::getArtist)
+                .map(ArtistDto::toDto)
+                .toList();
     }
 
     private int likeMusicCount(User user) {

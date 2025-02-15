@@ -13,4 +13,6 @@ public interface UserService {
     void saveArtists(String userid, List<String> artists);
 
     UserResponseDto.UserInfoDto getUserInfo(String userId);
+
+    UserResponseDto.UserInfoPageDto getUserInfoPage(User user);
 }
