@@ -11,6 +11,8 @@ import com.example.musing.reply.dto.ReplyResponseDto;
 import com.example.musing.user.dto.UserResponseDto;
 import com.example.musing.user.entity.User;
 import com.example.musing.user.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.util.List;
 
+@Tag(name = "유저 회원 정보 조회 관련 도메인")
 @RequestMapping("/musing/user")
 @RequiredArgsConstructor
 @RestController
@@ -66,6 +69,8 @@ public class UserController {
         return ResponseDto.of(userService.getMyBoardSearch(getUser(), page, sort, searchType, keyword));
     }
 
+    @Operation(summary = "유저 정보 조회",
+            description = "유저 이름 및 이메일, 자신이 선택한 모달류(장르, 분위기, 아티스트)와 작성한 게시글 및 리뷰")
     @GetMapping
     public ResponseDto<UserResponseDto.UserInfoPageDto> getUserInfoPage() {
         return ResponseDto.of(userService.getUserInfoPage(getUser()));
