@@ -81,6 +81,9 @@ public class UserController {
         return ResponseDto.of(genreService.getGenreDtos());
     }
 
+    @Operation(summary = "유저가 선호하는 장르 수정",
+            description = "유저가 선호하는 장르의 수정된 결과의 Id값을 리스트로 주면 됩니다.<br>" +
+                    "삭제하고 추가한 것을 구분없이 전체 결과로 보내면 됩니다.")
     @PostMapping("/like/genre")
     public ResponseDto<List<GenreDto>> updateGenres(@RequestBody List<Long> chooseGenres) {
         return ResponseDto.of(userService.updateGenres(getUser(), chooseGenres));
@@ -91,11 +94,17 @@ public class UserController {
         return ResponseDto.of(moodService.getMoodDtos());
     }
 
+    @Operation(summary = "유저가 선호하는 분위기 수정",
+            description = "유저가 선호하는 분위기의 수정된 결과의 Id값을 리스트로 주면 됩니다.<br>" +
+                    "삭제하고 추가한 것을 구분없이 전체 결과로 보내면 됩니다.")
     @PostMapping("/like/mood")
     public ResponseDto<List<MoodDto>> updateMoods(@RequestBody List<Long> chooseMoods) {
         return ResponseDto.of(userService.updateMoods(getUser(), chooseMoods));
     }
 
+    @Operation(summary = "유저가 선호하는 가수 수정",
+            description = "유저가 선호하는 가수의 수정된 결과의 String값을 리스트로 주면 됩니다.<br>" +
+                    "삭제하고 추가한 것을 구분없이 전체 결과로 보내면 됩니다.")
     @PostMapping("/like/artist")
     public ResponseDto<List<ArtistDto>> updateArtists(@RequestBody(required = false) List<String> chooseArtist) {
         return ResponseDto.of(userService.updateArtists(getUser(), chooseArtist));
