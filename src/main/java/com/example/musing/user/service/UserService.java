@@ -1,5 +1,8 @@
 package com.example.musing.user.service;
 
+import com.example.musing.artist.dto.ArtistDto;
+import com.example.musing.genre.dto.GenreDto;
+import com.example.musing.mood.dto.MoodDto;
 import com.example.musing.user.dto.UserResponseDto;
 import com.example.musing.user.entity.User;
 
@@ -15,4 +18,8 @@ public interface UserService {
     UserResponseDto.UserInfoDto getUserInfo(String userId);
 
     UserResponseDto.UserInfoPageDto getUserInfoPage(User user);
+
+    List<GenreDto> updateGenres(User user, List<Long> chooseGenres);
+    List<MoodDto> updateMoods(User user, List<Long> chooseMoods);
+    List<ArtistDto> updateArtists(User user, List<String> choosertists);
 }
