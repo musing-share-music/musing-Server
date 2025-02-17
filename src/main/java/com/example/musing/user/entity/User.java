@@ -37,7 +37,7 @@ public class User { //https://developers.google.com/identity/openid-connect/open
     @Column(nullable = false)
     private String profile; //구글 프로필 url저장소
 
-    @Column(nullable = false)
+    @Column
     private String youtubeId; //유튜브 id
 
     @Column(nullable = false)
