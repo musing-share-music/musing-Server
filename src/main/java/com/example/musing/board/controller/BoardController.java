@@ -40,6 +40,7 @@ public class BoardController {
 
     @Operation(summary = "음악 추천 게시판 리스트",
             description = "음악 추천 게시판으로 상단 팝업창 데이터와 하단 페이지를 같이 조회합니다.")
+    @GetMapping("/list")
     public ResponseDto<BoardListResponseDto.BoardListDto> BoardListPage() {
         BoardListResponseDto.BoardListDto boardList = boardService.findBoardList();
         return ResponseDto.of(boardList);
@@ -47,6 +48,7 @@ public class BoardController {
 
     @Operation(summary = "음악 추천 게시판 리스트 하단 페이지",
             description = "상단 팝업을 제외한 하단 페이지 부분, page 파라미터를 통해 다른 페이지 이동가능")
+    @GetMapping("/list/page")
     public ResponseDto<Page<BoardListResponseDto.BoardDto>> getBoards(
             @RequestParam(name = "page", defaultValue = "1") int page) {
         Page<BoardListResponseDto.BoardDto> responseList = boardService.findBoardDto(page);
@@ -57,6 +59,7 @@ public class BoardController {
             description = "상단 팝업을 제외한 하단 페이지 부분, page 파라미터를 통해 다른 페이지 이동가능<br>+" +
                     "searchType 종류는 ['title', 'username ', 'artist ', 'gerne', 'mood'] 종류로 있습니다.<br>" +
                     "keyword는 검색창에 입력한 단어입니다.")
+    @GetMapping("/list/page/search")
     public ResponseDto<Page<BoardListResponseDto.BoardDto>> getBoardsByKeyword(
             @RequestParam(name = "page", defaultValue = "1") int page,
             @RequestParam(name = "searchType") String searchType,
