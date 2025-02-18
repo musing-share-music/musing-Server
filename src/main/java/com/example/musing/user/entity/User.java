@@ -45,7 +45,7 @@ public class User { //https://developers.google.com/identity/openid-connect/open
     private Role role; //사용자, 관리자 구분
 
     // true면 사용가능 false면 정지상태, null일 경우 장르 및 분위기 선택 안한 상태
-    @Column(nullable = true)
+    @Column
     private Boolean activated; //null허용을 위해 웨퍼클래스 타입 적용
 
     //게시판 일대다 매핑

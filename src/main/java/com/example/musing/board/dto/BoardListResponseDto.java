@@ -1,6 +1,7 @@
 package com.example.musing.board.dto;
 
 import com.example.musing.artist.dto.ArtistDto;
+import com.example.musing.artist.entity.Artist_Music;
 import com.example.musing.board.entity.Board;
 
 import java.time.LocalDateTime;
@@ -44,11 +45,13 @@ public class BoardListResponseDto {
         String thumbNailLink,
         LocalDateTime createAt
     ) {
-        public static BoardRecapDto toDto(Board board, List<ArtistDto> artists) {
+        public static BoardRecapDto toDto(Board board) {
             return BoardRecapDto.builder()
                 .title(board.getTitle())
                 .musicName(board.getMusic().getName())
-                .artists(artists)
+                .artists(board.getMusic().getArtists().stream()
+                        .map(Artist_Music::getArtist)
+                        .map(ArtistDto::toDto).toList())
                 .thumbNailLink(board.getMusic().getThumbNailLink())
                 .createAt(board.getCreatedAt())
                 .build();

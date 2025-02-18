@@ -247,14 +247,7 @@ public class UserServiceImpl implements UserService {
     private List<BoardListResponseDto.BoardRecapDto> getMyBoards(String userId) {
         List<Board> myBoard = boardRepository.findActiveBoardsByUserId(userId, PAGEABLE);
 
-        List<List<ArtistDto>> artistListDto = myBoard.stream()
-                .map(board -> board.getMusic().getArtists().stream()
-                        .map(artistMusic -> ArtistDto.toDto(artistMusic.getArtist()))
-                        .toList())
-                .toList();
-
-        return IntStream.range(0, myBoard.size())
-                .mapToObj(i -> BoardListResponseDto.BoardRecapDto.toDto(myBoard.get(i), artistListDto.get(i)))
+        return myBoard.stream().map(BoardListResponseDto.BoardRecapDto::toDto)
                 .toList();
     }
 

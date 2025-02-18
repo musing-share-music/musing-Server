@@ -1,6 +1,7 @@
 package com.example.musing.board.dto;
 
 import com.example.musing.artist.dto.ArtistDto;
+import com.example.musing.artist.entity.Artist_Music;
 import com.example.musing.board.entity.Board;
 import com.example.musing.genre.dto.GenreDto;
 import com.example.musing.mood.dto.MoodDto;
@@ -28,12 +29,13 @@ public class BoardRequestDto {
             List<GenreDto> genreList,
             List<MoodDto> moodList
     ) {
-        public static BoardRequestDto.BoardDto toDto(Board board ,List<ArtistDto> artists,
-                                                     List<GenreDto> genreList, List<MoodDto> moodList) {
+        public static BoardRequestDto.BoardDto toDto(Board board, List<GenreDto> genreList, List<MoodDto> moodList) {
             return BoardDto.builder()
                     .title(board.getTitle())
                     .musicName(board.getMusic().getName())
-                    .artists(artists)
+                    .artists(board.getMusic().getArtists().stream()
+                            .map(Artist_Music::getArtist)
+                            .map(ArtistDto::toDto).toList())
                     .rating(board.getRating())
                     .username(board.getUser().getUsername())
                     .createAt(board.getCreatedAt())

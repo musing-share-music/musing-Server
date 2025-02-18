@@ -74,7 +74,7 @@ public class BoardServiceImpl implements BoardService {
 
         List<Board> boards = findBySpecBoard(spec, pageRequestOrderBy);
 
-        return boards.stream().map(board -> entityToGenreDto(board, getArtistMusicListDto(board)))
+        return boards.stream().map(this::entityToGenreDto)
                 .collect(Collectors.toList());
     }
 
@@ -113,7 +113,7 @@ public class BoardServiceImpl implements BoardService {
         // fetch join을 사용하여 해당 음악에 관련된 게시글을 가져옵니다.
         List<Board> boards = boardRepository.findBoardsByMusicList(musicList);
 
-        return boards.stream().map(board -> entityToGenreDto(board, getArtistMusicListDto(board)))
+        return boards.stream().map(this::entityToGenreDto)
                 .collect(Collectors.toList());
     }
 
@@ -236,7 +236,6 @@ public class BoardServiceImpl implements BoardService {
     }
 
     // 검색조건으로 음악 추천 게시판 검색
-    @Transactional
     @Override
     public Page<BoardListResponseDto.BoardDto> search(int page, String searchType, String keyword) {
         if (page < 1) { // 잘못된 접근으로 throw할때 쿼리문 실행을 안하기 위해 나눠서 체크
@@ -261,13 +260,12 @@ public class BoardServiceImpl implements BoardService {
         });
     }
 
+    @Transactional
     public void deleteBoard(Long boardId) {
-
         if (!boardRepository.existsById(boardId)) {
             throw new CustomException(NOT_FOUND_BOARD, "Board does not exist");
         }
         boardRepository.deleteById(boardId);
-
     }
 
     @Override
@@ -275,7 +273,6 @@ public class BoardServiceImpl implements BoardService {
     public void updateBoard(UpdateBoardRequestDto request, List<MultipartFile> images) {
         // 유저명 저장
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-
 
         // 기존 Board 객체를 찾기
         Board board = boardRepository.findById(request.getBoardId())
@@ -394,11 +391,6 @@ public class BoardServiceImpl implements BoardService {
                 .collect(Collectors.toList());
     }
 
-
-
-
-
-
     // 음악 추천 게시판 상세페이지 (리뷰 포함)
     @Override
     public BoardAndReplyPageDto findBoardDetailPage(long boardId) {
@@ -413,18 +405,7 @@ public class BoardServiceImpl implements BoardService {
     private BoardRequestDto.BoardDto findBoard(long boardId) {
         Board board = boardRepository.findById(boardId).orElseThrow(() -> new CustomException(NOT_FOUND_BOARD));
 
-/*        List<Artist> artistList = artist_musicRepository.findByMusic(board.getMusic()).stream()
-                .map(Artist_Music::getArtist)
-                .toList();
-        List<Genre> genres = genre_musicRepository.findByMusic(board.getMusic()).stream()
-                .map(Genre_Music::getGenre)
-                .toList();
-        List<Mood> moods = mood_musicRepository.findByMusic(board.getMusic()).stream()
-                .map(Mood_Music::getMood)
-                .toList();*/ // 동작 확인하고 지울 주석
-
-        return BoardRequestDto.BoardDto.toDto(board, getArtistMusicListDto(board),
-                getGenreMusicListDto(board), getMoodMusicListDto(board));
+        return BoardRequestDto.BoardDto.toDto(board, getGenreMusicListDto(board), getMoodMusicListDto(board));
     }
 
 
@@ -527,11 +508,11 @@ public class BoardServiceImpl implements BoardService {
 
     private BoardListResponseDto.BoardRecapDto findBoardListPopUp(List<Board> boards, int indexNum) {
         Board selectBoard = boards.get(indexNum);
-        return BoardListResponseDto.BoardRecapDto.toDto(selectBoard, getArtistMusicListDto(selectBoard));
+        return BoardListResponseDto.BoardRecapDto.toDto(selectBoard);
     }
 
-    private GenreBoardDto entityToGenreDto(Board board, List<ArtistDto> artists) { //장르로 검색한 게시글 엔티티를 Dto로 전환
-        return GenreBoardDto.toDto(board, artists);
+    private GenreBoardDto entityToGenreDto(Board board) { //장르로 검색한 게시글 엔티티를 Dto로 전환
+        return GenreBoardDto.toDto(board);
     }
 
     private RecommendBoardLeft entityToBoardDto(Board board) { //핫한 게시글을 엔티티에서 Dto로 전환
