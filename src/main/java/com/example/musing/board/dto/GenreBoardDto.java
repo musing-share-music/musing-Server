@@ -1,6 +1,7 @@
 package com.example.musing.board.dto;
 
 import com.example.musing.artist.dto.ArtistDto;
+import com.example.musing.artist.entity.Artist_Music;
 import com.example.musing.board.entity.Board;
 import com.example.musing.music.entity.Music;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -17,11 +18,13 @@ public record GenreBoardDto(
         List<ArtistDto> artists,
         @Schema(description = "유튜브 썸네일 사진 링크", example = "https://img.youtube.com/vi/pAgnJDJN4VA/maxresdefault.jpg")
         String thumbNailLink) { //메인 페이지 장르 추천에 쓰임
-    public static GenreBoardDto toDto(Board board, List<ArtistDto> artists){
+    public static GenreBoardDto toDto(Board board){
         return GenreBoardDto.builder()
                 .id(board.getId())
                 .musicName(board.getMusic().getName())
-                .artists(artists)
+                .artists(board.getMusic().getArtists().stream()
+                        .map(Artist_Music::getArtist)
+                        .map(ArtistDto::toDto).toList())
                 .thumbNailLink(board.getMusic().getThumbNailLink())
                 .build();
     }

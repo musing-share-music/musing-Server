@@ -7,8 +7,8 @@ import com.example.musing.exception.CustomException;
 import com.example.musing.genre.dto.GenreDto;
 import com.example.musing.genre.service.GenreService;
 import com.example.musing.main.dto.LoginMainPageDto;
-import com.example.musing.main.dto.RecommendBoardRight;
 import com.example.musing.main.dto.NotLoginMainPageDto;
+import com.example.musing.main.dto.RecommendBoardRight;
 import com.example.musing.notice.dto.NoticeDto;
 import com.example.musing.notice.service.NoticeService;
 import com.example.musing.user.dto.UserResponseDto;
@@ -81,7 +81,7 @@ public class MainServiceImpl implements MainService {
         return boardService.findBy5GenreBoard(genre);
     }
 
-    private List<GenreDto> getLikeGenres(String userId){
+    private List<GenreDto> getLikeGenres(String userId) {
         return userService.findById(userId).getGenres()
                 .stream()
                 .map(User_LikeGenre::getGenre)
@@ -89,12 +89,16 @@ public class MainServiceImpl implements MainService {
                 .toList();
     }
 
-    private String getFirstLikeGenre(String userId){
+    private String getFirstLikeGenre(String userId) {
         User user = userService.findById(userId);
-        if(user.getActivated()==null || !user.getActivated()){
+        if (user.getActivated() == null || !user.getActivated()) {
             throw new CustomException(NOT_FOUND_USER);
         }
+
         return user.getGenres()
-                .stream().findFirst().map(User_LikeGenre::getGenre).map(genre ->  genre.getGenreName().getKey()).get();
+                .stream()
+                .findFirst()
+                .map(User_LikeGenre::getGenre)
+                .map(genre -> genre.getGenreName().getKey()).get();
     }
 }

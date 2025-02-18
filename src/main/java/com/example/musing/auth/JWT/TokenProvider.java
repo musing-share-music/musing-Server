@@ -49,7 +49,7 @@ public class TokenProvider {
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
         cookie.setPath("/");
-        cookie.setMaxAge(60*60);
+        cookie.setMaxAge(60*30);
 
         return cookie;
     }

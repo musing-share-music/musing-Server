@@ -13,6 +13,7 @@ import com.example.musing.like_music.repository.Like_MusicRepository;
 import com.example.musing.mood.dto.MoodDto;
 import com.example.musing.mood.repository.MoodRepository;
 import com.example.musing.reply.dto.ReplyDto;
+import com.example.musing.reply.dto.ReplyResponseDto;
 import com.example.musing.reply.repository.ReplyRepository;
 import com.example.musing.user.dto.UserResponseDto;
 import com.example.musing.user.entity.User;
@@ -101,7 +102,7 @@ public class UserServiceImpl implements UserService {
 
         List<BoardListResponseDto.BoardRecapDto> myBoard = getMyBoards(userId);
 
-        List<ReplyDto> myReplies = getMyReplies(userId);
+        List<ReplyResponseDto> myReplies = getMyReplies(userId);
 
         return UserResponseDto.UserInfoPageDto.of(
                 user, likeGenres, likeMoods, likeArtists, myBoard, myReplies);
@@ -247,20 +248,13 @@ public class UserServiceImpl implements UserService {
     private List<BoardListResponseDto.BoardRecapDto> getMyBoards(String userId) {
         List<Board> myBoard = boardRepository.findActiveBoardsByUserId(userId, PAGEABLE);
 
-        List<List<ArtistDto>> artistListDto = myBoard.stream()
-                .map(board -> board.getMusic().getArtists().stream()
-                        .map(artistMusic -> ArtistDto.toDto(artistMusic.getArtist()))
-                        .toList())
-                .toList();
-
-        return IntStream.range(0, myBoard.size())
-                .mapToObj(i -> BoardListResponseDto.BoardRecapDto.toDto(myBoard.get(i), artistListDto.get(i)))
+        return myBoard.stream().map(BoardListResponseDto.BoardRecapDto::toDto)
                 .toList();
     }
 
-    private List<ReplyDto> getMyReplies(String userId) {
+    private List<ReplyResponseDto> getMyReplies(String userId) {
         return replyRepository.findByUserId(userId, PAGEABLE)
-                .stream().map(ReplyDto::from)
+                .stream().map(ReplyResponseDto::from)
                 .toList();
     }
 
