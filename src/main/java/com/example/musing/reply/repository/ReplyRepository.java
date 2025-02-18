@@ -8,12 +8,14 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ReplyRepository extends JpaRepository<Reply, Long> {
     Optional<Reply> findByIdAndUser_Email(long replyId, String email);
     Optional<Reply>  findByBoard_IdAndUser_Email(long boardId, String email);
 
+    @EntityGraph(attributePaths = {"board"})
     List<Reply> findByUserId(String userId, Pageable pageable);
 
     boolean existsByBoard_IdAndUser_Email(long boardId, String email);
