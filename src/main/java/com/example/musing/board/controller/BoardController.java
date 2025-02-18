@@ -45,8 +45,6 @@ public class BoardController {
     @GetMapping("/list")
     public ResponseDto<BoardListResponseDto.BoardListDto> BoardListPage() {
         BoardListResponseDto.BoardListDto boardList = boardService.findBoardList();
-    public ResponseDto<BoardListResponseDto.BoardListDto> BoardListPage() {
-        BoardListResponseDto.BoardListDto boardList = boardService.findBoardList();
         return ResponseDto.of(boardList);
     }
 
