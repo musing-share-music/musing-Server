@@ -47,13 +47,18 @@ public class ReplyResponseDto {
 
     @Builder
     public record MyReplyDto(
-            Long id,
-            long starScore,
-            String content,
-            MusicDto musicDto,
-            LocalDateTime createdAt,
-            LocalDateTime updatedAt
-
+        @Schema(description = "리뷰의 Id")
+        Long id,
+        @Schema(description = "리뷰의 별점", example = "5.0")
+        long starScore,
+        @Schema(description = "리뷰의 내용", example = "신나서 운동하면서 듣기 좋아요")
+        String content,
+        @Schema(description = "작성한 리뷰의 음악 정보")
+        MusicDto musicDto,
+        @Schema(description = "작성일자")
+        LocalDateTime createdAt,
+        @Schema(description = "수정일자")
+        LocalDateTime updatedAt
     ) {
         public static ReplyResponseDto.MyReplyDto from(Reply reply) {
             return ReplyResponseDto.MyReplyDto.builder()
