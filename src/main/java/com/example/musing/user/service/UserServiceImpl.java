@@ -258,7 +258,6 @@ public class UserServiceImpl implements UserService {
                 .collect(Collectors.toList());
 
         userLikeMoodRepository.deleteAll(moodsToDelete);
-
         currentLikeMoods.removeAll(moodsToDelete);
 
         Set<Long> existingMoodIds = currentLikeMoods.stream()
@@ -278,9 +277,14 @@ public class UserServiceImpl implements UserService {
     }
 
     private List<User_LikeArtist> updateUserLikeArtists(User user, List<User_LikeArtist> currentLikeArtists, List<String> newArtists) {
-        Set<String> chosenGenreIds = new HashSet<>(newArtists);
+        Set<String> chosenArtist = new HashSet<>(newArtists);
 
-        currentLikeArtists.removeIf(likeArtist -> !chosenGenreIds.contains(likeArtist.getArtist().getName()));
+        List<User_LikeArtist> artistsToDelete = currentLikeArtists.stream()
+                .filter(likeArtist -> !chosenArtist.contains(likeArtist.getArtist().getName()))
+                .collect(Collectors.toList());
+
+        userLikeArtistRepository.deleteAll(artistsToDelete);
+        currentLikeArtists.removeAll(artistsToDelete);
 
         Set<String> currentArtistNames = currentLikeArtists.stream()
                 .map(likeArtist -> likeArtist.getArtist().getName())
