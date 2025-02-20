@@ -51,12 +51,12 @@ public interface BoardRepository extends JpaRepository<Board, Long>, JpaSpecific
             "ORDER BY b.createdAt DESC")
     Page<Board> findActiveBoardsByGenre(@Param("genreName") GerneEnum genreName, Pageable pageable);
 
-	@Query("SELECT b FROM Board b " +
- 	       "JOIN FETCH b.music m " +
- 	       "JOIN Mood_Music mm ON m.id = mm.music.id " +
- 	       "WHERE mm.mood.moodName = :moodName AND b.activeCheck = true " +
- 	       "ORDER BY b.createdAt DESC")
- 	Page<Board> findActiveBoardsByMood(@Param("moodName") MoodEnum moodName, Pageable pageable);
+    @Query("SELECT b FROM Board b " +
+            "JOIN FETCH b.music m " +
+            "JOIN Mood_Music mm ON m.id = mm.music.id " +
+            "WHERE mm.mood.moodName = :moodName AND b.activeCheck = true " +
+            "ORDER BY b.createdAt DESC")
+    Page<Board> findActiveBoardsByMood(@Param("moodName") MoodEnum moodName, Pageable pageable);
 
     @Query("SELECT DISTINCT b FROM Board b " +
             "JOIN FETCH b.music m " +
@@ -65,6 +65,14 @@ public interface BoardRepository extends JpaRepository<Board, Long>, JpaSpecific
     Board findBoardWithMusicAndArtist(@Param("boardId") Long boardId);
 
     @EntityGraph(attributePaths = {"music", "user"})
-    @Query("SELECT b FROM Board b WHERE b.activeCheck = true AND b.user.id LIKE %:id%")
+    @Query("SELECT b FROM Board b WHERE b.activeCheck = true AND b.user.id = :id")
     List<Board> findActiveBoardsByUserId(@Param("id") String id, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"music"})
+    @Query("SELECT b FROM Board b WHERE b.activeCheck = true AND b.user.id = :id")
+    Page<Board> findActiveBoardsPageByUserId(@Param("id") String id, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"music"})
+    @Query("SELECT b FROM Board b WHERE b.activeCheck = true AND b.user.id = :id AND b.title LIKE %:title%")
+    Page<Board> findActiveBoardsPageByUserIdAndTitle(@Param("id") String id, @Param("title") String title, Pageable pageable);
 }

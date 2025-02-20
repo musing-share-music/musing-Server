@@ -12,8 +12,8 @@ import com.example.musing.genre.repository.GenreRepository;
 import com.example.musing.like_music.repository.Like_MusicRepository;
 import com.example.musing.mood.dto.MoodDto;
 import com.example.musing.mood.repository.MoodRepository;
-import com.example.musing.reply.dto.ReplyDto;
 import com.example.musing.reply.dto.ReplyResponseDto;
+import com.example.musing.reply.entity.Reply;
 import com.example.musing.reply.repository.ReplyRepository;
 import com.example.musing.user.dto.UserResponseDto;
 import com.example.musing.user.entity.User;
@@ -25,6 +25,7 @@ import com.example.musing.user.repository.User_LikeArtistRepository;
 import com.example.musing.user.repository.User_LikeGenreRepository;
 import com.example.musing.user.repository.User_LikeMoodRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -35,7 +36,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static com.example.musing.exception.ErrorCode.*;
 
@@ -43,6 +43,8 @@ import static com.example.musing.exception.ErrorCode.*;
 @RequiredArgsConstructor
 @Service
 public class UserServiceImpl implements UserService {
+    private static final int PAGESIZE = 10;
+    private static final Pageable PAGEABLE = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "createdAt"));
     private final UserRepository userRepository;
     private final GenreRepository genreRepository;
     private final MoodRepository moodRepository;
@@ -53,8 +55,44 @@ public class UserServiceImpl implements UserService {
     private final User_LikeArtistRepository userLikeArtistRepository;
     private final BoardRepository boardRepository;
     private final ReplyRepository replyRepository;
+    @Override
+    public Page<ReplyResponseDto> getMyReplySearch(User user, int page, String sort, String keyword) {
+        String userId = user.getId();
 
-    private static final Pageable PAGEABLE = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Pageable pageable = createPageable(page, sort);
+        Page<Reply> myReplyPage = replyRepository.findPageByUserIdAndTitle(userId, keyword, pageable);
+
+        return myReplyPage.map(ReplyResponseDto::from);
+    }
+    @Override
+    public Page<ReplyResponseDto> getMyReply(User user, int page, String sort) {
+        String userId = user.getId();
+
+        Pageable pageable = createPageable(page, sort);
+        Page<Reply> myReplyPage = replyRepository.findPageByUserId(userId, pageable);
+
+        return myReplyPage.map(ReplyResponseDto::from);
+    }
+
+    @Override
+    public Page<BoardListResponseDto.BoardRecapDto> getMyBoardSearch(User user, int page, String sort, String keyword) {
+        String userId = user.getId();
+
+        Pageable pageable = createPageable(page, sort);
+        Page<Board> myBoardPage = boardRepository.findActiveBoardsPageByUserIdAndTitle(userId, keyword, pageable);
+
+        return myBoardPage.map(BoardListResponseDto.BoardRecapDto::toDto);
+    }
+
+    @Override
+    public Page<BoardListResponseDto.BoardRecapDto> getMyBoard(User user, int page, String sort) {
+        String userId = user.getId();
+
+        Pageable pageable = createPageable(page, sort);
+        Page<Board> myBoardPage = boardRepository.findActiveBoardsPageByUserId(userId, pageable);
+
+        return myBoardPage.map(BoardListResponseDto.BoardRecapDto::toDto);
+    }
 
     @Override
     @Transactional
@@ -180,10 +218,21 @@ public class UserServiceImpl implements UserService {
         return UserResponseDto.UserInfoDto.of(user, likeMusicCount(user), 0); //playList아직 없어서 0 임시값
     }
 
+    private Pageable createPageable(int page, String sort) {
+        Sort.Direction direction = (sort != null && sort.equals("ASC")) ? Sort.Direction.ASC : Sort.Direction.DESC;
+        return PageRequest.of(page, PAGESIZE, Sort.by(direction, "createdAt"));
+    }
+
     private List<User_LikeGenre> updateUserLikeGenres(User user, List<User_LikeGenre> currentLikeGenres, List<Long> chooseGenres) {
         Set<Long> chosenGenreIds = new HashSet<>(chooseGenres);
 
-        currentLikeGenres.removeIf(likeGenre -> !chosenGenreIds.contains(likeGenre.getGenre().getId()));
+        List<User_LikeGenre> genresToDelete = currentLikeGenres.stream()
+                .filter(likeGenre -> !chosenGenreIds.contains(likeGenre.getGenre().getId()))
+                .collect(Collectors.toList());
+
+        userLikeGenreRepository.deleteAll(genresToDelete);
+
+        currentLikeGenres.removeAll(genresToDelete);
 
         Set<Long> existingGenreIds = currentLikeGenres.stream()
                 .map(likeGenre -> likeGenre.getGenre().getId())
@@ -204,7 +253,13 @@ public class UserServiceImpl implements UserService {
     private List<User_LikeMood> updateUserLikeMoods(User user, List<User_LikeMood> currentLikeMoods, List<Long> chooseMoods) {
         Set<Long> chosenMoodIds = new HashSet<>(chooseMoods);
 
-        currentLikeMoods.removeIf(likeMood -> !chosenMoodIds.contains(likeMood.getMood().getId()));
+        List<User_LikeMood> moodsToDelete = currentLikeMoods.stream()
+                .filter(likeMood -> !chosenMoodIds.contains(likeMood.getMood().getId()))
+                .collect(Collectors.toList());
+
+        userLikeMoodRepository.deleteAll(moodsToDelete);
+
+        currentLikeMoods.removeAll(moodsToDelete);
 
         Set<Long> existingMoodIds = currentLikeMoods.stream()
                 .map(likeMood -> likeMood.getMood().getId())
