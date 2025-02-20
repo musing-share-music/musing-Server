@@ -39,12 +39,19 @@ public class UserController {
         return ResponseDto.of("회원 탈퇴에 성공했습니다.");
     }
 
+    @Operation(summary = "나의 리뷰 및 별점 조회",
+            description = "자신이 작성한 리뷰 및 별점을 조회합니다." +
+                    "sort는 [DESC, ASC]로 파라미터를 받으며, 디폴트값으로 DESC로 최신순을 보여줍니다.")
     @GetMapping("/my-reply")
     public ResponseDto<Page<ReplyResponseDto.MyReplyDto>> selectMyReply(
             @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "DESC") String sort) {
         return ResponseDto.of(userService.getMyReply(getUser(), page, sort));
     }
 
+    @Operation(summary = "나의 리뷰 및 별점 조회",
+            description = "자신이 작성한 리뷰 및 별점을 조회합니다." +
+                    "sort는 [DESC, ASC]로 파라미터를 받으며, 디폴트값으로 DESC로 최신순을 보여줍니다." +
+                    "검색은 리뷰의 내용으로만 검색하며, keyword에 리뷰 내용을 넣어 검색합니다.")
     @GetMapping("/my-reply/search")
     public ResponseDto<Page<ReplyResponseDto.MyReplyDto>> selectMyReplySearch(
             @RequestParam(defaultValue = "1") int page,
@@ -54,12 +61,19 @@ public class UserController {
         return ResponseDto.of(userService.getMyReplySearch(getUser(), page, sort, searchType, keyword));
     }
 
+    @Operation(summary = "나의 음악 추천 게시글 조회",
+            description = "자신이 작성한 음악 추천 게시글을 조회합니다." +
+                    "sort는 [DESC, ASC]로 파라미터를 받으며, 디폴트값으로 DESC로 최신순을 보여줍니다.")
     @GetMapping("/my-board")
     public ResponseDto<Page<BoardListResponseDto.BoardRecapDto>> selectMyBoard(
             @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "DESC") String sort) {
         return ResponseDto.of(userService.getMyBoard(getUser(), page, sort));
     }
-
+    
+    @Operation(summary = "나의 음악 추천 게시글 조회",
+            description = "자신이 작성한 음악 추천 게시글을 조회합니다." +
+                    "sort는 [DESC, ASC]로 파라미터를 받으며, 디폴트값으로 DESC로 최신순을 보여줍니다." +
+                    "검색은 게시글의 제목으로만 검색하며, keyword에 제목을 넣어 검색합니다.")
     @GetMapping("/my-board/search")
     public ResponseDto<Page<BoardListResponseDto.BoardRecapDto>> selectMyBoardSearch(
             @RequestParam(defaultValue = "1") int page,
@@ -76,6 +90,8 @@ public class UserController {
         return ResponseDto.of(userService.getUserInfoPage(getUser()));
     }
 
+    @Operation(summary = "전체 장르 조회",
+            description = "수정하기 위해 기존에 있는 장르 항목을 전체 조회합니다.")
     @GetMapping("/genre")
     public ResponseDto<List<GenreDto>> selectGenreForm() {
         return ResponseDto.of(genreService.getGenreDtos());
@@ -89,6 +105,8 @@ public class UserController {
         return ResponseDto.of(userService.updateGenres(getUser(), chooseGenres));
     }
 
+    @Operation(summary = "전체 분위기 조회",
+            description = "수정하기 위해 기존에 있는 분위기 항목을 전체 조회합니다.")
     @GetMapping("/mood")
     public ResponseDto<List<MoodDto>> selectMoodForm() {
         return ResponseDto.of(moodService.getMoodDtos());
