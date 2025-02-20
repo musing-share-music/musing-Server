@@ -224,6 +224,9 @@ public class UserServiceImpl implements UserService {
     }
 
     private List<User_LikeGenre> updateUserLikeGenres(User user, List<User_LikeGenre> currentLikeGenres, List<Long> chooseGenres) {
+        if(chooseGenres.isEmpty()){
+            throw new CustomException(NOT_FOUND_LIKE_GENRE);
+        }
         Set<Long> chosenGenreIds = new HashSet<>(chooseGenres);
 
         List<User_LikeGenre> genresToDelete = currentLikeGenres.stream()
@@ -251,6 +254,10 @@ public class UserServiceImpl implements UserService {
     }
 
     private List<User_LikeMood> updateUserLikeMoods(User user, List<User_LikeMood> currentLikeMoods, List<Long> chooseMoods) {
+        if(chooseMoods.isEmpty()){
+            throw new CustomException(NOT_FOUND_LIKE_MOOD);
+        }
+
         Set<Long> chosenMoodIds = new HashSet<>(chooseMoods);
 
         List<User_LikeMood> moodsToDelete = currentLikeMoods.stream()
@@ -276,8 +283,12 @@ public class UserServiceImpl implements UserService {
         return userLikeMoodRepository.saveAll(currentLikeMoods);
     }
 
-    private List<User_LikeArtist> updateUserLikeArtists(User user, List<User_LikeArtist> currentLikeArtists, List<String> newArtists) {
-        Set<String> chosenArtist = new HashSet<>(newArtists);
+    private List<User_LikeArtist> updateUserLikeArtists(User user, List<User_LikeArtist> currentLikeArtists, List<String> chooseArtist) {
+        if(chooseArtist.isEmpty()){
+            throw new CustomException(NOT_FOUND_LIKE_ARTIST);
+        }
+        
+        Set<String> chosenArtist = new HashSet<>(chooseArtist);
 
         List<User_LikeArtist> artistsToDelete = currentLikeArtists.stream()
                 .filter(likeArtist -> !chosenArtist.contains(likeArtist.getArtist().getName()))
@@ -290,7 +301,7 @@ public class UserServiceImpl implements UserService {
                 .map(likeArtist -> likeArtist.getArtist().getName())
                 .collect(Collectors.toSet());
 
-        List<User_LikeArtist> newLikeArtists = newArtists.stream()
+        List<User_LikeArtist> newLikeArtists = chooseArtist.stream()
                 .filter(name -> !currentArtistNames.contains(name))
                 .map(name -> artistRepository.findByName(name)
                         .map(artist -> User_LikeArtist.of(artist, user))
