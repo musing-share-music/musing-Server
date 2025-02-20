@@ -34,7 +34,6 @@ public enum ErrorCode {
 
 
     // 음악 관련 예외처리
-
     NOT_FOUND_MUSIC(NOT_FOUND, "해당 노래를 찾을 수 없습니다"),
     NOT_FOUND_GENRE(NOT_FOUND, "해당 장르를 찾을 수 없습니다"),
     NOT_FOUND_MOOD(NOT_FOUND, "해당 분위기를 찾을 수 없습니다"),
@@ -45,6 +44,14 @@ public enum ErrorCode {
 
     //신고 관련 예외처리
     BAD_REQUEST_REPORT_PAGE(BAD_REQUEST, "해당 페이지는 존재하지 않습니다."),
+
+    //좋아하는 장르 관련 예외처리
+    NOT_FOUND_LIKE_GENRE(NOT_FOUND, "최소 한개 이상의 좋아하는 장르는 선택해야합니다."),
+    //좋아하는 분위기 관련 예외처리
+    NOT_FOUND_LIKE_MOOD(NOT_FOUND, "최소 한개 이상의 좋아하는 장르는 선택해야합니다."),
+    //좋아하는 가수 관련 예외처리
+    NOT_FOUND_LIKE_ARTIST(NOT_FOUND, "최소 한개 이상의 좋아하는 장르는 선택해야합니다."),
+
     ;
     private final HttpStatus httpStatus;
     private final String message;
