@@ -115,7 +115,7 @@ public class UserController {
     @Operation(summary = "유저가 선호하는 가수 수정",
             description = "유저가 선호하는 가수의 수정된 결과의 String값을 리스트로 주면 됩니다.<br>" +
                     "삭제하고 추가한 것을 구분없이 전체 결과로 보내면 됩니다.")
-    @PostMapping("/artist")
+    @PostMapping("/like/artist")
     public ResponseDto<List<ArtistDto>> updateArtists(@RequestBody(required = false) List<String> chooseArtist) {
         return ResponseDto.of(userService.updateArtists(getUser(), chooseArtist));
     }
