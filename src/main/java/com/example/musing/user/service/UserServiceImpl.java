@@ -62,23 +62,11 @@ public class UserServiceImpl implements UserService {
         String userId = user.getId();
 
         Pageable pageable = createPageable(page, sort);
-        Page<Reply> myReplyPage = searchBoards(userId, searchType, keyword, pageable);
+        Page<Reply> myReplyPage = searchReplys(userId, searchType, keyword, pageable);
 
         return myReplyPage.map(ReplyResponseDto::from);
     }
 
-    private Page<Reply> searchBoards(String userId, String searchType, String keyword, Pageable pageable) {
-        switch (searchType) {
-            case "content":
-                return replyRepository.findPageByUserIdAndContent(userId, keyword, pageable);
-            case "musicName":
-                return replyRepository.findPageByUserIdAndMusicName(userId, keyword, pageable);
-            case "artist":
-                return replyRepository.findPageByUserIdAndArtistName(userId, keyword, pageable);
-            default:
-                throw new CustomException(NOT_FOUND_KEYWORD);
-        }
-    }
     @Override
     public Page<ReplyResponseDto> getMyReply(User user, int page, String sort) {
         String userId = user.getId();
@@ -90,11 +78,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<BoardListResponseDto.BoardRecapDto> getMyBoardSearch(User user, int page, String sort, String keyword) {
+    public Page<BoardListResponseDto.BoardRecapDto> getMyBoardSearch(
+            User user, int page, String sort, String searchType, String keyword) {
         String userId = user.getId();
 
         Pageable pageable = createPageable(page, sort);
-        Page<Board> myBoardPage = boardRepository.findActiveBoardsPageByUserIdAndTitle(userId, keyword, pageable);
+        Page<Board> myBoardPage = searchBoards(userId, searchType, keyword, pageable);
 
         return myBoardPage.map(BoardListResponseDto.BoardRecapDto::toDto);
     }
@@ -231,6 +220,32 @@ public class UserServiceImpl implements UserService {
     public UserResponseDto.UserInfoDto getUserInfo(String userId) {
         User user = findById(userId);
         return UserResponseDto.UserInfoDto.of(user, likeMusicCount(user), 0); //playList아직 없어서 0 임시값
+    }
+
+    private Page<Reply> searchReplys(String userId, String searchType, String keyword, Pageable pageable) {
+        switch (searchType) {
+            case "content":
+                return replyRepository.findPageByUserIdAndContent(userId, keyword, pageable);
+            case "musicName":
+                return replyRepository.findPageByUserIdAndMusicName(userId, keyword, pageable);
+            case "artist":
+                return replyRepository.findPageByUserIdAndArtistName(userId, keyword, pageable);
+            default:
+                throw new CustomException(NOT_FOUND_KEYWORD);
+        }
+    }
+
+    private Page<Board> searchBoards(String userId, String searchType, String keyword, Pageable pageable) {
+        switch (searchType) {
+            case "title":
+                return boardRepository.findActiveBoardsPageByUserIdAndTitle(userId, keyword, pageable);
+            case "musicName":
+                return boardRepository.findActiveBoardsPageByUserIdAndMusicName(userId, keyword, pageable);
+            case "artist":
+                return boardRepository.findActiveBoardsPageByUserIdAndArtistName(userId, keyword, pageable);
+            default:
+                throw new CustomException(NOT_FOUND_KEYWORD);
+        }
     }
 
     private Pageable createPageable(int page, String sort) {

@@ -27,11 +27,11 @@ public interface ReplyRepository extends JpaRepository<Reply, Long> {
     @Query("SELECT r FROM Reply r WHERE r.user.id = :id AND r.content LIKE %:content%")
     Page<Reply> findPageByUserIdAndContent(@Param("id") String id, @Param("content") String content, Pageable pageable);
 
-    @EntityGraph(attributePaths = {"board"})
+    @EntityGraph(attributePaths = {"board", "user", "board.music"})
     @Query("SELECT r FROM Reply r WHERE r.user.id = :id AND r.board.music.name LIKE %:musicName%")
     Page<Reply> findPageByUserIdAndMusicName(@Param("id") String id, @Param("musicName") String musicName, Pageable pageable);
 
-    @EntityGraph(attributePaths = {"board.music.artists"})
+    @EntityGraph(attributePaths = {"board", "user", "board.music"})
     @Query("SELECT r FROM Reply r " +
             "JOIN r.board.music.artists am " +
             "WHERE r.user.id = :id " +

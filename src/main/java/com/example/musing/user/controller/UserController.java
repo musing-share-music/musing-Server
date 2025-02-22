@@ -53,8 +53,9 @@ public class UserController {
     public ResponseDto<Page<BoardListResponseDto.BoardRecapDto>> selectMyBoardSearch(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "DESC") String sort,
+            @RequestParam(defaultValue = "title") String searchType,
             @RequestParam(defaultValue = "") String keyword) {
-        return ResponseDto.of(userService.getMyBoardSearch(getUser(), page, sort, keyword));
+        return ResponseDto.of(userService.getMyBoardSearch(getUser(), page, sort, searchType, keyword));
     }
 
     @GetMapping
