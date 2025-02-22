@@ -25,10 +25,10 @@ public interface UserService {
     UserResponseDto.UserInfoPageDto getUserInfoPage(User user);
 
     Page<BoardListResponseDto.BoardRecapDto> getMyBoard(User user, int page, String sort);
-    Page<BoardListResponseDto.BoardRecapDto> getMyBoardSearch(User user, int page, String sort, String keyword);
+    Page<BoardListResponseDto.BoardRecapDto> getMyBoardSearch(
+            User user, int page, String sort, String searchType, String keyword);
     Page<ReplyResponseDto> getMyReply(User user, int page, String sort);
-    Page<ReplyResponseDto> getMyReplySearch(User user, int page, String sort, String keyword);
-
+    Page<ReplyResponseDto> getMyReplySearch(User user, int page, String sort, String searchType, String keyword);
     List<GenreDto> updateGenres(User user, List<Long> chooseGenres);
     List<MoodDto> updateMoods(User user, List<Long> chooseMoods);
     List<ArtistDto> updateArtists(User user, List<String> choosertists);

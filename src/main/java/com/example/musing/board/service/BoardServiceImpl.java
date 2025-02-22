@@ -395,7 +395,7 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public BoardAndReplyPageDto findBoardDetailPage(long boardId) {
         BoardRequestDto.BoardDto boardDto = findBoard(boardId);
-        Page<ReplyDto> replyDtos = replyService.findReplies(boardId, 1);
+        Page<ReplyDto> replyDtos = replyService.findReplies(boardId, 1, "date", "DESC");
 
         return BoardAndReplyPageDto.of(boardDto, replyDtos);
     }

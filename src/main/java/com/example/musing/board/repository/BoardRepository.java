@@ -4,6 +4,7 @@ import com.example.musing.board.entity.Board;
 import com.example.musing.genre.entity.GerneEnum;
 import com.example.musing.mood.entity.MoodEnum;
 import com.example.musing.music.entity.Music;
+import com.example.musing.reply.entity.Reply;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -75,4 +76,16 @@ public interface BoardRepository extends JpaRepository<Board, Long>, JpaSpecific
     @EntityGraph(attributePaths = {"music"})
     @Query("SELECT b FROM Board b WHERE b.activeCheck = true AND b.user.id = :id AND b.title LIKE %:title%")
     Page<Board> findActiveBoardsPageByUserIdAndTitle(@Param("id") String id, @Param("title") String title, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"music", "user"})
+    @Query("SELECT b FROM Board b WHERE b.activeCheck = true AND b.user.id = :id AND " +
+            "b.music.name LIKE %:musicName%")
+    Page<Board> findActiveBoardsPageByUserIdAndMusicName(@Param("id") String id, @Param("musicName") String musicName, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"music", "user"})
+    @Query("SELECT b FROM Board b " +
+            "JOIN b.music.artists am " +
+            "WHERE b.activeCheck = true AND b.user.id = :id " +
+            "AND am.artist.name LIKE %:artistName%")
+    Page<Board> findActiveBoardsPageByUserIdAndArtistName(@Param("id") String id, @Param("artistName") String artistName, Pageable pageable);
 }
