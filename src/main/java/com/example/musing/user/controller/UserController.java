@@ -51,7 +51,8 @@ public class UserController {
     @Operation(summary = "나의 리뷰 및 별점 조회",
             description = "자신이 작성한 리뷰 및 별점을 조회합니다." +
                     "sort는 [DESC, ASC]로 파라미터를 받으며, 디폴트값으로 DESC로 최신순을 보여줍니다." +
-                    "검색은 리뷰의 내용으로만 검색하며, keyword에 리뷰 내용을 넣어 검색합니다.")
+                    "searchType은 [content, musicName,artist]로 파라미터를 받습니다." +
+                    "keyword에 리뷰 내용을 넣어 검색합니다.")
     @GetMapping("/my-reply/search")
     public ResponseDto<Page<ReplyResponseDto.MyReplyDto>> selectMyReplySearch(
             @RequestParam(defaultValue = "1") int page,
@@ -72,8 +73,9 @@ public class UserController {
     
     @Operation(summary = "나의 음악 추천 게시글 조회",
             description = "자신이 작성한 음악 추천 게시글을 조회합니다." +
-                    "sort는 [DESC, ASC]로 파라미터를 받으며, 디폴트값으로 DESC로 최신순을 보여줍니다." +
-                    "검색은 게시글의 제목으로만 검색하며, keyword에 제목을 넣어 검색합니다.")
+                    "sort는 [DESC, ASC]로 파라미터를 받으며, 기본값으로 DESC로 최신순을 보여줍니다." +
+                    "searchType은 [title, musicName,artist]로 파라미터를 받습니다." +
+                    "keyword에 제목을 넣어 검색합니다.")
     @GetMapping("/my-board/search")
     public ResponseDto<Page<BoardListResponseDto.BoardRecapDto>> selectMyBoardSearch(
             @RequestParam(defaultValue = "1") int page,
