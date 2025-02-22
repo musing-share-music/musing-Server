@@ -16,5 +16,5 @@ public interface ReplyService {
 
     void deleteReply(long replyId);
 
-    Page<ReplyDto> findReplies(long boardId, int page);
+    Page<ReplyDto> findReplies(long boardId, int page, String sortType, String sort);
 }

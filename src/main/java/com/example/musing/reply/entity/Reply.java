@@ -70,5 +70,4 @@ public class Reply extends BaseEntity {
                 .board(board)
                 .build();
     }
-
 }

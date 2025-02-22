@@ -55,8 +55,12 @@ public class ReplyController {
     }
 
     @GetMapping("/board/{boardId}/reply")
-    public ResponseDto<Page<ReplyDto>> findReplyPage(@PathVariable long boardId, @RequestParam(name = "page",defaultValue = "1") int page){
-        Page<ReplyDto> replyDtos = replyService.findReplies(boardId,page);
+    public ResponseDto<Page<ReplyDto>> findReplyPage(
+            @PathVariable long boardId,
+            @RequestParam(name = "page",defaultValue = "1") int page,
+            @RequestParam(defaultValue = "date") String sortType,
+            @RequestParam(defaultValue = "DESC") String sort){
+        Page<ReplyDto> replyDtos = replyService.findReplies(boardId, page, sortType, sort);
         return ResponseDto.of(replyDtos, "");
     }
 

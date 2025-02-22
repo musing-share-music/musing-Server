@@ -40,5 +40,10 @@ public interface ReplyRepository extends JpaRepository<Reply, Long> {
 
     boolean existsByBoard_IdAndUser_Email(long boardId, String email);
     boolean existsByIdAndUser_Email(long boardId, String email);
+    @EntityGraph(attributePaths = {"board"})
     Page<Reply> findByBoard_Id(long boardId, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"board"})
+    @Query("SELECT r FROM Reply r WHERE r.board.id = :boardId AND r.content IS NOT NULL AND r.content <> ''")
+    Page<Reply> findByBoardIdWithContent(@Param("boardId") long boardId, Pageable pageable);
 }

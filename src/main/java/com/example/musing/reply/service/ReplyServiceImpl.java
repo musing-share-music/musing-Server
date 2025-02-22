@@ -3,6 +3,8 @@ package com.example.musing.reply.service;
 import com.example.musing.board.entity.Board;
 import com.example.musing.board.repository.BoardRepository;
 import com.example.musing.exception.CustomException;
+import com.example.musing.genre.entity.GerneEnum;
+import com.example.musing.mood.entity.MoodEnum;
 import com.example.musing.reply.dto.ReplyDto;
 import com.example.musing.reply.entity.Reply;
 import com.example.musing.reply.repository.ReplyRepository;
@@ -12,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -91,13 +94,14 @@ public class ReplyServiceImpl implements ReplyService {
     }
 
     @Override
-    public Page<ReplyDto> findReplies(long boardId, int page) {
+    public Page<ReplyDto> findReplies(long boardId, int page, String sortType, String sort) {
         if (page < 1) { // 잘못된 접근으로 throw할때 쿼리문 실행을 안하기 위해 나눠서 체크
             throw new CustomException(BAD_REQUEST_REPLY_PAGE);
         }
 
-        Pageable pageable = PageRequest.of(page - 1, PAGE_SIZE);
-        Page<Reply> pageReply = replyRepository.findByBoard_Id(boardId, pageable);
+        Pageable pageable = createPageable(page - 1, sort, sortType);
+
+        Page<Reply> pageReply = sortReplys(boardId, sortType, pageable);
         int totalPages = pageReply.getTotalPages();
 
         if (page - 1 > totalPages) {
@@ -105,6 +109,23 @@ public class ReplyServiceImpl implements ReplyService {
         }
 
         return pageReply.map(Reply::toDto);
+    }
+
+    private Page<Reply> sortReplys(long boardId, String sortType, Pageable pageable) {
+        switch (sortType) {
+            case "date", "starScore":
+                return replyRepository.findByBoard_Id(boardId, pageable);
+            case "onlyReview":
+                return replyRepository.findByBoardIdWithContent(boardId, pageable);
+            default:
+                throw new CustomException(NOT_FOUND_KEYWORD);
+        }
+    }
+
+    private Pageable createPageable(int page, String sort, String sortType) {
+        Sort.Direction direction = (sort != null && sort.equals("ASC")) ? Sort.Direction.ASC : Sort.Direction.DESC;
+        String properties = (sortType.equals("starScore")? "starScore" : "createdAt");
+        return PageRequest.of(page, PAGE_SIZE, Sort.by(direction, properties));
     }
 
     private String getUserEmail() {
