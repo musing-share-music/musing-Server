@@ -38,8 +38,9 @@ public class UserController {
     public ResponseDto<Page<ReplyResponseDto>> selectMyReplySearch(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "DESC") String sort,
+            @RequestParam(defaultValue = "content") String searchType,
             @RequestParam(defaultValue = "") String keyword) {
-        return ResponseDto.of(userService.getMyReplySearch(getUser(), page, sort, keyword));
+        return ResponseDto.of(userService.getMyReplySearch(getUser(), page, sort, searchType, keyword));
     }
 
     @GetMapping("/my-board")

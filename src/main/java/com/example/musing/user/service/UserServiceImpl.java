@@ -8,9 +8,11 @@ import com.example.musing.board.entity.Board;
 import com.example.musing.board.repository.BoardRepository;
 import com.example.musing.exception.CustomException;
 import com.example.musing.genre.dto.GenreDto;
+import com.example.musing.genre.entity.GerneEnum;
 import com.example.musing.genre.repository.GenreRepository;
 import com.example.musing.like_music.repository.Like_MusicRepository;
 import com.example.musing.mood.dto.MoodDto;
+import com.example.musing.mood.entity.MoodEnum;
 import com.example.musing.mood.repository.MoodRepository;
 import com.example.musing.reply.dto.ReplyResponseDto;
 import com.example.musing.reply.entity.Reply;
@@ -56,13 +58,26 @@ public class UserServiceImpl implements UserService {
     private final BoardRepository boardRepository;
     private final ReplyRepository replyRepository;
     @Override
-    public Page<ReplyResponseDto> getMyReplySearch(User user, int page, String sort, String keyword) {
+    public Page<ReplyResponseDto> getMyReplySearch(User user, int page, String sort, String searchType, String keyword) {
         String userId = user.getId();
 
         Pageable pageable = createPageable(page, sort);
-        Page<Reply> myReplyPage = replyRepository.findPageByUserIdAndTitle(userId, keyword, pageable);
+        Page<Reply> myReplyPage = searchBoards(userId, searchType, keyword, pageable);
 
         return myReplyPage.map(ReplyResponseDto::from);
+    }
+
+    private Page<Reply> searchBoards(String userId, String searchType, String keyword, Pageable pageable) {
+        switch (searchType) {
+            case "content":
+                return replyRepository.findPageByUserIdAndContent(userId, keyword, pageable);
+            case "musicName":
+                return replyRepository.findPageByUserIdAndMusicName(userId, keyword, pageable);
+            case "artist":
+                return replyRepository.findPageByUserIdAndArtistName(userId, keyword, pageable);
+            default:
+                throw new CustomException(NOT_FOUND_KEYWORD);
+        }
     }
     @Override
     public Page<ReplyResponseDto> getMyReply(User user, int page, String sort) {

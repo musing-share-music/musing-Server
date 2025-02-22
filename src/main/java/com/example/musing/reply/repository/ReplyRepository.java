@@ -1,8 +1,6 @@
 
 package com.example.musing.reply.repository;
-import com.example.musing.board.entity.Board;
 import com.example.musing.reply.entity.Reply;
-import com.example.musing.user.entity.User;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,7 +25,18 @@ public interface ReplyRepository extends JpaRepository<Reply, Long> {
 
     @EntityGraph(attributePaths = {"board"})
     @Query("SELECT r FROM Reply r WHERE r.user.id = :id AND r.content LIKE %:content%")
-    Page<Reply> findPageByUserIdAndTitle(@Param("id") String id, @Param("content") String content, Pageable pageable);
+    Page<Reply> findPageByUserIdAndContent(@Param("id") String id, @Param("content") String content, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"board"})
+    @Query("SELECT r FROM Reply r WHERE r.user.id = :id AND r.board.music.name LIKE %:musicName%")
+    Page<Reply> findPageByUserIdAndMusicName(@Param("id") String id, @Param("musicName") String musicName, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"board.music.artists"})
+    @Query("SELECT r FROM Reply r " +
+            "JOIN r.board.music.artists am " +
+            "WHERE r.user.id = :id " +
+            "AND am.artist.name LIKE %:artistName%")
+    Page<Reply> findPageByUserIdAndArtistName(@Param("id") String id, @Param("artistName") String artistName, Pageable pageable);
 
     boolean existsByBoard_IdAndUser_Email(long boardId, String email);
     boolean existsByIdAndUser_Email(long boardId, String email);
