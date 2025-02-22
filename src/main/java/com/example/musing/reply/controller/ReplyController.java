@@ -8,6 +8,7 @@ import com.example.musing.reply.dto.ReplyRequestDto;
 import com.example.musing.reply.dto.ReplyResponseDto;
 import com.example.musing.reply.entity.Reply;
 import com.example.musing.reply.service.ReplyService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
@@ -67,6 +68,12 @@ public class ReplyController {
         return ResponseDto.of(boardReplyDto, "성공적으로 리뷰를 삭제했습니다.");
     }
 
+    @Operation(summary = "음악 추천 게시글의 리뷰 및 별점 리스트 조회",
+            description = "해당 게시글의 작성된 리뷰 및 별점을 조회합니다." +
+                    "sortType [date, starScore, onlyReview]로 파라미터를 받습니다." +
+                    "sort는 [DESC, ASC]로 파라미터를 받으며, 디폴트값으로 DESC로 최신순을 보여줍니다." +
+                    "sortType이 'starScore'일 경우 sort값은 '별점 높은 순, 낮은 순'" +
+                    "나머지는 작성일자를 기준으로 최신 순, 오래된 순 입니다.")
     @GetMapping("/board/{boardId}/reply")
     public ResponseDto<Page<ReplyResponseDto.ReplyDto>> findReplyPage(
             @PathVariable long boardId,
