@@ -220,7 +220,7 @@ public class UserServiceImpl implements UserService {
 
     private Pageable createPageable(int page, String sort) {
         Sort.Direction direction = (sort != null && sort.equals("ASC")) ? Sort.Direction.ASC : Sort.Direction.DESC;
-        return PageRequest.of(page, PAGESIZE, Sort.by(direction, "createdAt"));
+        return PageRequest.of(page -1, PAGESIZE, Sort.by(direction, "createdAt"));
     }
 
     private List<User_LikeGenre> updateUserLikeGenres(User user, List<User_LikeGenre> currentLikeGenres, List<Long> chooseGenres) {

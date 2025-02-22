@@ -30,13 +30,13 @@ public class UserController {
 
     @GetMapping("/my-reply")
     public ResponseDto<Page<ReplyResponseDto>> selectMyReply(
-            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "DESC") String sort) {
+            @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "DESC") String sort) {
         return ResponseDto.of(userService.getMyReply(getUser(), page, sort));
     }
 
     @GetMapping("/my-reply/search")
     public ResponseDto<Page<ReplyResponseDto>> selectMyReplySearch(
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "DESC") String sort,
             @RequestParam(defaultValue = "") String keyword) {
         return ResponseDto.of(userService.getMyReplySearch(getUser(), page, sort, keyword));
@@ -44,13 +44,13 @@ public class UserController {
 
     @GetMapping("/my-board")
     public ResponseDto<Page<BoardListResponseDto.BoardRecapDto>> selectMyBoard(
-            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "DESC") String sort) {
+            @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "DESC") String sort) {
         return ResponseDto.of(userService.getMyBoard(getUser(), page, sort));
     }
 
     @GetMapping("/my-board/search")
     public ResponseDto<Page<BoardListResponseDto.BoardRecapDto>> selectMyBoardSearch(
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "DESC") String sort,
             @RequestParam(defaultValue = "") String keyword) {
         return ResponseDto.of(userService.getMyBoardSearch(getUser(), page, sort, keyword));
