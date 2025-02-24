@@ -36,6 +36,7 @@ public class NoticeController {
         Page<NoticeDto> noticeDtos = noticeService.getNoticeList(page);
         return ResponseDto.of(noticeDtos);
     }
+
     @Operation(summary = "공지사항 게시판 상세 페이지 조회")
     @GetMapping("/notice")
     public ResponseDto<NoticeDto> notice(@RequestParam int noticeId) {
@@ -45,7 +46,7 @@ public class NoticeController {
 
     @Operation(summary = "공지사항 게시글 작성",
             description = "공지사항 게시글 작성으로 Dto를 title, content를 포함하여 JSON 타입('application/json')으로 받습니다<br>" +
-                    "이미지를 업로드할 수 있도록 이 API는 'Content-Type': 'multipart/form-data'입니다. ")
+                    "이미지를 업로드할 수 있도록 이 API는 'Content-Type': 'multipart/form-data'입니다.")
     @PostMapping(value = "/admin/notice", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseDto<String> createNotice(@RequestPart NoticeRequestDto requestDto,
                                             @RequestPart(required = false) List<MultipartFile> files) {
@@ -53,6 +54,11 @@ public class NoticeController {
         return ResponseDto.of("", "공지사항 작성에 성공했습니다.");
     }
 
+    @Operation(summary = "공지사항 게시글 수정",
+            description = "공지사항 게시글 작성과 동일하게 Dto를 title, content를 포함하여 JSON 타입('application/json')으로 받습니다<br>" +
+                    "이미지를 업로드할 수 있도록 이 API는 'Content-Type': 'multipart/form-data'입니다." +
+                    "이미 업로드한 사진을 삭제할 경우 url주소를 그대로 deleteFileLinks에 넣어주면 됩니다." +
+                    "(※ 스웨거에서 deleteFileLinks에 값을 넣어 테스트 할 경우 List에 맞게 처음과 마지막에 '[', ']'를 따로 붙여주어야합니다)")
     @PutMapping(value = "/admin/notice/{noticeId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseDto<String> updateNotice(@PathVariable long noticeId, @RequestPart NoticeRequestDto requestDto,
                                             @RequestPart(required = false) List<String> deleteFileLinks,
@@ -61,6 +67,8 @@ public class NoticeController {
         return ResponseDto.of("", "공지사항 수정에 성공했습니다.");
     }
 
+    @Operation(summary = "공지사항 게시글 삭제",
+            description = "softDelete방식이기 때문에 put요청을 사용합니다.")
     @PutMapping(value = "/admin/notice/remove/{noticeId}")
     public ResponseDto<String> deleteNotice(@PathVariable long noticeId) {
         noticeService.deleteNotice(noticeId);
