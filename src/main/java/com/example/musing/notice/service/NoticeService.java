@@ -1,6 +1,5 @@
 package com.example.musing.notice.service;
 
-import com.example.musing.common.dto.DeleteImageLinkDto;
 import com.example.musing.notice.dto.NoticeDto;
 import com.example.musing.notice.dto.NoticeRequestDto;
 import org.springframework.data.domain.Page;
