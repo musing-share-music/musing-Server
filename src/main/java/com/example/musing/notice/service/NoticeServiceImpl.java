@@ -1,11 +1,12 @@
 package com.example.musing.notice.service;
 
-import com.example.musing.common.utils.s3.AWS_S3_Util;
+import com.example.musing.common.utils.S3.AWS_S3_Util;
 import com.example.musing.exception.CustomException;
 import com.example.musing.notice.dto.NoticeDto;
 import com.example.musing.notice.dto.NoticeRequestDto;
 import com.example.musing.notice.entity.Notice;
 import com.example.musing.notice.repository.NoticeRepository;
+import com.example.musing.user.entity.Role;
 import com.example.musing.user.entity.User;
 import com.example.musing.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -47,7 +48,7 @@ public class NoticeServiceImpl implements NoticeService {
         }
 
         Pageable pageable = PageRequest.of(page - 1, PAGESIZE);
-        Page<Notice> notices = noticeRepository.findAll(pageable);
+        Page<Notice> notices = noticeRepository.findAllByActiveCheckTrue(pageable);
 
         int totalPages = notices.getTotalPages();
         if (page - 1 > totalPages) {
@@ -64,7 +65,7 @@ public class NoticeServiceImpl implements NoticeService {
 
         Pageable pageable = PageRequest.of(page - 1, PAGESIZE);
 
-        Page<Notice> notices = noticeRepository.findByTitle(keyword, pageable);
+        Page<Notice> notices = noticeRepository.findByTitleAndActiveCheckTrue(keyword, pageable);
 
         int totalPages = notices.getTotalPages();
 
@@ -81,19 +82,68 @@ public class NoticeServiceImpl implements NoticeService {
     }
 
     @Override
+    @Transactional
     public void writeNotice(NoticeRequestDto requestDto, List<MultipartFile> files) {
         Notice notice = Notice.builder()
                 .title(requestDto.title())
                 .content(requestDto.content())
                 .user(getUser())
-                .images(uploadImages(files))
+                .images(uploadImages(files).toString())
                 .build();
         noticeRepository.save(notice);
     }
 
+    @Override
+    @Transactional
+    public void modifyNotice(long noticeId, NoticeRequestDto requestDto,
+                             List<String> deleteFileLinks, List<MultipartFile> newFiles) {
+        Notice notice = noticeRepository.findById(noticeId).orElseThrow(() -> new CustomException(NOT_FOUND_NOTICE));
+
+        List<String> images = notice.getImageList();
+
+        if (images == null) {
+            images = new ArrayList<>();
+        }
+
+        if (deleteFileLinks != null&& !deleteFileLinks.isEmpty()) {
+            images.removeIf(imageUrl -> {
+                if (deleteFileLinks.contains(imageUrl)) {
+                    String filename = extractFilename(imageUrl);
+                    awsS3Util.deleteFile("notice", filename);
+                    return true;
+                }
+                return false;
+            });
+        }
+
+        if (newFiles != null && !newFiles.isEmpty()) {
+            List<String> newImageUrls = uploadImages(newFiles);
+            images.addAll(newImageUrls);
+
+        }
+
+        notice.updateNotice(requestDto.title(), requestDto.content(), images.toString());
+    }
+
+    @Override
+    @Transactional
+    public void deleteNotice(long noticeId) {
+        if(getUser().getRole().equals(Role.ADMIN)){
+            noticeRepository.findById(noticeId)
+                    .orElseThrow(() -> new CustomException(NOT_FOUND_NOTICE))
+                    .softDelete();
+        } else {
+            throw new CustomException(INVALID_AUTHORITY);
+        }
+    }
+
+    private String extractFilename(String imageUrl) {
+        return imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
+    }
+
     private List<String> uploadImages(List<MultipartFile> files) {
-        if (files == null) {
-            return Collections.singletonList("");
+        if (files == null || files.isEmpty()) {
+            return null;
         }
 
         List<String> urlList = new ArrayList<>();
@@ -112,7 +162,6 @@ public class NoticeServiceImpl implements NoticeService {
 
     private User getUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println("email: " + authentication.getName());
         return userRepository.findById(authentication.getName()).orElseThrow(() -> new CustomException(NOT_FOUND_USER));
     }
 

@@ -31,7 +31,7 @@ public record NoticeDto(
                 .content(notice.getContent())
                 .createdAt(notice.getCreatedAt())
                 .username(notice.getUser().getUsername())
-                .imageUrl(notice.getImages())
+                .imageUrl(notice.getImageList())
                 .build();
     }
 }
