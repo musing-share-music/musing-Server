@@ -83,7 +83,7 @@ public class UserController {
         return ResponseDto.of(userService.updateMoods(getUser(), chooseMoods));
     }
 
-    @PostMapping("/artist")
+    @PostMapping("/like/artist")
     public ResponseDto<List<ArtistDto>> updateArtists(@RequestBody(required = false) List<String> chooseArtist) {
         return ResponseDto.of(userService.updateArtists(getUser(), chooseArtist));
     }
