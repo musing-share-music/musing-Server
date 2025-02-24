@@ -8,8 +8,11 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Getter // Lombok 어노테이션 : 클래스 내 모든 필드의 Getter 메소드 자동 생성
@@ -28,9 +31,10 @@ public class Notice extends BaseEntity {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    @Column
-    private List<String> images;
+    @Column(columnDefinition = "TEXT")
+    private String images;
 
+    @ColumnDefault("true")
     @Column(nullable = false)
     private boolean activeCheck;
 
@@ -39,11 +43,31 @@ public class Notice extends BaseEntity {
     @JoinColumn(name = "userid", nullable = false)
     private User user;
 
+    public List<String> getImageList() {
+        if (images == null || images.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        String[] imageArray = images.substring(1, images.length() - 1).split(", ");
+        return new ArrayList<>(Arrays.asList(imageArray));
+    }
+
     @Builder
-    public Notice(String title, String content, User user, List<String> images){
+    public Notice(String title, String content, User user, String images){
         this.title = title;
         this.content = content;
         this.user = user;
         this.images = images;
+        this.activeCheck = true;
+    }
+
+    public void updateNotice(String title, String content, String images) {
+        this.title = title;
+        this.content = content;
+        this.images = images;
+    }
+
+    public void softDelete() {
+        this.activeCheck = false;
     }
 }

@@ -1,5 +1,6 @@
 package com.example.musing.notice.controller;
 
+import com.example.musing.common.dto.DeleteImageLinkDto;
 import com.example.musing.common.dto.ResponseDto;
 import com.example.musing.notice.dto.NoticeDto;
 import com.example.musing.notice.dto.NoticeRequestDto;
@@ -39,8 +40,22 @@ public class NoticeController {
     }
 
     @PostMapping(value = "/admin/notice", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseDto<String> notice(@RequestPart NoticeRequestDto requestDto, @RequestPart List<MultipartFile> files) {
+    public ResponseDto<String> createNotice(@RequestPart NoticeRequestDto requestDto, @RequestPart(required = false) List<MultipartFile> files) {
         noticeService.writeNotice(requestDto, files);
         return ResponseDto.of("", "공지사항 작성에 성공했습니다.");
+    }
+
+    @PutMapping(value = "/admin/notice/{noticeId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseDto<String> updateNotice(@PathVariable long noticeId, @RequestPart NoticeRequestDto requestDto,
+                                            @RequestPart(required = false) List<String> deleteFileLinks,
+                                            @RequestPart(required = false) List<MultipartFile> files) {
+        noticeService.modifyNotice(noticeId, requestDto, deleteFileLinks, files);
+        return ResponseDto.of("", "공지사항 수정에 성공했습니다.");
+    }
+
+    @PutMapping(value = "/admin/notice/remove/{noticeId}")
+    public ResponseDto<String> deleteNotice(@PathVariable long noticeId) {
+        noticeService.deleteNotice(noticeId);
+        return ResponseDto.of("", "공지사항 삭제에 성공했습니다.");
     }
 }
