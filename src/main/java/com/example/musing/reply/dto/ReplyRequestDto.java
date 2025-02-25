@@ -12,7 +12,6 @@ public record ReplyRequestDto(
         String content,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
-
 ) {
     public static ReplyRequestDto from(Reply reply) {
         return ReplyRequestDto.builder()
