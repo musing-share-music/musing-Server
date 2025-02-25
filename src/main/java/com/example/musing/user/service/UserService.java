@@ -5,11 +5,9 @@ import com.example.musing.board.dto.BoardListResponseDto;
 import com.example.musing.genre.dto.GenreDto;
 import com.example.musing.mood.dto.MoodDto;
 import com.example.musing.reply.dto.ReplyResponseDto;
-import com.example.musing.reply.entity.Reply;
 import com.example.musing.user.dto.UserResponseDto;
 import com.example.musing.user.entity.User;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -27,8 +25,8 @@ public interface UserService {
     Page<BoardListResponseDto.BoardRecapDto> getMyBoard(User user, int page, String sort);
     Page<BoardListResponseDto.BoardRecapDto> getMyBoardSearch(
             User user, int page, String sort, String searchType, String keyword);
-    Page<ReplyResponseDto> getMyReply(User user, int page, String sort);
-    Page<ReplyResponseDto> getMyReplySearch(User user, int page, String sort, String searchType, String keyword);
+    Page<ReplyResponseDto.MyReplyDto> getMyReply(User user, int page, String sort);
+    Page<ReplyResponseDto.MyReplyDto> getMyReplySearch(User user, int page, String sort, String searchType, String keyword);
     List<GenreDto> updateGenres(User user, List<Long> chooseGenres);
     List<MoodDto> updateMoods(User user, List<Long> chooseMoods);
     List<ArtistDto> updateArtists(User user, List<String> choosertists);

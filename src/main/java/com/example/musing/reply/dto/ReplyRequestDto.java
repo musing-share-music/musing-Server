@@ -6,7 +6,7 @@ import lombok.Builder;
 import java.time.LocalDateTime;
 
 @Builder
-public record ReplyDto(
+public record ReplyRequestDto(
         Long id,
         long starScore,
         String content,
@@ -14,8 +14,8 @@ public record ReplyDto(
         LocalDateTime updatedAt
 
 ) {
-    public static ReplyDto from(Reply reply) {
-        return ReplyDto.builder()
+    public static ReplyRequestDto from(Reply reply) {
+        return ReplyRequestDto.builder()
                 .id(reply.getId())
                 .starScore(reply.getStarScore())
                 .content(reply.getContent())

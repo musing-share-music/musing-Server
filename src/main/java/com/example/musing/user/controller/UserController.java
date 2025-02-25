@@ -29,13 +29,13 @@ public class UserController {
     private final MoodService moodService;
 
     @GetMapping("/my-reply")
-    public ResponseDto<Page<ReplyResponseDto>> selectMyReply(
+    public ResponseDto<Page<ReplyResponseDto.MyReplyDto>> selectMyReply(
             @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "DESC") String sort) {
         return ResponseDto.of(userService.getMyReply(getUser(), page, sort));
     }
 
     @GetMapping("/my-reply/search")
-    public ResponseDto<Page<ReplyResponseDto>> selectMyReplySearch(
+    public ResponseDto<Page<ReplyResponseDto.MyReplyDto>> selectMyReplySearch(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "DESC") String sort,
             @RequestParam(defaultValue = "content") String searchType,
@@ -83,7 +83,7 @@ public class UserController {
         return ResponseDto.of(userService.updateMoods(getUser(), chooseMoods));
     }
 
-    @PostMapping("/artist")
+    @PostMapping("/like/artist")
     public ResponseDto<List<ArtistDto>> updateArtists(@RequestBody(required = false) List<String> chooseArtist) {
         return ResponseDto.of(userService.updateArtists(getUser(), chooseArtist));
     }

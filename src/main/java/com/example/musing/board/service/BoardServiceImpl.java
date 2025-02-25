@@ -24,7 +24,8 @@ import com.example.musing.mood.entity.Mood_Music;
 import com.example.musing.mood.repository.Mood_MusicRepository;
 import com.example.musing.music.entity.Music;
 import com.example.musing.music.repository.MusicRepository;
-import com.example.musing.reply.dto.ReplyDto;
+import com.example.musing.reply.dto.ReplyRequestDto;
+import com.example.musing.reply.dto.ReplyResponseDto;
 import com.example.musing.reply.repository.ReplyRepository;
 import com.example.musing.reply.service.ReplyService;
 import com.example.musing.user.entity.User;
@@ -395,7 +396,7 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public BoardAndReplyPageDto findBoardDetailPage(long boardId) {
         BoardRequestDto.BoardDto boardDto = findBoard(boardId);
-        Page<ReplyDto> replyDtos = replyService.findReplies(boardId, 1, "date", "DESC");
+        Page<ReplyResponseDto.ReplyDto> replyDtos = replyService.findReplies(boardId, 1, "date", "DESC");
 
         return BoardAndReplyPageDto.of(boardDto, replyDtos);
     }
