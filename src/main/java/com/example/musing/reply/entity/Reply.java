@@ -2,7 +2,7 @@ package com.example.musing.reply.entity;
 
 import com.example.musing.board.entity.Board;
 import com.example.musing.common.jpa.BaseEntity;
-import com.example.musing.reply.dto.ReplyDto;
+import com.example.musing.reply.dto.ReplyRequestDto;
 import com.example.musing.report.entity.ReportReply;
 import com.example.musing.user.entity.User;
 import jakarta.persistence.*;
@@ -58,11 +58,11 @@ public class Reply extends BaseEntity {
         this.content = content;
     }
 
-    public static ReplyDto toDto(Reply reply){
-        return ReplyDto.from(reply);
+    public static ReplyRequestDto toDto(Reply reply){
+        return ReplyRequestDto.from(reply);
     }
 
-    public static Reply from(ReplyDto replyDto, User user, Board board) {
+    public static Reply from(ReplyRequestDto replyDto, User user, Board board) {
         return Reply.builder()
                 .starScore(replyDto.starScore())
                 .content(replyDto.content())

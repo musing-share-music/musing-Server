@@ -3,9 +3,8 @@ package com.example.musing.reply.service;
 import com.example.musing.board.entity.Board;
 import com.example.musing.board.repository.BoardRepository;
 import com.example.musing.exception.CustomException;
-import com.example.musing.genre.entity.GerneEnum;
-import com.example.musing.mood.entity.MoodEnum;
-import com.example.musing.reply.dto.ReplyDto;
+import com.example.musing.reply.dto.ReplyRequestDto;
+import com.example.musing.reply.dto.ReplyResponseDto;
 import com.example.musing.reply.entity.Reply;
 import com.example.musing.reply.repository.ReplyRepository;
 import com.example.musing.user.entity.User;
@@ -36,7 +35,7 @@ public class ReplyServiceImpl implements ReplyService {
 
     @Transactional
     @Override
-    public void writeReply(long boardId, ReplyDto replyDto) {
+    public void writeReply(long boardId, ReplyRequestDto replyDto) {
         String email = getUserEmail(); //유저 정보 확인 이후 이메일 가져오기
 
         User user = userRepository.findByEmail(email)
@@ -57,24 +56,24 @@ public class ReplyServiceImpl implements ReplyService {
     }
 
     @Override
-    public ReplyDto findMyReplyByBoardId(long boardId) {
+    public ReplyResponseDto.ReplyDto findMyReplyByBoardId(long boardId) {
         String email = getUserEmail(); //유저 정보 확인 이후 이메일 가져오기
         Optional<Reply> reply = replyRepository.findByBoard_IdAndUser_Email(boardId, email);
-        return reply.map(ReplyDto::from).orElse(null); //없으면 null리턴
+        return reply.map(ReplyResponseDto.ReplyDto::from).orElse(null); //없으면 null리턴
     }
 
     @Override
-    public ReplyDto findMyReplyByReplyId(long replyId) {
+    public ReplyResponseDto.ReplyDto findMyReplyByReplyId(long replyId) {
         String email = getUserEmail(); //유저 정보 확인 이후 이메일 가져오기
         Reply reply = replyRepository.findByIdAndUser_Email(replyId, email)
                 .orElseThrow(() -> new CustomException(NOT_FOUND_REPLY));
 
-        return Reply.toDto(reply);
+        return ReplyResponseDto.ReplyDto.from(reply);
     }
 
     @Transactional
     @Override
-    public void modifyReply(long replyId, ReplyDto replyDto) {
+    public void modifyReply(long replyId, ReplyRequestDto replyDto) {
         String email = getUserEmail(); //유저 정보 확인 이후 이메일 가져오기
         Reply reply = replyRepository.findByBoard_IdAndUser_Email(replyId, email)
                 .orElseThrow(() -> new CustomException(NOT_FOUND_REPLY));
@@ -94,7 +93,7 @@ public class ReplyServiceImpl implements ReplyService {
     }
 
     @Override
-    public Page<ReplyDto> findReplies(long boardId, int page, String sortType, String sort) {
+    public Page<ReplyResponseDto.ReplyDto> findReplies(long boardId, int page, String sortType, String sort) {
         if (page < 1) { // 잘못된 접근으로 throw할때 쿼리문 실행을 안하기 위해 나눠서 체크
             throw new CustomException(BAD_REQUEST_REPLY_PAGE);
         }
@@ -108,7 +107,7 @@ public class ReplyServiceImpl implements ReplyService {
             throw new CustomException(BAD_REQUEST_REPLY_PAGE);
         }
 
-        return pageReply.map(Reply::toDto);
+        return pageReply.map(ReplyResponseDto.ReplyDto::from);
     }
 
     private Page<Reply> sortReplys(long boardId, String sortType, Pageable pageable) {

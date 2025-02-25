@@ -1,20 +1,20 @@
 package com.example.musing.reply.service;
 
-import com.example.musing.reply.dto.ReplyDto;
-import com.example.musing.reply.entity.Reply;
+import com.example.musing.reply.dto.ReplyRequestDto;
+import com.example.musing.reply.dto.ReplyResponseDto;
 import org.springframework.data.domain.Page;
 
 public interface ReplyService {
 
-    void writeReply(long boardId, ReplyDto replyDto);
+    void writeReply(long boardId, ReplyRequestDto replyDto);
 
-    ReplyDto findMyReplyByBoardId(long boardId);
+    ReplyResponseDto.ReplyDto findMyReplyByBoardId(long boardId);
 
-    ReplyDto findMyReplyByReplyId(long replyId);
+    ReplyResponseDto.ReplyDto findMyReplyByReplyId(long replyId);
 
-    void modifyReply(long replyId, ReplyDto replyDto);
+    void modifyReply(long replyId, ReplyRequestDto replyDto);
 
     void deleteReply(long replyId);
 
-    Page<ReplyDto> findReplies(long boardId, int page, String sortType, String sort);
+    Page<ReplyResponseDto.ReplyDto> findReplies(long boardId, int page, String sortType, String sort);
 }

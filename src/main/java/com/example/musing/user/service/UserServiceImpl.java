@@ -8,11 +8,9 @@ import com.example.musing.board.entity.Board;
 import com.example.musing.board.repository.BoardRepository;
 import com.example.musing.exception.CustomException;
 import com.example.musing.genre.dto.GenreDto;
-import com.example.musing.genre.entity.GerneEnum;
 import com.example.musing.genre.repository.GenreRepository;
 import com.example.musing.like_music.repository.Like_MusicRepository;
 import com.example.musing.mood.dto.MoodDto;
-import com.example.musing.mood.entity.MoodEnum;
 import com.example.musing.mood.repository.MoodRepository;
 import com.example.musing.reply.dto.ReplyResponseDto;
 import com.example.musing.reply.entity.Reply;
@@ -58,23 +56,23 @@ public class UserServiceImpl implements UserService {
     private final BoardRepository boardRepository;
     private final ReplyRepository replyRepository;
     @Override
-    public Page<ReplyResponseDto> getMyReplySearch(User user, int page, String sort, String searchType, String keyword) {
+    public Page<ReplyResponseDto.MyReplyDto> getMyReplySearch(User user, int page, String sort, String searchType, String keyword) {
         String userId = user.getId();
 
         Pageable pageable = createPageable(page, sort);
         Page<Reply> myReplyPage = searchReplys(userId, searchType, keyword, pageable);
 
-        return myReplyPage.map(ReplyResponseDto::from);
+        return myReplyPage.map(ReplyResponseDto.MyReplyDto::from);
     }
 
     @Override
-    public Page<ReplyResponseDto> getMyReply(User user, int page, String sort) {
+    public Page<ReplyResponseDto.MyReplyDto> getMyReply(User user, int page, String sort) {
         String userId = user.getId();
 
         Pageable pageable = createPageable(page, sort);
         Page<Reply> myReplyPage = replyRepository.findPageByUserId(userId, pageable);
 
-        return myReplyPage.map(ReplyResponseDto::from);
+        return myReplyPage.map(ReplyResponseDto.MyReplyDto::from);
     }
 
     @Override
@@ -144,7 +142,7 @@ public class UserServiceImpl implements UserService {
 
         List<BoardListResponseDto.BoardRecapDto> myBoard = getMyBoards(userId);
 
-        List<ReplyResponseDto> myReplies = getMyReplies(userId);
+        List<ReplyResponseDto.MyReplyDto> myReplies = getMyReplies(userId);
 
         return UserResponseDto.UserInfoPageDto.of(
                 user, likeGenres, likeMoods, likeArtists, myBoard, myReplies);
@@ -352,9 +350,9 @@ public class UserServiceImpl implements UserService {
                 .toList();
     }
 
-    private List<ReplyResponseDto> getMyReplies(String userId) {
+    private List<ReplyResponseDto.MyReplyDto> getMyReplies(String userId) {
         return replyRepository.findByUserId(userId, PAGEABLE)
-                .stream().map(ReplyResponseDto::from)
+                .stream().map(ReplyResponseDto.MyReplyDto::from)
                 .toList();
     }
 
