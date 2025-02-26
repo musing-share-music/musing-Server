@@ -1,4 +1,4 @@
-package com.example.musing.auth.JWT;
+package com.example.musing.auth.jwt;
 
 import com.example.musing.exception.ErrorCode;
 import com.example.musing.auth.exception.TokenException;
@@ -82,11 +82,11 @@ public class TokenProvider {
     }
 
     //엑세스 토큰 재발급
-    public String reissueAccessToken(String accessToken){
+    public String reissueAccessToken(String memberId){
         log.info("엑세스 토큰 검사");
-        if(StringUtils.hasText(accessToken)){
+        if(memberId != null){
             //엑세스 토큰값으로 리프래시토큰 조회
-            Token token =  tokenService.issueAccessToken(accessToken);
+            Token token =  tokenService.findAccessToken(memberId);
             String refreshToken = token.getRefreshtoken();
             //리프래시 토큰 유효성 체크 후 엑세스 토큰 발급
             if (validateToken(refreshToken)) {

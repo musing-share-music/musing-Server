@@ -1,7 +1,7 @@
-package com.example.musing.auth.Oauth2;
+package com.example.musing.auth.oauth2;
 
-import com.example.musing.auth.JWT.DTO.Oauth2Google;
-import com.example.musing.auth.JWT.DTO.PrincipalDetails;
+import com.example.musing.auth.jwt.dto.Oauth2Google;
+import com.example.musing.auth.jwt.dto.PrincipalDetails;
 import com.example.musing.common.utils.youtube.YoutubeService;
 import com.example.musing.user.entity.User;
 import com.example.musing.user.repository.UserRepository;

@@ -1,8 +1,8 @@
 package com.example.musing.auth.handler;
 
-import com.example.musing.auth.JWT.Token;
-import com.example.musing.auth.JWT.TokenProvider;
-import com.example.musing.auth.JWT.TokenService;
+import com.example.musing.auth.jwt.Token;
+import com.example.musing.auth.jwt.TokenProvider;
+import com.example.musing.auth.jwt.TokenService;
 import com.example.musing.auth.exception.AuthorityException;
 import com.example.musing.exception.ErrorCode;
 import jakarta.servlet.ServletException;
