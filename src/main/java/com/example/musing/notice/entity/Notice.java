@@ -45,7 +45,7 @@ public class Notice extends BaseEntity {
 
     public List<String> getImageList() {
         if (images == null || images.isEmpty()) {
-            return new ArrayList<>();
+            return null;
         }
 
         String[] imageArray = images.substring(1, images.length() - 1).split(", ");
