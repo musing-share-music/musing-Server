@@ -5,6 +5,7 @@ import com.example.musing.notice.dto.NoticeDto;
 import com.example.musing.notice.dto.NoticeRequestDto;
 import com.example.musing.notice.service.NoticeService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
@@ -12,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-
+@Tag(name = "공지사항 API")
 @RequestMapping("/musing")
 @RequiredArgsConstructor
 @RestController
