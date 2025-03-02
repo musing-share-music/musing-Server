@@ -31,7 +31,7 @@ public class GenreServiceImpl implements GenreService {
         Random random = new Random();
         long index = 0;
         if (genreRepository.count() != 0) {
-            index = random.nextLong(genreRepository.count());
+            index = random.nextLong(genreRepository.count() - 1);
         }
         GenreDto genreMusicDto = GenreDto.toDto(genreRepository.findById(index).orElseThrow(() -> new CustomException(NOT_FOUND_GENRE)));
         return genreMusicDto;
