@@ -88,7 +88,7 @@ public class NoticeServiceImpl implements NoticeService {
                 .title(requestDto.title())
                 .content(requestDto.content())
                 .user(getUser())
-                .images(uploadImages(files).toString())
+                .images(uploadImages(files) == null ? null : uploadImages(files).toString())
                 .build();
         noticeRepository.save(notice);
     }
@@ -122,7 +122,8 @@ public class NoticeServiceImpl implements NoticeService {
 
         }
 
-        notice.updateNotice(requestDto.title(), requestDto.content(), images.toString());
+        notice.updateNotice(requestDto.title(), requestDto.content(),
+                images.isEmpty() ? null : images.toString());
     }
 
     @Override

@@ -1,6 +1,6 @@
 package com.example.musing.config;
 
-import com.example.musing.auth.Oauth2.CustomOauth2UserService;
+import com.example.musing.auth.oauth2.CustomOauth2UserService;
 import com.example.musing.auth.handler.CustomAccessDeniedHandler;
 import com.example.musing.auth.handler.CustomAuthenticationEntryPoint;
 import com.example.musing.auth.handler.OAuth2FailureHandler;
@@ -53,7 +53,6 @@ public class SecurityConfig {
                 // oauth2 사용으로 기존 시큐리티 로그인 페이지 차단
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
-                .logout(AbstractHttpConfigurer::disable) //로그아웃할때 쿠키 삭제하는거 해야할듯
                 //JWT 사용으로 세션 사용하지않음
                 .sessionManagement(c ->
                         c.sessionCreationPolicy(SessionCreationPolicy.STATELESS)

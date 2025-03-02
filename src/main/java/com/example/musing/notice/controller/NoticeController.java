@@ -39,7 +39,8 @@ public class NoticeController {
     }
 
     @PostMapping(value = "/admin/notice", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseDto<String> createNotice(@RequestPart NoticeRequestDto requestDto, @RequestPart(required = false) List<MultipartFile> files) {
+    public ResponseDto<String> createNotice(@RequestPart NoticeRequestDto requestDto,
+                                            @RequestPart(required = false) List<MultipartFile> files) {
         noticeService.writeNotice(requestDto, files);
         return ResponseDto.of("", "공지사항 작성에 성공했습니다.");
     }

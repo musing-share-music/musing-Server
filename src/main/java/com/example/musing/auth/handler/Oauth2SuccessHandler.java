@@ -1,8 +1,8 @@
 package com.example.musing.auth.handler;
 
-import com.example.musing.auth.JWT.Token;
-import com.example.musing.auth.JWT.TokenProvider;
-import com.example.musing.auth.JWT.TokenService;
+import com.example.musing.auth.jwt.CookieService;
+import com.example.musing.auth.jwt.Token;
+import com.example.musing.auth.jwt.TokenService;
 import com.example.musing.auth.exception.AuthorityException;
 import com.example.musing.exception.ErrorCode;
 import jakarta.servlet.ServletException;
@@ -26,7 +26,7 @@ import java.util.Optional;
 @Component
 @Slf4j
 public class Oauth2SuccessHandler implements AuthenticationSuccessHandler {
-    private final TokenProvider tokenProvider;
+    private final CookieService cookieService;
     private final TokenService tokenService;
 
     @Value("${client.host}")
@@ -46,8 +46,8 @@ public class Oauth2SuccessHandler implements AuthenticationSuccessHandler {
         }
         if (authorization == null) {
             //엑세스 토큰 및 리프래시 토큰 생성
-            String accessToken = tokenProvider.generateAccessToken(authentication);
-            Cookie cookie = tokenProvider.generateCookie(accessToken);
+            String accessToken = tokenService.generateAccessToken(authentication);
+            Cookie cookie = cookieService.generateCookie(accessToken);
             response.addCookie(cookie);
 
             String userId = authentication.getName();
@@ -57,7 +57,7 @@ public class Oauth2SuccessHandler implements AuthenticationSuccessHandler {
                 //리프래쉬 토큰 로테이션을 위해 그냥 지우고 다시 생성
                 tokenService.deleteRefreshToken(accessToken);
             }
-            tokenProvider.generateRefreshToken(null, authentication, accessToken);
+            tokenService.generateRefreshToken(null, authentication, accessToken);
         }
         //관리자일때랑 아닐때 구분해서
         OAuth2User oAuth2User = (OAuth2User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();

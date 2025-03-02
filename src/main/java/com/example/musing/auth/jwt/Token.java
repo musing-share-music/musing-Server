@@ -1,4 +1,4 @@
-package com.example.musing.auth.JWT;
+package com.example.musing.auth.jwt;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

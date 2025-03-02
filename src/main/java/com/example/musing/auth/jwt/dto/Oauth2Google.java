@@ -1,4 +1,4 @@
-package com.example.musing.auth.JWT.DTO;
+package com.example.musing.auth.jwt.dto;
 
 
 
