@@ -10,6 +10,7 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.util.ArrayList;
@@ -52,8 +53,9 @@ public class Board extends BaseEntity {
     @Column(nullable = false)
     private boolean activeCheck;
 
+    @ColumnDefault("NON_CHECK")
     @Column(nullable = false)
-    private boolean permitRegister;
+    private CheckRegister permitRegister;
 
     @Column
     private String image;
@@ -87,6 +89,10 @@ public class Board extends BaseEntity {
         this.image = image;
         this.user = user;
         this.music = music;
+    }
+
+    public void updateRegister(CheckRegister checkRegister) {
+        this.permitRegister = checkRegister;
     }
 
     public static PostDto toDto(Board board) {
