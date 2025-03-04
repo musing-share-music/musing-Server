@@ -1,7 +1,7 @@
 package com.example.musing.admin.board.service;
 
+import com.example.musing.admin.board.repository.AdminBoardRepository;
 import com.example.musing.board.entity.Board;
-import com.example.musing.board.repository.BoardRepository;
 import com.example.musing.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,10 @@ import static com.example.musing.exception.ErrorCode.NOT_FOUND_BOARD;
 @RequiredArgsConstructor
 @Service
 public class AdminBoardServiceImpl implements AdminBoardService {
-    private final BoardRepository boardRepository;
+    private final AdminBoardRepository boardRepository;
+
+
+
     @Transactional
     @Override
     public void updateBoardStateNeedFix(long boardId) {
