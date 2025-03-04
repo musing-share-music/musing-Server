@@ -56,6 +56,7 @@ public class Board extends BaseEntity {
     private boolean activeCheck;
 
     @ColumnDefault("NON_CHECK")
+    @Enumerated(value = EnumType.STRING)
     @Column(nullable = false)
     private CheckRegister permitRegister;
 
