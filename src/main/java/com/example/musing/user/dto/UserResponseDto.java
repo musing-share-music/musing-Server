@@ -26,6 +26,7 @@ public class UserResponseDto {
 
     @Builder
     public record UserInfoDto(
+            String userId,
             String email,
             String name,
             String authority,
@@ -34,6 +35,7 @@ public class UserResponseDto {
     ) {
         public static UserInfoDto of(User user, int likeMusicCount, int myPlaylistCount) {
             return UserInfoDto.builder()
+                    .userId(user.getId())
                     .email(user.getEmail())
                     .name(user.getUsername())
                     .authority(user.getRole().name())
