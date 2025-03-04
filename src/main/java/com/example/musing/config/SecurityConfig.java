@@ -66,6 +66,7 @@ public class SecurityConfig {
                         //사용자 전체 허용
                         .requestMatchers("/musing/main").permitAll()
                         .requestMatchers("/musing/signup").permitAll() //회원가입 도메인 1단계가 필요없이 구글 로그인 부분으로 되면 이렇게 적용
+                        .requestMatchers("/musing/auth/**").permitAll()
                         .requestMatchers("/musing/notice/**").permitAll()
                         .requestMatchers("/musing/board/**").permitAll()
                         //관리자 전용 도메인 허용

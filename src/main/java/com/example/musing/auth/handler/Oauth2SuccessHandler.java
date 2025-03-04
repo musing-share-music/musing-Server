@@ -44,11 +44,11 @@ public class Oauth2SuccessHandler implements AuthenticationSuccessHandler {
                 break;
             }
         }
+
         if (authorization == null) {
             //엑세스 토큰 및 리프래시 토큰 생성
             String accessToken = tokenService.generateAccessToken(authentication);
-            Cookie cookie = cookieService.generateCookie(accessToken);
-            response.addCookie(cookie);
+            cookieService.generateCookie(accessToken, response);
 
             String userId = authentication.getName();
             Optional<Token> token = tokenService.findById(userId);//리프래시 토큰있나 확인
@@ -57,7 +57,9 @@ public class Oauth2SuccessHandler implements AuthenticationSuccessHandler {
                 //리프래쉬 토큰 로테이션을 위해 그냥 지우고 다시 생성
                 tokenService.deleteRefreshToken(accessToken);
             }
-            tokenService.generateRefreshToken(null, authentication, accessToken);
+            String ipAdress = tokenService.getClientIpAddress(request);
+            String userAgent = tokenService.getClientUserAgent(request);
+            tokenService.generateRefreshToken(null, authentication, ipAdress, userAgent);
         }
         //관리자일때랑 아닐때 구분해서
         OAuth2User oAuth2User = (OAuth2User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
