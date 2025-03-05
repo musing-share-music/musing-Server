@@ -1,6 +1,7 @@
 package com.example.musing.board.dto;
 
 import com.example.musing.board.entity.Board;
+import com.example.musing.board.entity.CheckRegister;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
@@ -28,7 +29,7 @@ public class PostDto {
     private boolean activeCheck; // 등록/조회 공통
 
     @Schema(description = "승인여부", example = "관리자 승인 시 음악 데이터 생성")
-    private boolean permitRegister; // 등록/조회 공통
+    private CheckRegister permitRegister; // 등록/조회 공통
 
     @Schema(description = "이미지", example = "글 등록 관련 이미지")
     private String image; // 등록/조회 공통
@@ -44,7 +45,7 @@ public class PostDto {
                 .recommendCount(board.getRecommendCount())
                 .viewCount(board.getViewCount())
                 .activeCheck(board.isActiveCheck())
-                .permitRegister(board.isPermitRegister())
+                .permitRegister(board.getPermitRegister())
                 .image(board.getImage())
                 .build();
     }
@@ -59,7 +60,7 @@ public class PostDto {
                 .recommendCount(0)// 등록 시 기본값 설정
                 .viewCount(0) // 등록 시 기본값 설정
                 .activeCheck(postDto.isActiveCheck())
-                .permitRegister(postDto.isPermitRegister())
+                .permitRegister(postDto.getPermitRegister())
                 .image(postDto.getImage())
                 .build();
     }

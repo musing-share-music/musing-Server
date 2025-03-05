@@ -13,6 +13,7 @@ public enum ErrorCode {
     TOKEN_EXPIRED(UNAUTHORIZED, "토큰이 만료되었습니다."),
     INVALID_TOKEN(UNAUTHORIZED, "올바르지 않은 토큰입니다."),
     INVALID_JWT_SIGNATURE(UNAUTHORIZED, "잘못된 JWT 시그니처입니다."),
+    NEW_ENVIRONMENT_LOGIN(UNAUTHORIZED, "새로운 환경에 로그인했습니다."),
 
     // 권한 설정 예외처리
     INVALID_AUTHORITY(UNAUTHORIZED, "잘못된 권한 설정입니다"),

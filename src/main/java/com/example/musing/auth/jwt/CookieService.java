@@ -1,12 +1,13 @@
 package com.example.musing.auth.jwt;
 
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
 
 @Component
 public class CookieService {
     //쿠키 생성
-    public Cookie generateCookie(String accessToken){
+    public void generateCookie(String accessToken, HttpServletResponse response){
         String cookieName = "accessToken";
         String cookieValue = accessToken;
         Cookie cookie = new Cookie(cookieName,cookieValue);
@@ -16,6 +17,6 @@ public class CookieService {
         cookie.setPath("/");
         cookie.setMaxAge(60*30);
 
-        return cookie;
+        response.addCookie(cookie);
     }
 }

@@ -44,6 +44,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.example.musing.board.entity.CheckRegister.NEED_FIX;
+import static com.example.musing.board.entity.CheckRegister.PERMIT;
 import static com.example.musing.exception.ErrorCode.*;
 
 @Transactional(readOnly = true)
@@ -64,9 +66,6 @@ public class BoardServiceImpl implements BoardService {
     private final GenreRepository genreRepository;
     private final Artist_MusicRepository artist_musicRepository;
     private final Genre_MusicRepository genre_musicRepository;
-    private final Mood_MusicRepository mood_musicRepository;
-    private final ReplyRepository replyRepository;
-
 
     @Override
     public List<GenreBoardDto> findBy5GenreBoard(String genre) { //장르로 검색한 게시글들을 엔티티에서 Dto로 전환

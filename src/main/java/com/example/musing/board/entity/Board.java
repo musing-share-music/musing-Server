@@ -10,10 +10,13 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.example.musing.board.entity.CheckRegister.NON_CHECK;
 
 @Getter // Lombok 어노테이션 : 클래스 내 모든 필드의 Getter 메소드 자동 생성
 @NoArgsConstructor// Lombok 어노테이션 : 기본 생성자 자동 추가
@@ -52,8 +55,10 @@ public class Board extends BaseEntity {
     @Column(nullable = false)
     private boolean activeCheck;
 
+    @ColumnDefault("NON_CHECK")
+    @Enumerated(value = EnumType.STRING)
     @Column(nullable = false)
-    private boolean permitRegister;
+    private CheckRegister permitRegister;
 
     @Column
     private String image;
@@ -78,15 +83,20 @@ public class Board extends BaseEntity {
     private List<ReportBoard> Reports = new ArrayList<>();
 
     @Builder
-    public Board(String title, String content, boolean activeCheck, String image, int recommendCount, int viewCount, boolean permitRegister,User user,Music music) {
+    public Board(String title, String content, boolean activeCheck, String image, int recommendCount, int viewCount, CheckRegister permitRegister ,User user,Music music) {
         this.title = title;
         this.content = content;
         this.recommendCount = 0; // 기본값 설정
         this.viewCount = 0; // 기본값 설정
         this.activeCheck = activeCheck;
+        this.permitRegister = NON_CHECK;
         this.image = image;
         this.user = user;
         this.music = music;
+    }
+
+    public void updateRegister(CheckRegister checkRegister) {
+        this.permitRegister = checkRegister;
     }
 
     public static PostDto toDto(Board board) {
