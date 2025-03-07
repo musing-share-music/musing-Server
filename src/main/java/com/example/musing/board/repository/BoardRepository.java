@@ -62,7 +62,8 @@ public interface BoardRepository extends JpaRepository<Board, Long>, JpaSpecific
     @Query("SELECT DISTINCT b FROM Board b " +
             "JOIN FETCH b.music m " +
             "JOIN FETCH m.artists a " +
-            "WHERE b.id = :boardId")
+            "JOIN FETCH b.user u " +
+            "WHERE b.activeCheck = true AND b.id = :boardId")
     Board findBoardWithMusicAndArtist(@Param("boardId") Long boardId);
 
     @EntityGraph(attributePaths = {"music", "user"})

@@ -12,9 +12,12 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 
 public interface AdminBoardRepository extends JpaRepository<Board, Long>, JpaSpecificationExecutor<Board> {
-    @EntityGraph(attributePaths = {"music", "user"})
-    @Query("SELECT b FROM Board b WHERE b.activeCheck = false AND b.id = :boardId")
-    Optional<Board> findDeleteBoardById(@Param("boardId") long boardId);
+    @Query("SELECT DISTINCT b FROM Board b " +
+            "JOIN FETCH b.music m " +
+            "JOIN FETCH m.artists a " +
+            "JOIN FETCH b.user u " +
+            "WHERE b.activeCheck = true AND b.id = :boardId")
+    Board findBoardWithMusicAndArtist(@Param("boardId") Long boardId);
 
     @EntityGraph(attributePaths = {"user"})
     @Query("SELECT b FROM Board b WHERE b.activeCheck = false ORDER BY b.createdAt DESC")
