@@ -13,14 +13,14 @@ import org.springframework.web.bind.annotation.*;
 public class AdminBoardController {
     private AdminBoardService adminBoardService;
 
-    @GetMapping("/list/removed/page")
+    @GetMapping("/list/removed")
     public ResponseDto<Page<AdminBoardResponseDto.BoardListDto>> getDeleteBoards(
             @RequestParam(name = "page", defaultValue = "1") int page) {
         Page<AdminBoardResponseDto.BoardListDto> responseList = adminBoardService.getDeletedPage(page);
         return ResponseDto.of(responseList);
     }
 
-    @GetMapping("/list/removed/page/search")
+    @GetMapping("/list/removed/search")
     public ResponseDto<Page<AdminBoardResponseDto.BoardListDto>> getDeleteBoardsByKeyword(
             @RequestParam(name = "page", defaultValue = "1") int page,
             @RequestParam(name = "searchType") String searchType,
@@ -30,14 +30,14 @@ public class AdminBoardController {
         return ResponseDto.of(responseList);
     }
 
-    @GetMapping("/list/page")
+    @GetMapping("/list")
     public ResponseDto<Page<AdminBoardResponseDto.BoardListDto>> getBoards(
             @RequestParam(name = "page", defaultValue = "1") int page) {
         Page<AdminBoardResponseDto.BoardListDto> responseList = adminBoardService.getRegisterPermitPage(page);
         return ResponseDto.of(responseList);
     }
 
-    @GetMapping("/list/page/search")
+    @GetMapping("/list/search")
     public ResponseDto<Page<AdminBoardResponseDto.BoardListDto>> getBoardsByKeyword(
             @RequestParam(name = "page", defaultValue = "1") int page,
             @RequestParam(name = "searchType") String searchType,
