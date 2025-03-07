@@ -216,7 +216,7 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public Page<BoardListResponseDto.BoardDto> findBoardDto(int page) {
         if (page < 1) { // 잘못된 접근으로 throw할때 쿼리문 실행을 안하기 위해 나눠서 체크
-            throw new CustomException(BAD_REQUEST_REPLY_PAGE);
+            throw new CustomException(BAD_REQUEST_BOARD_PAGE);
         }
 
         Pageable pageable = PageRequest.of(page - 1, PAGESIZE);
@@ -224,7 +224,7 @@ public class BoardServiceImpl implements BoardService {
 
         int totalPages = boards.getTotalPages();
         if (page - 1 > totalPages) {
-            throw new CustomException(BAD_REQUEST_REPLY_PAGE);
+            throw new CustomException(BAD_REQUEST_BOARD_PAGE);
         }
 
         return boards.map(board -> {
@@ -239,7 +239,7 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public Page<BoardListResponseDto.BoardDto> search(int page, String searchType, String keyword) {
         if (page < 1) { // 잘못된 접근으로 throw할때 쿼리문 실행을 안하기 위해 나눠서 체크
-            throw new CustomException(BAD_REQUEST_REPLY_PAGE);
+            throw new CustomException(BAD_REQUEST_BOARD_PAGE);
         }
 
         Pageable pageable = PageRequest.of(page - 1, PAGESIZE);
@@ -249,7 +249,7 @@ public class BoardServiceImpl implements BoardService {
         int totalPages = boards.getTotalPages();
 
         if (page - 1 > totalPages) {
-            throw new CustomException(BAD_REQUEST_REPLY_PAGE);
+            throw new CustomException(BAD_REQUEST_BOARD_PAGE);
         }
 
         return boards.map(board -> {
