@@ -216,7 +216,7 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public Page<BoardListResponseDto.BoardDto> findBoardDto(int page) {
         if (page < 1) { // 잘못된 접근으로 throw할때 쿼리문 실행을 안하기 위해 나눠서 체크
-            throw new CustomException(BAD_REQUEST_REPLY_PAGE);
+            throw new CustomException(BAD_REQUEST_BOARD_PAGE);
         }
 
         Pageable pageable = PageRequest.of(page - 1, PAGESIZE);
@@ -224,7 +224,7 @@ public class BoardServiceImpl implements BoardService {
 
         int totalPages = boards.getTotalPages();
         if (page - 1 > totalPages) {
-            throw new CustomException(BAD_REQUEST_REPLY_PAGE);
+            throw new CustomException(BAD_REQUEST_BOARD_PAGE);
         }
 
         return boards.map(board -> {
@@ -239,7 +239,7 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public Page<BoardListResponseDto.BoardDto> search(int page, String searchType, String keyword) {
         if (page < 1) { // 잘못된 접근으로 throw할때 쿼리문 실행을 안하기 위해 나눠서 체크
-            throw new CustomException(BAD_REQUEST_REPLY_PAGE);
+            throw new CustomException(BAD_REQUEST_BOARD_PAGE);
         }
 
         Pageable pageable = PageRequest.of(page - 1, PAGESIZE);
@@ -249,7 +249,7 @@ public class BoardServiceImpl implements BoardService {
         int totalPages = boards.getTotalPages();
 
         if (page - 1 > totalPages) {
-            throw new CustomException(BAD_REQUEST_REPLY_PAGE);
+            throw new CustomException(BAD_REQUEST_BOARD_PAGE);
         }
 
         return boards.map(board -> {
@@ -343,20 +343,12 @@ public class BoardServiceImpl implements BoardService {
     }
 
     public DetailResponse selectDetail(long boardId) {
-
         Board board = boardRepository.findBoardWithMusicAndArtist(boardId);
         if (!boardRepository.existsById(boardId)) {
             throw new CustomException(NOT_FOUND_BOARD);
         }
 
-        // 첫 번째 Music 정보 가져오기
         Music music = board.getMusic();
-
-        // 첫 번째 Music이 없으면 기본 값 설정
-        String musicTitle = (music != null) ? music.getName() : null;
-        String playtime = (music != null) ? music.getPlaytime() : null;
-        String albumName = (music != null) ? music.getAlbumName() : null;
-        String songLink = (music != null) ? music.getSongLink() : null;
 
         // 첫 번째 Music의 Artist 정보 가져오기
         String artistNames = (music != null && !music.getArtists().isEmpty())
@@ -369,19 +361,7 @@ public class BoardServiceImpl implements BoardService {
                 ? music.getArtists().get(0).getArtist().getId() // 첫 번째 아티스트의 장르 ID 사용
                 : null;
 
-        return DetailResponse.builder()
-                .title(board.getTitle())
-                .musicTitle(musicTitle)
-                .artist(artistNames)
-                .youtubeLink(board.getMusic().getSongLink())
-                .hashtags(extractHashtags(board.getContent())) // 해시태그 추출
-                .genre(genreId)
-                .content(board.getContent())
-                .playtime(playtime)
-                .AlbumName(albumName)
-                .songLink(songLink)
-                .thumbNailLink(board.getImage())
-                .build();
+        return DetailResponse.of(board, artistNames, extractHashtags(board.getContent()), genreId);
     }
 
     private List<String> extractHashtags(String content) {
