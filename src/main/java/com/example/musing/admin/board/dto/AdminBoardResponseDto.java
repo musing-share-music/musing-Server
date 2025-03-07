@@ -4,32 +4,23 @@ import com.example.musing.artist.dto.ArtistDto;
 import com.example.musing.board.entity.Board;
 import com.example.musing.genre.dto.GenreDto;
 import com.example.musing.mood.dto.MoodDto;
+import com.example.musing.user.entity.User;
 import lombok.Builder;
 
-import java.util.List;
+import java.time.LocalDateTime;
 
 public class AdminBoardResponseDto {
     @Builder
-    public record BoardDto(
+    public record BoardListDto(
             String title,
-            String musicName,
-            List<ArtistDto> artists,
-            float rating,
-            int replyCount,
-            String thumbNailLink,
-            List<GenreDto> genreList,
-            List<MoodDto> moodList
+            String username,
+            LocalDateTime createdAt
     ) {
-        public static AdminBoardResponseDto.BoardDto toDto(Board board , List<GenreDto> genreList, List<MoodDto> moodList, List<ArtistDto> artists) {
-            return AdminBoardResponseDto.BoardDto.builder()
+        public static BoardListDto toDto(Board board) {
+            return BoardListDto.builder()
                     .title(board.getTitle())
-                    .musicName(board.getMusic().getName())
-                    .artists(artists)
-                    .rating(board.getRating())
-                    .replyCount(board.getReplyCount())
-                    .thumbNailLink(board.getMusic().getThumbNailLink())
-                    .genreList(genreList)
-                    .moodList(moodList)
+                    .username(board.getUser().getUsername())
+                    .createdAt(board.getCreatedAt())
                     .build();
         }
     }
