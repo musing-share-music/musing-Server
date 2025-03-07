@@ -19,10 +19,6 @@ public interface BoardService {
     //게시판 등록 로직
     void createBoard(CreateBoardRequest request, List<MultipartFile> images);
 
-
-
-
-
     BoardListResponseDto.BoardListDto findBoardList();
     Page<BoardListResponseDto.BoardDto> findBoardDto(int page);
 
