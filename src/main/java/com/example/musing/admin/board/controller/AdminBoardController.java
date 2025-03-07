@@ -16,7 +16,7 @@ public class AdminBoardController {
 
     @Operation(summary = "삭제된 게시글 조회",
             description = "page 파라미터를 통해 다른 페이지 이동이 가능합니다.")
-    @GetMapping("/list/removed/page")
+    @GetMapping("/list/removed")
     public ResponseDto<Page<AdminBoardResponseDto.BoardListDto>> getDeleteBoards(
             @RequestParam(name = "page", defaultValue = "1") int page) {
         Page<AdminBoardResponseDto.BoardListDto> responseList = adminBoardService.getDeletedPage(page);
@@ -27,7 +27,7 @@ public class AdminBoardController {
             description = "page 파라미터를 통해 다른 페이지 이동이 가능합니다.<br>" +
                     "searchType 종류는 ['title', 'username'] 종류로 있습니다.<br>" +
                     "keyword는 검색창에 입력한 단어입니다.")
-    @GetMapping("/list/removed/page/search")
+    @GetMapping("/list/removed/search")
     public ResponseDto<Page<AdminBoardResponseDto.BoardListDto>> getDeleteBoardsByKeyword(
             @RequestParam(name = "page", defaultValue = "1") int page,
             @RequestParam(name = "searchType") String searchType,
@@ -38,7 +38,7 @@ public class AdminBoardController {
     }
     @Operation(summary = "승인 요청이 된 페이지 리스트 조회",
             description = "page 파라미터를 통해 다른 페이지 이동이 가능합니다.")
-    @GetMapping("/list/page")
+    @GetMapping("/list")
     public ResponseDto<Page<AdminBoardResponseDto.BoardListDto>> getBoards(
             @RequestParam(name = "page", defaultValue = "1") int page) {
         Page<AdminBoardResponseDto.BoardListDto> responseList = adminBoardService.getRegisterPermitPage(page);
@@ -49,7 +49,7 @@ public class AdminBoardController {
             description = "page 파라미터를 통해 다른 페이지 이동이 가능합니다.<br>" +
                     "searchType 종류는 ['title', 'username'] 종류로 있습니다.<br>" +
                     "keyword는 검색창에 입력한 단어입니다.")
-    @GetMapping("/list/page/search")
+    @GetMapping("/list/search")
     public ResponseDto<Page<AdminBoardResponseDto.BoardListDto>> getBoardsByKeyword(
             @RequestParam(name = "page", defaultValue = "1") int page,
             @RequestParam(name = "searchType") String searchType,
