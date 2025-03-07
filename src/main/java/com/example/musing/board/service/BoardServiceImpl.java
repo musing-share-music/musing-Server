@@ -425,7 +425,6 @@ public class BoardServiceImpl implements BoardService {
         }
 
         // 조건에 맞는 3개 이하의 게시글 가져오기
-        List<Board> randomBoard = selectRandomBoards(boards, 3);
         BoardListResponseDto.RecommendBoardFirstDto firstPopUpDto = findBoardListPopUpFirst(boards);
 
         List<BoardListResponseDto.BoardRecapDto> boardPopUpDto = new ArrayList<>();
@@ -462,23 +461,6 @@ public class BoardServiceImpl implements BoardService {
     private List<Board> findBySpecBoard(Specification<Board> spec, PageRequest request) {
         Page<Board> boards = boardRepository.findAll(spec, request); //조건에 부합하는 게시글 전부가져오기
         return boards.getContent();
-    }
-
-    // 랜덤한 게시글을 가져오는 메서드
-    private List<Board> selectRandomBoards(List<Board> boards, int count) {
-        int effectiveCount = Math.min(count, boards.size());
-
-        Set<Integer> selectedIndices = new HashSet<>();
-        Random random = new Random();
-
-        while (selectedIndices.size() < effectiveCount) {
-            int randomIndex = random.nextInt(boards.size());
-            selectedIndices.add(randomIndex);
-        }
-
-        return selectedIndices.stream()
-                .map(boards::get)
-                .collect(Collectors.toList());
     }
 
     private BoardListResponseDto.RecommendBoardFirstDto findBoardListPopUpFirst(List<Board> boards) {
