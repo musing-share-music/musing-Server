@@ -351,17 +351,15 @@ public class BoardServiceImpl implements BoardService {
         Music music = board.getMusic();
 
         // 첫 번째 Music의 Artist 정보 가져오기
-        String artistNames = (music != null && !music.getArtists().isEmpty())
-                ? music.getArtists().stream()
+        List<String> artistNames = music.getArtists().stream()
                 .map(am -> am.getArtist().getName())
-                .collect(Collectors.joining(", ")) // 여러 명일 경우 쉼표로 구분
-                : null;
+                .toList();
 
-        Long genreId = (music != null && !music.getArtists().isEmpty())
-                ? music.getArtists().get(0).getArtist().getId() // 첫 번째 아티스트의 장르 ID 사용
-                : null;
+        List<String> genreNames = music.getGenreMusics().stream()
+                .map(Genre_Music::getGenre)
+                .map(genre -> genre.getGenreName().getKey()).toList();
 
-        return DetailResponse.of(board, artistNames, extractHashtags(board.getContent()), genreId);
+        return DetailResponse.of(board, artistNames, extractHashtags(board.getContent()), genreNames);
     }
 
     private List<String> extractHashtags(String content) {
@@ -394,7 +392,7 @@ public class BoardServiceImpl implements BoardService {
         return board.getMusic().getGenreMusics().stream()
                 .map(Genre_Music::getGenre)
                 .map(GenreDto::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     //게시글의 음악에 포함된 분위기를 Dto로 담아 리스트로 반환
@@ -402,7 +400,7 @@ public class BoardServiceImpl implements BoardService {
         return board.getMusic().getMoodMusics().stream()
                 .map(Mood_Music::getMood)
                 .map(MoodDto::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     //게시글의 음악에 포함된 아티스트를 Dto로 담아 리스트로 반환
@@ -410,7 +408,7 @@ public class BoardServiceImpl implements BoardService {
         return board.getMusic().getArtists().stream()
                 .map(Artist_Music::getArtist)
                 .map(ArtistDto::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     // 음악 추천 게시판 상단

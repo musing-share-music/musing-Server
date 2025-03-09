@@ -16,23 +16,26 @@ public record DetailResponse(
     String username,
     LocalDateTime createdAt,
     LocalDateTime updatedAt,
-    String artist,
+    List<String> artist,
     String youtubeLink,
     List<String> hashtags,
-    Long genre,
+    List<String> genre,
     String content,
     String playtime,
     String AlbumName,
     String songLink,
     String thumbNailLink) {
-    public static DetailResponse of(Board board, String artistsName, List<String> hashtags, Long genreIds) {
+    public static DetailResponse of(Board board, List<String> artistsName, List<String> hashtags, List<String> genreName) {
         return DetailResponse.builder()
                 .title(board.getTitle())
                 .musicTitle(board.getMusic().getName())
+                .username(board.getUser().getUsername())
+                .createdAt(board.getCreatedAt())
+                .updatedAt(board.getUpdatedAt())
                 .artist(artistsName)
                 .youtubeLink(board.getMusic().getSongLink())
                 .hashtags(hashtags) // 해시태그 추출
-                .genre(genreIds)
+                .genre(genreName)
                 .content(board.getContent())
                 .playtime(board.getMusic().getPlaytime())
                 .AlbumName(board.getMusic().getAlbumName())
