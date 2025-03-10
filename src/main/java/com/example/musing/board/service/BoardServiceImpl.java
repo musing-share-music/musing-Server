@@ -123,9 +123,6 @@ public class BoardServiceImpl implements BoardService {
     @Override
     @Transactional
     public void createBoard(CreateBoardRequest request, List<MultipartFile> images) {
-        // 유저명 저장
-        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-
         // 파일명 리스트 생성
         List<String> fileNames = new ArrayList<>();
         if (images == null || images.isEmpty()) {
@@ -138,50 +135,47 @@ public class BoardServiceImpl implements BoardService {
                 fileNames.add(fileName);
             }
         }
-
-        // Artist 저장
-        Artist artist = Artist.builder()
-                .name(request.getArtist()) // request.getArtist()는 Artist의 이름(String)이라고 가정
-                .build();
-
         // Music 저장
-        Music music = Music.builder()
-                .name(request.getMusicTitle())
-                .playtime(request.getPlaytime())
-                .albumName(request.getAlbumName())
-                .songLink(request.getSongLink())
-                .thumbNailLink(request.getThumbNailLink())
-                .build();
+        Music music = Music.of(request);
+        musicRepository.save(music);
 
-        Artist_Music artistMusic = Artist_Music.of(artist, music);
+        // Artist 확인 및 저장, 중간 테이블 저장
+        List<Artist_Music> artistMusics = new ArrayList<>();
 
+        for(String artistName : request.getArtist()) {
+            Optional<Artist> optionalArtist = artistRepository.findByName(artistName);
 
-        Long genreId = request.getGenre();
-        if (genreId == null || genreId <= 0) {
+            if(optionalArtist.isEmpty()) { //해당 아티스트가 존재하지 않을 때
+                Artist artist = Artist.of(artistName);
+                artistRepository.save(artist);
+
+                artistMusics.add(Artist_Music.of(
+                        artist, music));
+            } else {
+                artistMusics.add(Artist_Music.of(
+                        optionalArtist.get(), music)); //바로 불러와서 중간 테이블을 저장하기 위한 리스트에 적재
+            }
+        }
+
+        artist_musicRepository.saveAll(artistMusics);
+        
+        //받은 장르의 Id리스트 여부 체크
+        if (request.getGenre() == null || request.getGenre().isEmpty()) {
             throw new CustomException(NOT_FOUND_GENRE);
         }
 
+        // 중간테이블 저장을 위한 테이블 선언
+        List<Genre_Music> musicGenre = new ArrayList<>();
 
-        Genre genre = genreRepository.findById(genreId).orElseThrow(() -> new CustomException(NOT_FOUND_GENRE));
+        // 장르 Id확인 후 저장을 위한 리스트 적재
+        for(Long genreId : request.getGenre()) {
+            Genre genre = genreRepository.findById(genreId).orElseThrow(() -> new CustomException(NOT_FOUND_GENRE));
 
-        // Music과 Genre를 중간 테이블을 통해 연결
-        Genre_Music musicGenre = Genre_Music.of(music, genre);
-
-        artistRepository.save(artist); // Artist 먼저 저장
-        musicRepository.save(music);
-
-
-        genre_musicRepository.save(musicGenre); // Genre_Music 저장 (중간 테이블)
-        artist_musicRepository.save(artistMusic);
-
-
-        Long musicId = music.getId();
-        if (musicId != null) {
-            System.out.println("자동 생성된 Music ID: " + musicId);
-        } else {
-            System.out.println("Music ID가 자동으로 생성되지 않았습니다.");
+            // Music과 Genre를 중간 테이블을 통해 연결
+            musicGenre.add(Genre_Music.of(music, genre));
         }
-
+        
+        genre_musicRepository.saveAll(musicGenre); // Genre_Music 저장 (중간 테이블)
 
         User user = userRepository.findById(SecurityContextHolder
                 .getContext()

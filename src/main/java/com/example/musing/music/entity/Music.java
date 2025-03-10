@@ -1,6 +1,7 @@
 package com.example.musing.music.entity;
 
 import com.example.musing.artist.entity.Artist_Music;
+import com.example.musing.board.dto.CreateBoardRequest;
 import com.example.musing.board.entity.Board;
 import com.example.musing.genre.entity.Genre_Music;
 import com.example.musing.hashtag.entity.HashTag;
@@ -70,6 +71,16 @@ public class Music {
         this.albumName = albumName;
         this.songLink = songLink;
         this.thumbNailLink = thumbNailLink;
+    }
+
+    public static Music of(CreateBoardRequest request) {
+        return Music.builder()
+                .name(request.getMusicTitle())
+                .playtime(request.getPlaytime())
+                .albumName(request.getAlbumName())
+                .songLink(request.getSongLink())
+                .thumbNailLink(request.getThumbNailLink())
+                .build();
     }
 
     // 해시태그 추가 메서드
