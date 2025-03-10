@@ -44,7 +44,7 @@ public class BoardRequestDto {
                     .replyCount(board.getReplyCount())
                     .thumbNailLink(board.getMusic().getThumbNailLink())
                     .content(board.getContent())
-                    .imageUrl(board.getImage())
+                    .imageUrl(board.getImages())
                     .genreList(genreList)
                     .moodList(moodList)
                     .build();

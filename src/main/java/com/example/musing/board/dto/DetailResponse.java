@@ -40,7 +40,7 @@ public record DetailResponse(
                 .playtime(board.getMusic().getPlaytime())
                 .AlbumName(board.getMusic().getAlbumName())
                 .songLink(board.getMusic().getSongLink())
-                .thumbNailLink(board.getImage())
+                .thumbNailLink(board.getMusic().getThumbNailLink())
                 .build();
     }
 }

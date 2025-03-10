@@ -8,6 +8,7 @@ import com.example.musing.artist.repository.Artist_MusicRepository;
 import com.example.musing.board.dto.*;
 import com.example.musing.board.entity.Board;
 import com.example.musing.board.repository.BoardRepository;
+import com.example.musing.common.utils.S3.AWS_S3_Util;
 import com.example.musing.exception.CustomException;
 import com.example.musing.genre.dto.GenreDto;
 import com.example.musing.genre.entity.Genre;
@@ -21,12 +22,9 @@ import com.example.musing.main.dto.RecommendBoardRight;
 import com.example.musing.mood.dto.MoodDto;
 import com.example.musing.mood.entity.MoodEnum;
 import com.example.musing.mood.entity.Mood_Music;
-import com.example.musing.mood.repository.Mood_MusicRepository;
 import com.example.musing.music.entity.Music;
 import com.example.musing.music.repository.MusicRepository;
-import com.example.musing.reply.dto.ReplyRequestDto;
 import com.example.musing.reply.dto.ReplyResponseDto;
-import com.example.musing.reply.repository.ReplyRepository;
 import com.example.musing.reply.service.ReplyService;
 import com.example.musing.user.entity.User;
 import com.example.musing.user.repository.UserRepository;
@@ -44,8 +42,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.example.musing.board.entity.CheckRegister.NEED_FIX;
-import static com.example.musing.board.entity.CheckRegister.PERMIT;
 import static com.example.musing.exception.ErrorCode.*;
 
 @Transactional(readOnly = true)
@@ -57,6 +53,8 @@ public class BoardServiceImpl implements BoardService {
             of(0, 5, Sort.by(Sort.Direction.DESC, "createdAt"));
     private static PageRequest pageRequest = PageRequest.of(0, 1);
     private static int PAGESIZE = 8;
+    private static String S3BUCKETURL = "board";
+
     private final UserRepository userRepository;
     private final BoardRepository boardRepository;
     private final ArtistRepository artistRepository;
@@ -66,6 +64,7 @@ public class BoardServiceImpl implements BoardService {
     private final GenreRepository genreRepository;
     private final Artist_MusicRepository artist_musicRepository;
     private final Genre_MusicRepository genre_musicRepository;
+    private final AWS_S3_Util awsS3Util;
 
     @Override
     public List<GenreBoardDto> findBy5GenreBoard(String genre) { //장르로 검색한 게시글들을 엔티티에서 Dto로 전환
@@ -123,18 +122,6 @@ public class BoardServiceImpl implements BoardService {
     @Override
     @Transactional
     public void createBoard(CreateBoardRequest request, List<MultipartFile> images) {
-        // 파일명 리스트 생성
-        List<String> fileNames = new ArrayList<>();
-        if (images == null || images.isEmpty()) {
-            fileNames.add("이미지 없음");
-        } else {
-            // 이미지가 있는 경우 파일명 생성
-            for (MultipartFile file : images) {
-                String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-                // 파일 저장 로직 작성 필요함(서버나 S3에 저장)
-                fileNames.add(fileName);
-            }
-        }
         // Music 저장
         Music music = Music.of(request);
         musicRepository.save(music);
@@ -142,10 +129,10 @@ public class BoardServiceImpl implements BoardService {
         // Artist 확인 및 저장, 중간 테이블 저장
         List<Artist_Music> artistMusics = new ArrayList<>();
 
-        for(String artistName : request.getArtist()) {
+        for (String artistName : request.getArtist()) {
             Optional<Artist> optionalArtist = artistRepository.findByName(artistName);
 
-            if(optionalArtist.isEmpty()) { //해당 아티스트가 존재하지 않을 때
+            if (optionalArtist.isEmpty()) { //해당 아티스트가 존재하지 않을 때
                 Artist artist = Artist.of(artistName);
                 artistRepository.save(artist);
 
@@ -158,7 +145,7 @@ public class BoardServiceImpl implements BoardService {
         }
 
         artist_musicRepository.saveAll(artistMusics);
-        
+
         //받은 장르의 Id리스트 여부 체크
         if (request.getGenre() == null || request.getGenre().isEmpty()) {
             throw new CustomException(NOT_FOUND_GENRE);
@@ -168,13 +155,13 @@ public class BoardServiceImpl implements BoardService {
         List<Genre_Music> musicGenre = new ArrayList<>();
 
         // 장르 Id확인 후 저장을 위한 리스트 적재
-        for(Long genreId : request.getGenre()) {
+        for (Long genreId : request.getGenre()) {
             Genre genre = genreRepository.findById(genreId).orElseThrow(() -> new CustomException(NOT_FOUND_GENRE));
 
             // Music과 Genre를 중간 테이블을 통해 연결
             musicGenre.add(Genre_Music.of(music, genre));
         }
-        
+
         genre_musicRepository.saveAll(musicGenre); // Genre_Music 저장 (중간 테이블)
 
         User user = userRepository.findById(SecurityContextHolder
@@ -182,7 +169,7 @@ public class BoardServiceImpl implements BoardService {
                 .getAuthentication()
                 .getName()).orElseThrow(() -> new CustomException(NOT_FOUND_USER));
 
-        String imageString = String.join(",", fileNames);
+        String imageString = uploadImages(images) == null ? null : uploadImages(images).toString();
 
         Board board = Board.of(user, music, request.getTitle(), request.getContent(), imageString);
         boardRepository.save(board); // Board 저장 (최종적으로 Board를 저장)
@@ -256,7 +243,8 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     @Transactional
-    public void updateBoard(UpdateBoardRequestDto request, List<MultipartFile> images) {
+    public void updateBoard(UpdateBoardRequestDto request,
+                            List<String> deleteFileLinks, List<MultipartFile> newFiles) {
         // 유저명 저장
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
 
@@ -264,20 +252,32 @@ public class BoardServiceImpl implements BoardService {
         Board board = boardRepository.findById(request.getBoardId())
                 .orElseThrow(() -> new CustomException(NOT_FOUND_BOARD));
 
-        if(!Objects.equals(board.getUser().getId(), userId)) {
+
+        if (!Objects.equals(board.getUser().getId(), userId)) {
             throw new CustomException(NOT_MATCHED_BOARD_AND_USER);
         }
 
-        // 파일명 리스트 생성
-        List<String> fileNames = new ArrayList<>();
-        if (images == null || images.isEmpty()) {
-            fileNames.add("이미지 없음");
-        } else {
-            // 이미지가 있는 경우 파일명 생성
-            for (MultipartFile file : images) {
-                String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-                fileNames.add(fileName);
-            }
+        // 이미지 가져오기
+        List<String> images = board.getImageList();
+
+        if (images == null) {
+            images = new ArrayList<>();
+        }
+
+        if (deleteFileLinks != null&& !deleteFileLinks.isEmpty()) {
+            images.removeIf(imageUrl -> {
+                if (deleteFileLinks.contains(imageUrl)) {
+                    String filename = extractFilename(imageUrl);
+                    awsS3Util.deleteFile(S3BUCKETURL, filename);
+                    return true;
+                }
+                return false;
+            });
+        }
+
+        if (newFiles != null && !newFiles.isEmpty()) {
+            List<String> newImageUrls = uploadImages(newFiles);
+            images.addAll(newImageUrls);
         }
 
         // Music 정보 업데이트
@@ -290,10 +290,10 @@ public class BoardServiceImpl implements BoardService {
         // Artist 확인 및 저장, 중간 테이블 저장
         List<Artist_Music> artistMusics = new ArrayList<>();
 
-        for(String artistName : request.getArtist()) {
+        for (String artistName : request.getArtist()) {
             Optional<Artist> optionalArtist = artistRepository.findByName(artistName);
 
-            if(optionalArtist.isEmpty()) { //해당 아티스트가 존재하지 않을 때
+            if (optionalArtist.isEmpty()) { //해당 아티스트가 존재하지 않을 때
                 Artist artist = Artist.of(artistName);
                 artistRepository.save(artist);
 
@@ -318,7 +318,7 @@ public class BoardServiceImpl implements BoardService {
         List<Genre_Music> musicGenre = new ArrayList<>();
 
         // 장르 Id확인 후 저장을 위한 리스트 적재
-        for(Long genreId : request.getGenre()) {
+        for (Long genreId : request.getGenre()) {
             Genre genre = genreRepository.findById(genreId).orElseThrow(() -> new CustomException(NOT_FOUND_GENRE));
 
             // Music과 Genre를 중간 테이블을 통해 연결
@@ -327,11 +327,12 @@ public class BoardServiceImpl implements BoardService {
 
         genre_musicRepository.saveAll(musicGenre); // Genre_Music 저장 (중간 테이블)
 
-        // Board 정보 업데이트
-        String imageString = String.join(",", fileNames);
-        board.updateBoard(music, request.getTitle(), request.getContent(), imageString);
+
+        board.updateBoard(music, request.getTitle(), request.getContent(),
+                images.isEmpty() ? null : images.toString());
     }
 
+    @Override
     public DetailResponse selectDetail(long boardId) {
         Board board = boardRepository.findBoardWithMusicAndArtist(boardId);
         if (!boardRepository.existsById(boardId)) {
@@ -352,13 +353,6 @@ public class BoardServiceImpl implements BoardService {
         return DetailResponse.of(board, artistNames, extractHashtags(board.getContent()), genreNames);
     }
 
-    private List<String> extractHashtags(String content) {
-        if (content == null) return Collections.emptyList();
-        return Arrays.stream(content.split("\\s+"))
-                .filter(word -> word.startsWith("#"))
-                .collect(Collectors.toList());
-    }
-
     // 음악 추천 게시판 상세페이지 (리뷰 포함)
     @Override
     public BoardAndReplyPageDto findBoardDetailPage(long boardId) {
@@ -368,6 +362,35 @@ public class BoardServiceImpl implements BoardService {
         return BoardAndReplyPageDto.of(boardDto, replyDtos);
     }
 
+    private String extractFilename(String imageUrl) {
+        return imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
+    }
+
+    private List<String> uploadImages(List<MultipartFile> files) {
+        if (files == null || files.isEmpty()) {
+            return null;
+        }
+
+        List<String> urlList = new ArrayList<>();
+
+        for (MultipartFile file : files) {
+            // 이미지 파일명 생성
+            UUID uuid = UUID.randomUUID();
+            String fileName = uuid.toString() + "_" + file.getOriginalFilename().lastIndexOf(".");//uuid+확장자명으로 이름지정
+
+            String imageUrl = awsS3Util.uploadImageToS3(file, S3BUCKETURL, fileName);//파일 업로드
+
+            urlList.add(imageUrl);
+        }
+        return urlList;
+    }
+
+    private List<String> extractHashtags(String content) {
+        if (content == null) return Collections.emptyList();
+        return Arrays.stream(content.split("\\s+"))
+                .filter(word -> word.startsWith("#"))
+                .collect(Collectors.toList());
+    }
 
     //게시글 상세 정보
     private BoardRequestDto.BoardDto findBoard(long boardId) {
@@ -424,22 +447,20 @@ public class BoardServiceImpl implements BoardService {
     }
 
     private Page<Board> searchBoards(String searchType, String keyword, Pageable pageable) {
-        switch (searchType) {
-            case "username":
-                return boardRepository.findActiveBoardsByUsername(keyword, pageable);
-            case "title":
-                return boardRepository.findActiveBoardsByTitle(keyword, pageable);
-            case "artist":
-                return boardRepository.findActiveBoardsByArtist(keyword, pageable);
-            case "genre":
+        return switch (searchType) {
+            case "username" -> boardRepository.findActiveBoardsByUsername(keyword, pageable);
+            case "title" -> boardRepository.findActiveBoardsByTitle(keyword, pageable);
+            case "artist" -> boardRepository.findActiveBoardsByArtist(keyword, pageable);
+            case "genre" -> {
                 GerneEnum gerneEnum = GerneEnum.fromKey(keyword);
-                return boardRepository.findActiveBoardsByGenre(gerneEnum, pageable);
-            case "mood":
+                yield boardRepository.findActiveBoardsByGenre(gerneEnum, pageable);
+            }
+            case "mood" -> {
                 MoodEnum moodEnum = MoodEnum.fromKey(keyword);
-                return boardRepository.findActiveBoardsByMood(moodEnum, pageable);
-            default:
-                throw new CustomException(NOT_FOUND_KEYWORD);
-        }
+                yield boardRepository.findActiveBoardsByMood(moodEnum, pageable);
+            }
+            default -> throw new CustomException(NOT_FOUND_KEYWORD);
+        };
     }
 
     private List<Board> findBySpecBoard(Specification<Board> spec) {

@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static com.example.musing.board.entity.CheckRegister.NON_CHECK;
@@ -63,7 +64,7 @@ public class Board extends BaseEntity {
     private CheckRegister permitRegister;
 
     @Column
-    private String image;
+    private String images;
 
 
     //관계설정 유저에 관한 외래키 보유 주인테이블
@@ -84,6 +85,15 @@ public class Board extends BaseEntity {
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReportBoard> Reports = new ArrayList<>();
 
+    public List<String> getImageList() {
+        if (images == null || images.isEmpty()) {
+            return null;
+        }
+
+        String[] imageArray = images.substring(1, images.length() - 1).split(", ");
+        return new ArrayList<>(Arrays.asList(imageArray));
+    }
+
     @Builder
     public Board(String title, String content, boolean activeCheck, String image, int recommendCount, int viewCount, CheckRegister permitRegister ,User user,Music music) {
         this.title = title;
@@ -92,7 +102,7 @@ public class Board extends BaseEntity {
         this.viewCount = 0; // 기본값 설정
         this.activeCheck = activeCheck;
         this.permitRegister = NON_CHECK;
-        this.image = image;
+        this.images = image;
         this.user = user;
         this.music = music;
     }
@@ -114,7 +124,7 @@ public class Board extends BaseEntity {
         this.music = music;
         this.title = title;
         this.content = content;
-        this.image = image;
+        this.images = image;
         return this;
     }
     public void updateRegister(CheckRegister checkRegister) {
