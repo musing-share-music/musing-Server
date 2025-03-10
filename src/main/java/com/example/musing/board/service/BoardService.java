@@ -29,7 +29,7 @@ public interface BoardService {
     // 글 삭제
     void deleteBoard(Long boardId);
     //글 수정
-     void updateBoard(UpdateBoardRequestDto request, List<String> deleteFileLinks, List<MultipartFile> newFiles);
+     void updateBoard(Long boardId, UpdateBoardRequestDto request, List<String> deleteFileLinks, List<MultipartFile> newFiles);
 
      DetailResponse selectDetail(long boardId);
 }

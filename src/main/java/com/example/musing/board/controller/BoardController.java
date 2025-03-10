@@ -60,11 +60,11 @@ public class BoardController {
     }
 
     @PutMapping(value ="/updatePost", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseDto<Board> updatePost(@ModelAttribute @Valid UpdateBoardRequestDto updateRequest,
+    public ResponseDto<Board> updatePost(@PathVariable long boardId, @ModelAttribute @Valid UpdateBoardRequestDto updateRequest,
                                          @RequestPart(required = false) List<String> deleteFileLinks,
                                          @RequestPart(required = false) List<MultipartFile> files) {
 
-        boardService.updateBoard(updateRequest, deleteFileLinks, files);
+        boardService.updateBoard(boardId, updateRequest, deleteFileLinks, files);
         return ResponseDto.of(null,"성공적으로 글이 수정되었습니다.");
     }
 

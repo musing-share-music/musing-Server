@@ -12,8 +12,6 @@ import java.util.List;
 @NoArgsConstructor
 public class UpdateBoardRequestDto {
 
-    //업데이트 리퀘스트 dto
-    private Long boardId;
     private String title;
     private String musicTitle;
     private List<String> artist;

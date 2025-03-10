@@ -243,13 +243,13 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     @Transactional
-    public void updateBoard(UpdateBoardRequestDto request,
+    public void updateBoard(Long boardId, UpdateBoardRequestDto request,
                             List<String> deleteFileLinks, List<MultipartFile> newFiles) {
         // 유저명 저장
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
 
         // 기존 Board 객체를 찾기
-        Board board = boardRepository.findById(request.getBoardId())
+        Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new CustomException(NOT_FOUND_BOARD));
 
 
