@@ -252,7 +252,6 @@ public class BoardServiceImpl implements BoardService {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new CustomException(NOT_FOUND_BOARD));
 
-
         if (!Objects.equals(board.getUser().getId(), userId)) {
             throw new CustomException(NOT_MATCHED_BOARD_AND_USER);
         }

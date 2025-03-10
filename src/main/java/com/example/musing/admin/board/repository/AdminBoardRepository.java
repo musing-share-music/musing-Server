@@ -16,8 +16,8 @@ public interface AdminBoardRepository extends JpaRepository<Board, Long>, JpaSpe
             "JOIN FETCH b.music m " +
             "JOIN FETCH m.artists a " +
             "JOIN FETCH b.user u " +
-            "WHERE b.activeCheck = true AND b.id = :boardId")
-    Board findBoardWithMusicAndArtist(@Param("boardId") Long boardId);
+            "WHERE b.activeCheck = false AND b.id = :boardId")
+    Board findBoardByActiveCheckFalse(@Param("boardId") Long boardId);
 
     @EntityGraph(attributePaths = {"user"})
     @Query("SELECT b FROM Board b WHERE b.activeCheck = false ORDER BY b.createdAt DESC")

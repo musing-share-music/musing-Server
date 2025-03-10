@@ -2,6 +2,7 @@ package com.example.musing.board.dto;
 
 
 import com.example.musing.board.entity.Board;
+import com.example.musing.board.entity.CheckRegister;
 import lombok.Builder;
 import lombok.Data;
 
@@ -11,20 +12,21 @@ import java.util.List;
 
 @Builder
 public record DetailResponse(
-    String title,
-    String musicTitle,
-    String username,
-    LocalDateTime createdAt,
-    LocalDateTime updatedAt,
-    List<String> artist,
-    String youtubeLink,
-    List<String> hashtags,
-    List<String> genre,
-    String content,
-    String playtime,
-    String AlbumName,
-    String songLink,
-    String thumbNailLink) {
+        String title,
+        String musicTitle,
+        String username,
+        LocalDateTime createdAt,
+        LocalDateTime updatedAt,
+        List<String> artist,
+        String youtubeLink,
+        List<String> hashtags,
+        List<String> genre,
+        String content,
+        String playtime,
+        String AlbumName,
+        String songLink,
+        String thumbNailLink,
+        String permitRegister) {
     public static DetailResponse of(Board board, List<String> artistsName, List<String> hashtags, List<String> genreName) {
         return DetailResponse.builder()
                 .title(board.getTitle())
@@ -41,6 +43,7 @@ public record DetailResponse(
                 .AlbumName(board.getMusic().getAlbumName())
                 .songLink(board.getMusic().getSongLink())
                 .thumbNailLink(board.getMusic().getThumbNailLink())
+                .permitRegister(board.getPermitRegister().name())
                 .build();
     }
 }

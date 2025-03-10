@@ -4,12 +4,14 @@ import com.example.musing.admin.board.dto.AdminBoardResponseDto;
 import com.example.musing.admin.board.repository.AdminBoardRepository;
 import com.example.musing.artist.dto.ArtistDto;
 import com.example.musing.artist.entity.Artist_Music;
+import com.example.musing.board.dto.DetailResponse;
 import com.example.musing.board.entity.Board;
 import com.example.musing.exception.CustomException;
 import com.example.musing.genre.dto.GenreDto;
 import com.example.musing.genre.entity.Genre_Music;
 import com.example.musing.mood.dto.MoodDto;
 import com.example.musing.mood.entity.Mood_Music;
+import com.example.musing.music.entity.Music;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -17,6 +19,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,6 +38,26 @@ public class AdminBoardServiceImpl implements AdminBoardService {
     private static String NON_CHECK_PERMIT = "registerPermit";
     private static String DELETED_PAGE = "deletedPage";
 
+    @Override
+    public DetailResponse selectDetail(long boardId) {
+        Board board = boardRepository.findBoardByActiveCheckFalse(boardId);
+        if (!boardRepository.existsById(boardId)) {
+            throw new CustomException(NOT_FOUND_BOARD);
+        }
+
+        Music music = board.getMusic();
+
+        // 첫 번째 Music의 Artist 정보 가져오기
+        List<String> artistNames = music.getArtists().stream()
+                .map(am -> am.getArtist().getName())
+                .toList();
+
+        List<String> genreNames = music.getGenreMusics().stream()
+                .map(Genre_Music::getGenre)
+                .map(genre -> genre.getGenreName().getKey()).toList();
+
+        return DetailResponse.of(board, artistNames, extractHashtags(board.getContent()), genreNames);
+    }
     @Override
     public Page<AdminBoardResponseDto.BoardListDto> getRegisterPermitSearchPage(int page, String searchType,
                                                                                  String keyword) {
@@ -68,6 +92,13 @@ public class AdminBoardServiceImpl implements AdminBoardService {
     public void updateBoardStatePermit(long boardId) {
         Board board = boardRepository.findById(boardId).orElseThrow(() -> new CustomException(NOT_FOUND_BOARD));
         board.updateRegister(PERMIT);
+    }
+
+    private List<String> extractHashtags(String content) {
+        if (content == null) return Collections.emptyList();
+        return Arrays.stream(content.split("\\s+"))
+                .filter(word -> word.startsWith("#"))
+                .collect(Collectors.toList());
     }
 
     private Page<AdminBoardResponseDto.BoardListDto> search(int page, String searchType, String keyword, String boardType) {

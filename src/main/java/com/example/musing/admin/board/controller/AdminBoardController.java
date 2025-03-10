@@ -2,6 +2,7 @@ package com.example.musing.admin.board.controller;
 
 import com.example.musing.admin.board.dto.AdminBoardResponseDto;
 import com.example.musing.admin.board.service.AdminBoardService;
+import com.example.musing.board.dto.DetailResponse;
 import com.example.musing.common.dto.ResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -13,15 +14,20 @@ import org.springframework.web.bind.annotation.*;
 public class AdminBoardController {
     private AdminBoardService adminBoardService;
 
+    @GetMapping("/removed")
+    public ResponseDto<DetailResponse> getDeletedBoardDetail(@RequestParam Long boardId) {
+        DetailResponse responseDto = adminBoardService.selectDetail(boardId);
+        return ResponseDto.of(responseDto);
+    }
     @GetMapping("/list/removed")
-    public ResponseDto<Page<AdminBoardResponseDto.BoardListDto>> getDeleteBoards(
+    public ResponseDto<Page<AdminBoardResponseDto.BoardListDto>> getDeletedBoards(
             @RequestParam(name = "page", defaultValue = "1") int page) {
         Page<AdminBoardResponseDto.BoardListDto> responseList = adminBoardService.getDeletedPage(page);
         return ResponseDto.of(responseList);
     }
 
     @GetMapping("/list/removed/search")
-    public ResponseDto<Page<AdminBoardResponseDto.BoardListDto>> getDeleteBoardsByKeyword(
+    public ResponseDto<Page<AdminBoardResponseDto.BoardListDto>> getDeletedBoardsByKeyword(
             @RequestParam(name = "page", defaultValue = "1") int page,
             @RequestParam(name = "searchType") String searchType,
             @RequestParam(name = "keyword") String keyword) {
