@@ -12,10 +12,10 @@ public class CreateBoardRequest {
 
     private String title;
     private String musicTitle;
-    private String artist;
+    private List<String> artist;
     private String youtubeLink;
     private List<String> hashtags;
-    private Long genre;
+    private List<Long> genre;
     private String content;
     private String playtime;
     private String AlbumName;

@@ -12,14 +12,12 @@ import java.util.List;
 @NoArgsConstructor
 public class UpdateBoardRequestDto {
 
-    //업데이트 리퀘스트 dto
-    private Long boardId;
     private String title;
     private String musicTitle;
-    private String artist;
+    private List<String> artist;
     private String youtubeLink;
     private List<String> hashtags;
-    private Long genre;
+    private List<Long> genre;
     private String content;
     private String playtime;
     private String songLink;

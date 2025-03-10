@@ -46,7 +46,7 @@ public class PostDto {
                 .viewCount(board.getViewCount())
                 .activeCheck(board.isActiveCheck())
                 .permitRegister(board.getPermitRegister())
-                .image(board.getImage())
+                .image(board.getImages())
                 .build();
     }
 
