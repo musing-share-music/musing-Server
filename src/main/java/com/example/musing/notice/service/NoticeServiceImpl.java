@@ -109,7 +109,7 @@ public class NoticeServiceImpl implements NoticeService {
             images.removeIf(imageUrl -> {
                 if (deleteFileLinks.contains(imageUrl)) {
                     String filename = extractFilename(imageUrl);
-                    awsS3Util.deleteFile("notice", filename);
+                    awsS3Util.deleteFile(S3BUCKETURL, filename);
                     return true;
                 }
                 return false;
@@ -119,7 +119,6 @@ public class NoticeServiceImpl implements NoticeService {
         if (newFiles != null && !newFiles.isEmpty()) {
             List<String> newImageUrls = uploadImages(newFiles);
             images.addAll(newImageUrls);
-
         }
 
         notice.updateNotice(requestDto.title(), requestDto.content(),
