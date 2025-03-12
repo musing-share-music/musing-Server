@@ -15,13 +15,15 @@ import org.springframework.web.bind.annotation.*;
 public class AdminBoardController {
     private AdminBoardService adminBoardService;
 
+    @Operation(summary = "삭제된 게시글 상세페이지 조회",
+            description = "boardId 파라미터를 통해 해당 게시글로 접근 가능합니다.")
     @GetMapping("/removed")
     public ResponseDto<DetailResponse> getDeletedBoardDetail(@RequestParam Long boardId) {
         DetailResponse responseDto = adminBoardService.selectDetail(boardId);
         return ResponseDto.of(responseDto);
     }
     
-    @Operation(summary = "삭제된 게시글 조회",
+    @Operation(summary = "삭제된 게시글 리스트 조회",
             description = "page 파라미터를 통해 다른 페이지 이동이 가능합니다.")
     @GetMapping("/list/removed")
     public ResponseDto<Page<AdminBoardResponseDto.BoardListDto>> getDeletedBoards(
@@ -30,7 +32,7 @@ public class AdminBoardController {
         return ResponseDto.of(responseList);
     }
 
-    @Operation(summary = "삭제된 게시글 조회 검색",
+    @Operation(summary = "삭제된 게시글 리스트 조회 검색",
             description = "page 파라미터를 통해 다른 페이지 이동이 가능합니다.<br>" +
                     "searchType 종류는 ['title', 'username'] 종류로 있습니다.<br>" +
                     "keyword는 검색창에 입력한 단어입니다.")
