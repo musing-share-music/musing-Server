@@ -60,7 +60,7 @@ public class BoardController {
     }
 
     @PutMapping(value ="/updatePost", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseDto<Board> updatePost(@PathVariable long boardId, @ModelAttribute @Valid UpdateBoardRequestDto updateRequest,
+    public ResponseDto<Board> updatePost(@RequestParam long boardId, @ModelAttribute @Valid UpdateBoardRequestDto updateRequest,
                                          @RequestPart(required = false) List<String> deleteFileLinks,
                                          @RequestPart(required = false) List<MultipartFile> files) {
 
