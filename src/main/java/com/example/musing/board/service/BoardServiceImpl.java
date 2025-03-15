@@ -331,12 +331,17 @@ public class BoardServiceImpl implements BoardService {
                 images.isEmpty() ? null : images.toString());
     }
 
+    @Transactional
     @Override
     public DetailResponse selectDetail(long boardId) {
-        Board board = boardRepository.findBoardWithMusicAndArtist(boardId);
         if (!boardRepository.existsById(boardId)) {
             throw new CustomException(NOT_FOUND_BOARD);
         }
+        // 조회수 증가, DB 자체를 원자적으로 연산하도록 함.
+        // 1차 캐시에 반영되지않기에 따로 findBy를 해줘야하기에 먼저 사용함
+        incrementBoardViewCount(boardId);
+
+        Board board = boardRepository.findBoardWithMusicAndArtist(boardId);
 
         Music music = board.getMusic();
 
@@ -359,6 +364,10 @@ public class BoardServiceImpl implements BoardService {
         Page<ReplyResponseDto.ReplyDto> replyDtos = replyService.findReplies(boardId, 1, "date", "DESC");
 
         return BoardAndReplyPageDto.of(boardDto, replyDtos);
+    }
+
+    private void incrementBoardViewCount(long boardId){
+        boardRepository.incrementBoardViewCount(boardId);
     }
 
     private String extractFilename(String imageUrl) {

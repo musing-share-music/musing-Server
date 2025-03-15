@@ -7,10 +7,7 @@ import com.example.musing.music.entity.Music;
 import com.example.musing.reply.entity.Reply;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
@@ -18,6 +15,11 @@ import java.util.Optional;
 
 
 public interface BoardRepository extends JpaRepository<Board, Long>, JpaSpecificationExecutor<Board> {
+
+    @Modifying
+    @Query(value = "UPDATE Board b SET b.viewCount = b.viewCount + 1 WHERE b.id = :boardId")
+    void incrementBoardViewCount(@Param("boardId") Long boardId);
+
     @EntityGraph(attributePaths = {"music", "user"})
     @Query("SELECT b FROM Board b WHERE b.activeCheck = true AND b.id = :boardId")
     Optional<Board> findById(@Param("boardId") long boardId);

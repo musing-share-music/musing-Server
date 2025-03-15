@@ -26,6 +26,7 @@ public record DetailResponse(
         String AlbumName,
         String songLink,
         String thumbNailLink,
+        int viewCount,
         String permitRegister) {
     public static DetailResponse of(Board board, List<String> artistsName, List<String> hashtags, List<String> genreName) {
         return DetailResponse.builder()
@@ -43,6 +44,7 @@ public record DetailResponse(
                 .AlbumName(board.getMusic().getAlbumName())
                 .songLink(board.getMusic().getSongLink())
                 .thumbNailLink(board.getMusic().getThumbNailLink())
+                .viewCount(board.getViewCount())
                 .permitRegister(board.getPermitRegister().name())
                 .build();
     }
