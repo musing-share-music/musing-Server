@@ -8,6 +8,7 @@ import com.example.musing.genre.entity.Genre_Music;
 import com.example.musing.hashtag.entity.HashTag;
 import com.example.musing.like_music.entity.Like_Music;
 import com.example.musing.mood.entity.Mood_Music;
+import com.example.musing.playlist_music.entity.PlaylistMusic;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -62,14 +63,16 @@ public class Music {
     @OneToMany(mappedBy = "music", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Like_Music> preferMusics = new ArrayList<Like_Music>();
 
-    //아티스트와 관계 매핑
+    // 플레이 리스트 매핑
+    @OneToMany(mappedBy = "music", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PlaylistMusic> playlistMusicList = new ArrayList<>();
+
     @Builder
     public Music(long id, String name, String playtime,
-                 String albumName, String songLink, String thumbNailLink) {
+                 String songLink, String thumbNailLink) {
         this.id = id;
         this.name = name;
         this.playtime = playtime;
-        this.albumName = albumName;
         this.songLink = songLink;
         this.thumbNailLink = thumbNailLink;
     }
@@ -78,7 +81,6 @@ public class Music {
         return Music.builder()
                 .name(request.getMusicTitle())
                 .playtime(request.getPlaytime())
-                .albumName(request.getAlbumName())
                 .songLink(request.getSongLink())
                 .thumbNailLink(request.getThumbNailLink())
                 .build();
