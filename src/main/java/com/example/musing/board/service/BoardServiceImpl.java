@@ -18,6 +18,7 @@ import com.example.musing.genre.repository.GenreRepository;
 import com.example.musing.genre.repository.Genre_MusicRepository;
 import com.example.musing.like_music.entity.Like_Music;
 import com.example.musing.like_music.repository.Like_MusicRepository;
+import com.example.musing.like_music.service.Like_MusicService;
 import com.example.musing.main.dto.RecommendBoardRight;
 import com.example.musing.mood.dto.MoodDto;
 import com.example.musing.mood.entity.MoodEnum;
@@ -28,6 +29,7 @@ import com.example.musing.reply.dto.ReplyResponseDto;
 import com.example.musing.reply.service.ReplyService;
 import com.example.musing.user.entity.User;
 import com.example.musing.user.repository.UserRepository;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -60,11 +62,13 @@ public class BoardServiceImpl implements BoardService {
     private final ArtistRepository artistRepository;
     private final Like_MusicRepository likeMusicRepository;
     private final MusicRepository musicRepository;
-    private final ReplyService replyService;
     private final GenreRepository genreRepository;
     private final Artist_MusicRepository artist_musicRepository;
     private final Genre_MusicRepository genre_musicRepository;
+    private final ReplyService replyService;
+    private final Like_MusicService likeMusicService;
     private final AWS_S3_Util awsS3Util;
+    private final EntityManager entityManager;
 
     @Override
     public List<GenreBoardDto> findBy5GenreBoard(String genre) { //장르로 검색한 게시글들을 엔티티에서 Dto로 전환
@@ -331,12 +335,17 @@ public class BoardServiceImpl implements BoardService {
                 images.isEmpty() ? null : images.toString());
     }
 
+    @Transactional
     @Override
     public DetailResponse selectDetail(long boardId) {
-        Board board = boardRepository.findBoardWithMusicAndArtist(boardId);
         if (!boardRepository.existsById(boardId)) {
             throw new CustomException(NOT_FOUND_BOARD);
         }
+        // 조회수 증가, DB 자체를 원자적으로 연산하도록 함.
+        // 1차 캐시에 반영되지않기에 따로 findBy를 해줘야하기에 먼저 사용함
+        incrementBoardViewCount(boardId);
+
+        Board board = boardRepository.findBoardWithMusicAndArtist(boardId);
 
         Music music = board.getMusic();
 
@@ -352,6 +361,25 @@ public class BoardServiceImpl implements BoardService {
         return DetailResponse.of(board, artistNames, extractHashtags(board.getContent()), genreNames);
     }
 
+    @Override
+    @Transactional
+    public BoardRecommedDto toggleLike(long boardId) {
+        Board board = boardRepository.findById(boardId).orElseThrow(() -> new CustomException(NOT_FOUND_BOARD));
+
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findById(userId).orElseThrow(() -> new CustomException(NOT_FOUND_USER));
+
+        boolean isLiked = likeMusicService.toggleRecommend(user, board.getMusic());
+        int delta = isLiked ? 1 : -1;
+
+        boardRepository.updateRecommendCount(boardId, delta);
+
+        entityManager.refresh(board); //레파지토리에서 db원자적 호출을 하기에 갱신 후 조회
+
+        return BoardRecommedDto.of(board.getRecommendCount(), isLiked);
+    }
+
+
     // 음악 추천 게시판 상세페이지 (리뷰 포함)
     @Override
     public BoardAndReplyPageDto findBoardDetailPage(long boardId) {
@@ -359,6 +387,10 @@ public class BoardServiceImpl implements BoardService {
         Page<ReplyResponseDto.ReplyDto> replyDtos = replyService.findReplies(boardId, 1, "date", "DESC");
 
         return BoardAndReplyPageDto.of(boardDto, replyDtos);
+    }
+
+    private void incrementBoardViewCount(long boardId){
+        boardRepository.incrementBoardViewCount(boardId);
     }
 
     private String extractFilename(String imageUrl) {

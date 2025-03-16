@@ -1,9 +1,6 @@
 package com.example.musing.board.controller;
 
-import com.example.musing.board.dto.BoardListResponseDto;
-import com.example.musing.board.dto.CreateBoardRequest;
-import com.example.musing.board.dto.DetailResponse;
-import com.example.musing.board.dto.UpdateBoardRequestDto;
+import com.example.musing.board.dto.*;
 import com.example.musing.board.entity.Board;
 import com.example.musing.board.service.BoardService;
 import com.example.musing.common.dto.ResponseDto;
@@ -79,5 +76,11 @@ public class BoardController {
     public ResponseDto<DetailResponse> selectDetail(@RequestParam("boardId") Long boardId) {
         DetailResponse responseDto = boardService.selectDetail(boardId);
         return ResponseDto.of(responseDto, "글 조회에 성공했습니다.");
+    }
+
+    @PostMapping("recommend")
+    public ResponseDto<BoardRecommedDto> recommend(@RequestParam("boardId") Long boardId) {
+        BoardRecommedDto boardRecommedDto = boardService.toggleLike(boardId);
+        return ResponseDto.of(boardRecommedDto);
     }
 }

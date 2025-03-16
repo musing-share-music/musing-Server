@@ -2,6 +2,7 @@ package com.example.musing.board.service;
 
 import com.example.musing.board.dto.*;
 import com.example.musing.main.dto.RecommendBoardRight;
+import com.example.musing.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,7 +30,8 @@ public interface BoardService {
     // 글 삭제
     void deleteBoard(Long boardId);
     //글 수정
-     void updateBoard(Long boardId, UpdateBoardRequestDto request, List<String> deleteFileLinks, List<MultipartFile> newFiles);
+    void updateBoard(Long boardId, UpdateBoardRequestDto request, List<String> deleteFileLinks, List<MultipartFile> newFiles);
 
-     DetailResponse selectDetail(long boardId);
+    DetailResponse selectDetail(long boardId);
+    BoardRecommedDto toggleLike(long boardId);
 }
