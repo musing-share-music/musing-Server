@@ -3,13 +3,15 @@ package com.example.musing.like_music.entity;
 import com.example.musing.music.entity.Music;
 import com.example.musing.user.entity.User;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
 @Entity
-@Table(name = "like_music")
+@Table(name = "like_music", uniqueConstraints =
+@UniqueConstraint(columnNames = {"user_id", "music_id"}))
 public class Like_Music {
 
     //유저가 좋아요를 눌렀을때에 관한 객체
@@ -27,4 +29,17 @@ public class Like_Music {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "musicid")
     private Music music;
+
+    @Builder
+    public Like_Music(User user, Music music) {
+        this.user = user;
+        this.music = music;
+    }
+
+    public static Like_Music of(User user, Music music) {
+        return Like_Music.builder()
+                .user(user)
+                .music(music)
+                .build();
+    }
 }

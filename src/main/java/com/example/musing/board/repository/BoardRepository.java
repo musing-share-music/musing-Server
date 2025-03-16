@@ -15,6 +15,9 @@ import java.util.Optional;
 
 
 public interface BoardRepository extends JpaRepository<Board, Long>, JpaSpecificationExecutor<Board> {
+    @Modifying
+    @Query("UPDATE Board b SET b.recommendCount = b.recommendCount + :delta WHERE b.id = :boardId")
+    int updateRecommendCount(@Param("boardId") Long boardId, @Param("delta") int delta);
 
     @Modifying
     @Query(value = "UPDATE Board b SET b.viewCount = b.viewCount + 1 WHERE b.id = :boardId")
