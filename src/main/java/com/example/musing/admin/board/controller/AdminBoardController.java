@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/musing/admin/board")
 public class AdminBoardController {
-    private AdminBoardService adminBoardService;
+    private final AdminBoardService adminBoardService;
 
     @GetMapping("/removed")
     public ResponseDto<DetailResponse> getDeletedBoardDetail(@RequestParam Long boardId) {
@@ -20,35 +20,35 @@ public class AdminBoardController {
         return ResponseDto.of(responseDto);
     }
     @GetMapping("/list/removed")
-    public ResponseDto<Page<AdminBoardResponseDto.BoardListDto>> getDeletedBoards(
+    public ResponseDto<Page<AdminBoardResponseDto.AdminBoardListDto>> getDeletedBoards(
             @RequestParam(name = "page", defaultValue = "1") int page) {
-        Page<AdminBoardResponseDto.BoardListDto> responseList = adminBoardService.getDeletedPage(page);
+        Page<AdminBoardResponseDto.AdminBoardListDto> responseList = adminBoardService.getDeletedPage(page);
         return ResponseDto.of(responseList);
     }
 
     @GetMapping("/list/removed/search")
-    public ResponseDto<Page<AdminBoardResponseDto.BoardListDto>> getDeletedBoardsByKeyword(
+    public ResponseDto<Page<AdminBoardResponseDto.AdminBoardListDto>> getDeletedBoardsByKeyword(
             @RequestParam(name = "page", defaultValue = "1") int page,
             @RequestParam(name = "searchType") String searchType,
             @RequestParam(name = "keyword") String keyword) {
-        Page<AdminBoardResponseDto.BoardListDto> responseList =
+        Page<AdminBoardResponseDto.AdminBoardListDto> responseList =
                 adminBoardService.getDeletedSearchPage(page, searchType, keyword);
         return ResponseDto.of(responseList);
     }
 
     @GetMapping("/list")
-    public ResponseDto<Page<AdminBoardResponseDto.BoardListDto>> getBoards(
+    public ResponseDto<Page<AdminBoardResponseDto.AdminBoardListDto>> getBoards(
             @RequestParam(name = "page", defaultValue = "1") int page) {
-        Page<AdminBoardResponseDto.BoardListDto> responseList = adminBoardService.getRegisterPermitPage(page);
+        Page<AdminBoardResponseDto.AdminBoardListDto> responseList = adminBoardService.getRegisterPermitPage(page);
         return ResponseDto.of(responseList);
     }
 
     @GetMapping("/list/search")
-    public ResponseDto<Page<AdminBoardResponseDto.BoardListDto>> getBoardsByKeyword(
+    public ResponseDto<Page<AdminBoardResponseDto.AdminBoardListDto>> getBoardsByKeyword(
             @RequestParam(name = "page", defaultValue = "1") int page,
             @RequestParam(name = "searchType") String searchType,
             @RequestParam(name = "keyword") String keyword) {
-        Page<AdminBoardResponseDto.BoardListDto> responseList =
+        Page<AdminBoardResponseDto.AdminBoardListDto> responseList =
                 adminBoardService.getRegisterPermitSearchPage(page, searchType, keyword);
         return ResponseDto.of(responseList);
     }

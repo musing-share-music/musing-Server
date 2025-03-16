@@ -2,15 +2,10 @@ package com.example.musing.admin.board.service;
 
 import com.example.musing.admin.board.dto.AdminBoardResponseDto;
 import com.example.musing.admin.board.repository.AdminBoardRepository;
-import com.example.musing.artist.dto.ArtistDto;
-import com.example.musing.artist.entity.Artist_Music;
 import com.example.musing.board.dto.DetailResponse;
 import com.example.musing.board.entity.Board;
 import com.example.musing.exception.CustomException;
-import com.example.musing.genre.dto.GenreDto;
 import com.example.musing.genre.entity.Genre_Music;
-import com.example.musing.mood.dto.MoodDto;
-import com.example.musing.mood.entity.Mood_Music;
 import com.example.musing.music.entity.Music;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -59,24 +54,24 @@ public class AdminBoardServiceImpl implements AdminBoardService {
         return DetailResponse.of(board, artistNames, extractHashtags(board.getContent()), genreNames);
     }
     @Override
-    public Page<AdminBoardResponseDto.BoardListDto> getRegisterPermitSearchPage(int page, String searchType,
-                                                                                 String keyword) {
+    public Page<AdminBoardResponseDto.AdminBoardListDto> getRegisterPermitSearchPage(int page, String searchType,
+                                                                                     String keyword) {
         return search(page, searchType, keyword, NON_CHECK_PERMIT);
     }
 
     @Override
-    public Page<AdminBoardResponseDto.BoardListDto> getDeletedSearchPage(int page, String searchType,
-                                                                                String keyword) {
+    public Page<AdminBoardResponseDto.AdminBoardListDto> getDeletedSearchPage(int page, String searchType,
+                                                                              String keyword) {
         return search(page, searchType, keyword, DELETED_PAGE);
     }
 
     @Override
-    public Page<AdminBoardResponseDto.BoardListDto> getRegisterPermitPage(int page) {
+    public Page<AdminBoardResponseDto.AdminBoardListDto> getRegisterPermitPage(int page) {
         return findBoardPage(page, NON_CHECK_PERMIT);
     }
 
     @Override
-    public Page<AdminBoardResponseDto.BoardListDto> getDeletedPage(int page) {
+    public Page<AdminBoardResponseDto.AdminBoardListDto> getDeletedPage(int page) {
         return findBoardPage(page, DELETED_PAGE);
     }
 
@@ -101,7 +96,7 @@ public class AdminBoardServiceImpl implements AdminBoardService {
                 .collect(Collectors.toList());
     }
 
-    private Page<AdminBoardResponseDto.BoardListDto> search(int page, String searchType, String keyword, String boardType) {
+    private Page<AdminBoardResponseDto.AdminBoardListDto> search(int page, String searchType, String keyword, String boardType) {
         if (page < 1) { // 잘못된 접근으로 throw할때 쿼리문 실행을 안하기 위해 나눠서 체크
             throw new CustomException(BAD_REQUEST_BOARD_PAGE);
         }
@@ -116,10 +111,10 @@ public class AdminBoardServiceImpl implements AdminBoardService {
             throw new CustomException(BAD_REQUEST_BOARD_PAGE);
         }
 
-        return boards.map(AdminBoardResponseDto.BoardListDto::toDto);
+        return boards.map(AdminBoardResponseDto.AdminBoardListDto::toDto);
     }
 
-    private Page<AdminBoardResponseDto.BoardListDto> findBoardPage(int page, String boardType) {
+    private Page<AdminBoardResponseDto.AdminBoardListDto> findBoardPage(int page, String boardType) {
         if (page < 1) { // 잘못된 접근으로 throw할때 쿼리문 실행을 안하기 위해 나눠서 체크
             throw new CustomException(BAD_REQUEST_BOARD_PAGE);
         }
@@ -132,7 +127,7 @@ public class AdminBoardServiceImpl implements AdminBoardService {
             throw new CustomException(BAD_REQUEST_BOARD_PAGE);
         }
 
-        return boards.map(AdminBoardResponseDto.BoardListDto::toDto);
+        return boards.map(AdminBoardResponseDto.AdminBoardListDto::toDto);
     }
 
     private Page<Board> findPage(String boardType, Pageable pageable) {
