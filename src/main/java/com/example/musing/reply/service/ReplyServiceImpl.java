@@ -33,18 +33,19 @@ public class ReplyServiceImpl implements ReplyService {
     private final UserRepository userRepository;
     private final BoardRepository boardRepository;
 
+    public Reply findByReplyId(long replyId) {
+        return replyRepository.findById(replyId).orElseThrow(() -> new CustomException(NOT_FOUND_REPLY));
+    }
+
     @Transactional
     @Override
     public void writeReply(long boardId, ReplyRequestDto replyDto) {
-        String email = getUserEmail(); //유저 정보 확인 이후 이메일 가져오기
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
+        User user = getUser();
 
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new CustomException(NOT_FOUND_BOARD));
 
-        boolean replyExist = replyRepository.existsByBoard_IdAndUser_Email(boardId, email);
+        boolean replyExist = replyRepository.existsByBoard_IdAndUser(boardId, user);
 
         if (replyExist) {
             throw new CustomException(EXIST_REPLY);
@@ -57,15 +58,13 @@ public class ReplyServiceImpl implements ReplyService {
 
     @Override
     public ReplyResponseDto.ReplyDto findMyReplyByBoardId(long boardId) {
-        String email = getUserEmail(); //유저 정보 확인 이후 이메일 가져오기
-        Optional<Reply> reply = replyRepository.findByBoard_IdAndUser_Email(boardId, email);
+        Optional<Reply> reply = replyRepository.findByBoard_IdAndUser(boardId, getUser());
         return reply.map(ReplyResponseDto.ReplyDto::from).orElse(null); //없으면 null리턴
     }
 
     @Override
     public ReplyResponseDto.ReplyDto findMyReplyByReplyId(long replyId) {
-        String email = getUserEmail(); //유저 정보 확인 이후 이메일 가져오기
-        Reply reply = replyRepository.findByIdAndUser_Email(replyId, email)
+        Reply reply = replyRepository.findByIdAndUser(replyId, getUser())
                 .orElseThrow(() -> new CustomException(NOT_FOUND_REPLY));
 
         return ReplyResponseDto.ReplyDto.from(reply);
@@ -74,8 +73,7 @@ public class ReplyServiceImpl implements ReplyService {
     @Transactional
     @Override
     public void modifyReply(long replyId, ReplyRequestDto replyDto) {
-        String email = getUserEmail(); //유저 정보 확인 이후 이메일 가져오기
-        Reply reply = replyRepository.findByBoard_IdAndUser_Email(replyId, email)
+        Reply reply = replyRepository.findByBoard_IdAndUser(replyId, getUser())
                 .orElseThrow(() -> new CustomException(NOT_FOUND_REPLY));
 
         reply.updateReply(replyDto.starScore(), replyDto.content());
@@ -84,10 +82,8 @@ public class ReplyServiceImpl implements ReplyService {
     @Transactional
     @Override
     public void deleteReply(long replyId) {
-        String email = getUserEmail(); //유저 정보 확인 이후 이메일 가져오기
-
-        if (replyRepository.existsByIdAndUser_Email(replyId, email)) {
-            new CustomException(NOT_MATCHED_REPLY_AND_USER);
+        if (replyRepository.existsByIdAndUser(replyId, getUser())) {
+            throw new CustomException(NOT_MATCHED_REPLY_AND_USER);
         }
         replyRepository.deleteById(replyId);
     }
@@ -127,13 +123,15 @@ public class ReplyServiceImpl implements ReplyService {
         return PageRequest.of(page, PAGE_SIZE, Sort.by(direction, properties));
     }
 
-    private String getUserEmail() {
+    private User getUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         //유저 정보 확인 및 로그인 상태 여부 확인
         if (authentication == null || authentication.getName().equals("anonymousUser")) {
             throw new CustomException(NOT_FOUND_USER);
         }
-        return authentication.getName();
+
+        return userRepository.findById(authentication.getName())
+                .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
     }
 }

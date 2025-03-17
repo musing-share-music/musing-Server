@@ -5,6 +5,7 @@ import com.example.musing.reply.entity.Reply;
 import java.util.List;
 import java.util.Optional;
 
+import com.example.musing.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -13,8 +14,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface ReplyRepository extends JpaRepository<Reply, Long> {
-    Optional<Reply> findByIdAndUser_Email(long replyId, String email);
-    Optional<Reply>  findByBoard_IdAndUser_Email(long boardId, String email);
+    Optional<Reply> findByIdAndUser(long replyId, User user);
+    Optional<Reply> findByBoard_IdAndUser(long boardId, User user);
 
     @EntityGraph(attributePaths = {"board"})
     List<Reply> findByUserId(String userId, Pageable pageable);
@@ -38,8 +39,8 @@ public interface ReplyRepository extends JpaRepository<Reply, Long> {
             "AND am.artist.name LIKE %:artistName%")
     Page<Reply> findPageByUserIdAndArtistName(@Param("id") String id, @Param("artistName") String artistName, Pageable pageable);
 
-    boolean existsByBoard_IdAndUser_Email(long boardId, String email);
-    boolean existsByIdAndUser_Email(long boardId, String email);
+    boolean existsByBoard_IdAndUser(long boardId, User user);
+    boolean existsByIdAndUser(long boardId, User user);
     @EntityGraph(attributePaths = {"board"})
     Page<Reply> findByBoard_Id(long boardId, Pageable pageable);
 
