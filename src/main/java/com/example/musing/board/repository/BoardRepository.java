@@ -15,6 +15,23 @@ import java.util.Optional;
 
 
 public interface BoardRepository extends JpaRepository<Board, Long>, JpaSpecificationExecutor<Board> {
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query("UPDATE Board b SET " +
+            "b.replyCount = b.replyCount -1, " +
+            "b.rating = CASE " +
+            "WHEN (b.replyCount -1) = 0 THEN 0 " +
+            "ELSE ((b.rating * b.replyCount) - :deletedRating) / (b.replyCount -1) " +
+            "END " +
+            "WHERE b.id = :boardId")
+    void updateReplyStatsOnDelete(@Param("boardId") Long boardId,
+                                  @Param("deletedRating") float deletedRating);
+
+    @Query("UPDATE Board b SET b.replyCount = b.replyCount +1," +
+            " b.rating = (b.rating * b.replyCount + :newRating)/(b.replyCount +1)" +
+            " WHERE b.id = :boardId")
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    void updateReplyStatsOnCreate(@Param("boardId") Long boardId,
+                          @Param("newRating") float newRating);
     @Modifying
     @Query("UPDATE Board b SET b.recommendCount = b.recommendCount + :delta WHERE b.id = :boardId")
     int updateRecommendCount(@Param("boardId") Long boardId, @Param("delta") int delta);
