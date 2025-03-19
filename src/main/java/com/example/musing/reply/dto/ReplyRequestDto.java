@@ -7,20 +7,14 @@ import java.time.LocalDateTime;
 
 @Builder
 public record ReplyRequestDto(
-        Long id,
         long starScore,
-        String content,
-        LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        String content
 
 ) {
     public static ReplyRequestDto from(Reply reply) {
         return ReplyRequestDto.builder()
-                .id(reply.getId())
                 .starScore(reply.getStarScore())
                 .content(reply.getContent())
-                .createdAt(reply.getCreatedAt())
-                .updatedAt(reply.getUpdatedAt())
                 .build();
     }
 }

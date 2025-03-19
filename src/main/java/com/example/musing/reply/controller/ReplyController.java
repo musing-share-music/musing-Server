@@ -1,8 +1,11 @@
 package com.example.musing.reply.controller;
 
+import com.example.musing.board.dto.BoardReplyDto;
+import com.example.musing.board.service.BoardService;
 import com.example.musing.common.dto.ResponseDto;
 import com.example.musing.reply.dto.ReplyRequestDto;
 import com.example.musing.reply.dto.ReplyResponseDto;
+import com.example.musing.reply.entity.Reply;
 import com.example.musing.reply.service.ReplyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 public class ReplyController {
 
     private final ReplyService replyService;
+    private final BoardService boardService;
 
     @GetMapping("/reply/myReply")
     public ResponseDto<ReplyResponseDto.ReplyDto> findMyReply(@RequestParam("boardId") long boardId) {
@@ -30,10 +34,11 @@ public class ReplyController {
     }
 
     @PostMapping("/reply/write")
-    public ResponseDto<ReplyRequestDto> writeReply(@RequestParam("boardId") long boardId, ReplyRequestDto replyDto){
+    public ResponseDto<ReplyResponseDto.ReplyAndUpdatedBoardDto> writeReply(@RequestParam("boardId") long boardId,
+                                                                            ReplyRequestDto replyDto){
         // 서비스단에서 User 정보 확인함
-        replyService.writeReply(boardId, replyDto);
-        return ResponseDto.of(null,"성공적으로 작성하였습니다.");
+        ReplyResponseDto.ReplyAndUpdatedBoardDto replyAndUpdatedBoardDto = replyService.writeReply(boardId, replyDto);
+        return ResponseDto.of(replyAndUpdatedBoardDto,"성공적으로 작성하였습니다.");
     }
 
     @GetMapping("/reply/modify")
@@ -43,15 +48,19 @@ public class ReplyController {
     }
 
     @PutMapping("/reply/modify")
-    public ResponseDto<ReplyRequestDto> modifyReply(@RequestParam("replyId") long replyId, ReplyRequestDto replyDto) {
-        replyService.modifyReply(replyId, replyDto);
-        return ResponseDto.of(null,"성공적으로 리뷰를 수정했습니다.");
+    public ResponseDto<BoardReplyDto> modifyReply(@RequestParam("replyId") long replyId, ReplyRequestDto replyDto) {
+        Reply reply = replyService.findByReplyId(replyId);
+
+        BoardReplyDto boardReplyDto = replyService.modifyReply(replyId, replyDto);
+        return ResponseDto.of(boardReplyDto,"성공적으로 리뷰를 수정했습니다.");
     }
 
     @DeleteMapping("/reply")
-    public ResponseDto<ReplyRequestDto> deleteReply(@RequestParam("replyId") long replyId){
-        replyService.deleteReply(replyId);
-        return ResponseDto.of(null, "성공적으로 리뷰를 삭제했습니다.");
+    public ResponseDto<BoardReplyDto> deleteReply(@RequestParam("replyId") long replyId){
+        Reply reply = replyService.findByReplyId(replyId);
+
+        BoardReplyDto boardReplyDto = replyService.deleteReply(replyId);;
+        return ResponseDto.of(boardReplyDto, "성공적으로 리뷰를 삭제했습니다.");
     }
 
     @GetMapping("/board/{boardId}/reply")

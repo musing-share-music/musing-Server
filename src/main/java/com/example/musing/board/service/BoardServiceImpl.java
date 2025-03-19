@@ -26,6 +26,7 @@ import com.example.musing.mood.entity.Mood_Music;
 import com.example.musing.music.entity.Music;
 import com.example.musing.music.repository.MusicRepository;
 import com.example.musing.reply.dto.ReplyResponseDto;
+import com.example.musing.reply.entity.Reply;
 import com.example.musing.reply.service.ReplyService;
 import com.example.musing.user.entity.User;
 import com.example.musing.user.repository.UserRepository;
@@ -68,7 +69,6 @@ public class BoardServiceImpl implements BoardService {
     private final ReplyService replyService;
     private final Like_MusicService likeMusicService;
     private final AWS_S3_Util awsS3Util;
-    private final EntityManager entityManager;
 
     @Override
     public List<GenreBoardDto> findBy5GenreBoard(String genre) { //장르로 검색한 게시글들을 엔티티에서 Dto로 전환
@@ -267,7 +267,7 @@ public class BoardServiceImpl implements BoardService {
             images = new ArrayList<>();
         }
 
-        if (deleteFileLinks != null&& !deleteFileLinks.isEmpty()) {
+        if (deleteFileLinks != null && !deleteFileLinks.isEmpty()) {
             images.removeIf(imageUrl -> {
                 if (deleteFileLinks.contains(imageUrl)) {
                     String filename = extractFilename(imageUrl);
@@ -372,11 +372,7 @@ public class BoardServiceImpl implements BoardService {
         boolean isLiked = likeMusicService.toggleRecommend(user, board.getMusic());
         int delta = isLiked ? 1 : -1;
 
-        boardRepository.updateRecommendCount(boardId, delta);
-
-        entityManager.refresh(board); //레파지토리에서 db원자적 호출을 하기에 갱신 후 조회
-
-        return BoardRecommedDto.of(board.getRecommendCount(), isLiked);
+        return BoardRecommedDto.of(boardRepository.updateRecommendCount(boardId, delta), isLiked);
     }
 
 
@@ -389,7 +385,7 @@ public class BoardServiceImpl implements BoardService {
         return BoardAndReplyPageDto.of(boardDto, replyDtos);
     }
 
-    private void incrementBoardViewCount(long boardId){
+    private void incrementBoardViewCount(long boardId) {
         boardRepository.incrementBoardViewCount(boardId);
     }
 

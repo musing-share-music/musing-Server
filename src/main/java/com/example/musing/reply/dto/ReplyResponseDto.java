@@ -1,5 +1,6 @@
 package com.example.musing.reply.dto;
 
+import com.example.musing.board.dto.BoardReplyDto;
 import com.example.musing.music.dto.MusicDto;
 import com.example.musing.reply.entity.Reply;
 import com.example.musing.user.dto.UserResponseDto;
@@ -8,6 +9,20 @@ import lombok.Builder;
 import java.time.LocalDateTime;
 
 public class ReplyResponseDto {
+
+    @Builder
+    public record ReplyAndUpdatedBoardDto(
+            BoardReplyDto boardReplyDto,
+            ReplyDto replyDto
+    ) {
+        public static ReplyAndUpdatedBoardDto of(int count, float rating, Reply reply){
+            return ReplyAndUpdatedBoardDto.builder()
+                    .boardReplyDto(BoardReplyDto.of(count, rating))
+                    .replyDto(ReplyDto.from(reply))
+                    .build();
+        }
+    }
+
     @Builder
     public record ReplyDto(
             Long id,
