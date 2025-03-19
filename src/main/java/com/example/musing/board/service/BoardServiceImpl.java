@@ -26,6 +26,7 @@ import com.example.musing.mood.entity.Mood_Music;
 import com.example.musing.music.entity.Music;
 import com.example.musing.music.repository.MusicRepository;
 import com.example.musing.reply.dto.ReplyResponseDto;
+import com.example.musing.reply.entity.Reply;
 import com.example.musing.reply.service.ReplyService;
 import com.example.musing.user.entity.User;
 import com.example.musing.user.repository.UserRepository;
@@ -68,31 +69,6 @@ public class BoardServiceImpl implements BoardService {
     private final ReplyService replyService;
     private final Like_MusicService likeMusicService;
     private final AWS_S3_Util awsS3Util;
-
-    @Transactional
-    public BoardReplyDto updateReplyBydelete(long boardId, float replyRating) {
-        if (!boardRepository.existsById(boardId)) {
-            throw new CustomException(NOT_FOUND_BOARD);
-        }
-
-        boardRepository.updateReplyStatsOnDelete(boardId, replyRating);
-        Board board = boardRepository.findById(boardId).orElseThrow(() -> new CustomException(NOT_FOUND_BOARD));
-
-        return BoardReplyDto.of(board.getReplyCount(), board.getRating());
-    }
-
-
-    @Transactional
-    public BoardReplyDto updateReplyByCreate(long boardId, float replyRating) {
-        if (!boardRepository.existsById(boardId)) {
-            throw new CustomException(NOT_FOUND_BOARD);
-        }
-
-        boardRepository.updateReplyStatsOnCreate(boardId, replyRating);
-        Board board = boardRepository.findById(boardId).orElseThrow(() -> new CustomException(NOT_FOUND_BOARD));
-
-        return BoardReplyDto.of(board.getReplyCount(), board.getRating());
-    }
 
     @Override
     public List<GenreBoardDto> findBy5GenreBoard(String genre) { //장르로 검색한 게시글들을 엔티티에서 Dto로 전환

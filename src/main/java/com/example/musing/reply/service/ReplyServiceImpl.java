@@ -1,5 +1,6 @@
 package com.example.musing.reply.service;
 
+import com.example.musing.board.dto.BoardReplyDto;
 import com.example.musing.board.entity.Board;
 import com.example.musing.board.repository.BoardRepository;
 import com.example.musing.exception.CustomException;
@@ -33,13 +34,14 @@ public class ReplyServiceImpl implements ReplyService {
     private final UserRepository userRepository;
     private final BoardRepository boardRepository;
 
+    @Override
     public Reply findByReplyId(long replyId) {
         return replyRepository.findById(replyId).orElseThrow(() -> new CustomException(NOT_FOUND_REPLY));
     }
 
     @Transactional
     @Override
-    public void writeReply(long boardId, ReplyRequestDto replyDto) {
+    public ReplyResponseDto.ReplyAndUpdatedBoardDto writeReply(long boardId, ReplyRequestDto replyDto) {
         User user = getUser();
 
         Board board = boardRepository.findById(boardId)
@@ -51,9 +53,44 @@ public class ReplyServiceImpl implements ReplyService {
             throw new CustomException(EXIST_REPLY);
         }
 
-        Reply reply = Reply.from(replyDto, user, board);
+        Reply reply = replyRepository.save(Reply.from(replyDto, user, board));
 
-        replyRepository.save(reply);
+        boardRepository.updateReplyStatsOnCreate(boardId, (float) replyDto.starScore());
+        Board updatedBoard = boardRepository.findById(boardId).orElseThrow(() -> new CustomException(NOT_FOUND_BOARD));
+
+        return ReplyResponseDto.ReplyAndUpdatedBoardDto.of(updatedBoard.getReplyCount(), updatedBoard.getRating(), reply);
+    }
+
+    @Transactional
+    @Override
+    public BoardReplyDto modifyReply(long replyId, ReplyRequestDto replyDto) {
+        Reply reply = replyRepository.findByIdAndUser(replyId, getUser())
+                .orElseThrow(() -> new CustomException(NOT_FOUND_REPLY));
+
+        boardRepository.updateReplyStatsOnUpdate(reply.getBoard().getId(), reply.getStarScore(), replyDto.starScore());
+
+        reply.updateReply(replyDto.starScore(), replyDto.content());
+
+        Board updatedBoard = boardRepository.findById(reply.getBoard().getId())
+                .orElseThrow(() -> new CustomException(NOT_FOUND_BOARD));
+
+        return BoardReplyDto.of(updatedBoard.getReplyCount(), updatedBoard.getRating());
+    }
+
+    @Transactional
+    @Override
+    public BoardReplyDto deleteReply(long replyId) {
+        Reply reply = replyRepository.findByIdAndUser(replyId, getUser())
+                .orElseThrow(() -> new CustomException(NOT_FOUND_REPLY));
+
+        boardRepository.updateReplyStatsOnDelete(reply.getBoard().getId(), reply.getStarScore());
+
+        replyRepository.delete(reply);
+
+        Board updatedBoard = boardRepository.findById(reply.getBoard().getId())
+                .orElseThrow(() -> new CustomException(NOT_FOUND_BOARD));
+
+        return BoardReplyDto.of(updatedBoard.getReplyCount(), updatedBoard.getRating());
     }
 
     @Override
@@ -68,24 +105,6 @@ public class ReplyServiceImpl implements ReplyService {
                 .orElseThrow(() -> new CustomException(NOT_FOUND_REPLY));
 
         return ReplyResponseDto.ReplyDto.from(reply);
-    }
-
-    @Transactional
-    @Override
-    public void modifyReply(long replyId, ReplyRequestDto replyDto) {
-        Reply reply = replyRepository.findByBoard_IdAndUser(replyId, getUser())
-                .orElseThrow(() -> new CustomException(NOT_FOUND_REPLY));
-
-        reply.updateReply(replyDto.starScore(), replyDto.content());
-    }
-
-    @Transactional
-    @Override
-    public void deleteReply(long replyId) {
-        if (replyRepository.existsByIdAndUser(replyId, getUser())) {
-            throw new CustomException(NOT_MATCHED_REPLY_AND_USER);
-        }
-        replyRepository.deleteById(replyId);
     }
 
     @Override
