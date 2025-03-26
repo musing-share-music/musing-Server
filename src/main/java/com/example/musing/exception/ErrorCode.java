@@ -47,6 +47,9 @@ public enum ErrorCode {
     //신고 관련 예외처리
     BAD_REQUEST_REPORT_PAGE(BAD_REQUEST, "해당 페이지는 존재하지 않습니다."),
 
+    // 알람 관련 예외처리
+    NOT_FOUND_ALARM_TYPE(NOT_FOUND, "지정되지 않은 알람 종류 입니다."),
+
     //좋아하는 장르 관련 예외처리
     NOT_FOUND_LIKE_GENRE(NOT_FOUND, "최소 한개 이상의 좋아하는 장르는 선택해야합니다."),
     //좋아하는 분위기 관련 예외처리
