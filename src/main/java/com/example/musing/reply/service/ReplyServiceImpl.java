@@ -29,14 +29,20 @@ import static com.example.musing.exception.ErrorCode.*;
 @Service
 public class ReplyServiceImpl implements ReplyService {
 
-    private static int PAGE_SIZE = 10;
     private final ReplyRepository replyRepository;
     private final UserRepository userRepository;
     private final BoardRepository boardRepository;
 
+    private static final int PAGE_SIZE = 10;
+
     @Override
     public Reply findByReplyId(long replyId) {
         return replyRepository.findById(replyId).orElseThrow(() -> new CustomException(NOT_FOUND_REPLY));
+    }
+
+    @Override
+    public Board findByBoardId(long boardId) {
+        return boardRepository.findById(boardId).orElseThrow(() -> new CustomException(NOT_FOUND_BOARD));
     }
 
     @Transactional

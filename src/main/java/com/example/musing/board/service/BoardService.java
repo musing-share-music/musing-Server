@@ -1,6 +1,7 @@
 package com.example.musing.board.service;
 
 import com.example.musing.board.dto.*;
+import com.example.musing.board.entity.Board;
 import com.example.musing.main.dto.RecommendBoardRight;
 import com.example.musing.user.entity.User;
 import org.springframework.data.domain.Page;
@@ -18,7 +19,7 @@ public interface BoardService {
     List<GenreBoardDto> findBy10LikeMusics(String userId);
 
     //게시판 등록 로직
-    void createBoard(CreateBoardRequest request, List<MultipartFile> images);
+    Board createBoard(CreateBoardRequest request, List<MultipartFile> images);
 
     BoardListResponseDto.BoardListDto findBoardList();
     Page<BoardListResponseDto.BoardDto> findBoardDto(int page);

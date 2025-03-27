@@ -10,6 +10,7 @@ import com.example.musing.exception.ErrorCode;
 import com.example.musing.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
@@ -17,8 +18,9 @@ import java.util.Map;
 
 import static com.example.musing.exception.ErrorCode.NOT_FOUND_ALARM_TYPE;
 
-@Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
+@Service
 public class AlarmServiceImpl implements AlarmService{
     private final AlarmRepository alarmRepository;
     private final EmitterRepository emitterRepository;
@@ -28,6 +30,7 @@ public class AlarmServiceImpl implements AlarmService{
     private final String ADMINDENY_CONTENT = "작성하신 게시글의 관리자 확인이 거절되었어요.";
     private final String APPLYPERMIT_CONTENT = "승인 요청이 접수된 게시글이 있어요.";
 
+    @Transactional
     @Override
     public SseEmitter subscribe(String userId, String lastEventId) {
         String emitterId = makeTimeIncludeId(userId);
@@ -46,6 +49,7 @@ public class AlarmServiceImpl implements AlarmService{
         return emitter;
     }
 
+    @Transactional
     @Override
     public void send(User user, AlarmType alarmType, String content, String relatedUrl) {
         Alarm alarm = alarmRepository

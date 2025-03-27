@@ -125,7 +125,7 @@ public class BoardServiceImpl implements BoardService {
     //게시판 등록 로직
     @Override
     @Transactional
-    public void createBoard(CreateBoardRequest request, List<MultipartFile> images) {
+    public Board createBoard(CreateBoardRequest request, List<MultipartFile> images) {
         // Music 저장
         Music music = Music.of(request);
         musicRepository.save(music);
@@ -176,7 +176,7 @@ public class BoardServiceImpl implements BoardService {
         String imageString = uploadImages(images) == null ? null : uploadImages(images).toString();
 
         Board board = Board.of(user, music, request.getTitle(), request.getContent(), imageString);
-        boardRepository.save(board); // Board 저장 (최종적으로 Board를 저장)
+        return boardRepository.save(board); // Board 저장 (최종적으로 Board를 저장)
     }
 
 

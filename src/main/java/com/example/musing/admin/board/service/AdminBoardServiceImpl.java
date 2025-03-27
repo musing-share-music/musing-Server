@@ -34,6 +34,11 @@ public class AdminBoardServiceImpl implements AdminBoardService {
     private static String DELETED_PAGE = "deletedPage";
 
     @Override
+    public Board findByBoardId(long boardId) {
+        return boardRepository.findById(boardId).orElseThrow(() -> new CustomException(NOT_FOUND_BOARD));
+    }
+
+    @Override
     public DetailResponse selectDetail(long boardId) {
         Board board = boardRepository.findBoardByActiveCheckFalse(boardId);
         if (!boardRepository.existsById(boardId)) {
@@ -78,14 +83,14 @@ public class AdminBoardServiceImpl implements AdminBoardService {
     @Transactional
     @Override
     public void updateBoardStateNeedFix(long boardId) {
-        Board board = boardRepository.findById(boardId).orElseThrow(() -> new CustomException(NOT_FOUND_BOARD));
+        Board board = boardRepository.findNonCheckBoardById(boardId).orElseThrow(() -> new CustomException(NOT_FOUND_BOARD));
         board.updateRegister(NEED_FIX);
     }
 
     @Transactional
     @Override
     public void updateBoardStatePermit(long boardId) {
-        Board board = boardRepository.findById(boardId).orElseThrow(() -> new CustomException(NOT_FOUND_BOARD));
+        Board board = boardRepository.findNonCheckBoardById(boardId).orElseThrow(() -> new CustomException(NOT_FOUND_BOARD));
         board.updateRegister(PERMIT);
     }
 
