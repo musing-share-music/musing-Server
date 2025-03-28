@@ -1,5 +1,6 @@
 package com.example.musing.reply.service;
 
+import com.example.musing.alarm.event.SentAlarmEvent;
 import com.example.musing.board.dto.BoardReplyDto;
 import com.example.musing.board.entity.Board;
 import com.example.musing.board.repository.BoardRepository;
@@ -11,6 +12,7 @@ import com.example.musing.reply.repository.ReplyRepository;
 import com.example.musing.user.entity.User;
 import com.example.musing.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
+import static com.example.musing.alarm.entity.AlarmType.APPLYPERMIT;
 import static com.example.musing.exception.ErrorCode.*;
 
 @RequiredArgsConstructor
@@ -32,17 +35,13 @@ public class ReplyServiceImpl implements ReplyService {
     private final ReplyRepository replyRepository;
     private final UserRepository userRepository;
     private final BoardRepository boardRepository;
-
+    private final ApplicationEventPublisher publisher;
     private static final int PAGE_SIZE = 10;
+    private static final String ALARM_API_URL = "/musing/board/selectDetail?boardId=";
 
     @Override
     public Reply findByReplyId(long replyId) {
         return replyRepository.findById(replyId).orElseThrow(() -> new CustomException(NOT_FOUND_REPLY));
-    }
-
-    @Override
-    public Board findByBoardId(long boardId) {
-        return boardRepository.findById(boardId).orElseThrow(() -> new CustomException(NOT_FOUND_BOARD));
     }
 
     @Transactional
@@ -63,7 +62,12 @@ public class ReplyServiceImpl implements ReplyService {
 
         boardRepository.updateReplyStatsOnCreate(boardId, (float) replyDto.starScore());
         Board updatedBoard = boardRepository.findById(boardId).orElseThrow(() -> new CustomException(NOT_FOUND_BOARD));
+        
+        String boardUrl = ALARM_API_URL + board.getId();
 
+        // 게시글 작성자에게 알람 전송
+        publisher.publishEvent(SentAlarmEvent.of(board.getUser(), APPLYPERMIT, boardUrl));
+        
         return ReplyResponseDto.ReplyAndUpdatedBoardDto.of(updatedBoard.getReplyCount(), updatedBoard.getRating(), reply);
     }
 

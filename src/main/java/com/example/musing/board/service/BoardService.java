@@ -19,7 +19,7 @@ public interface BoardService {
     List<GenreBoardDto> findBy10LikeMusics(String userId);
 
     //게시판 등록 로직
-    Board createBoard(CreateBoardRequest request, List<MultipartFile> images);
+    void createBoard(CreateBoardRequest request, List<MultipartFile> images);
 
     BoardListResponseDto.BoardListDto findBoardList();
     Page<BoardListResponseDto.BoardDto> findBoardDto(int page);

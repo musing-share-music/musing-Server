@@ -10,8 +10,6 @@ import org.springframework.data.domain.Page;
 public interface ReplyService {
     Reply findByReplyId(long replyId);
 
-    Board findByBoardId(long boardId);
-
     ReplyResponseDto.ReplyAndUpdatedBoardDto writeReply(long boardId, ReplyRequestDto replyDto);
 
     ReplyResponseDto.ReplyDto findMyReplyByBoardId(long boardId);

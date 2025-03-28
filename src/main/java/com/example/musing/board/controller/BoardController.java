@@ -23,24 +23,16 @@ import static com.example.musing.alarm.entity.AlarmType.APPLYPERMIT;
 public class BoardController {
 
     private final BoardService boardService;
-    private final AlarmService alarmService;
-
-    private static final String ALARM_CONTENT = "새로운 관리자 승인요청이 들어왔어요.";
-    private static final String ALARM_API_URL = "/musing/board/selectDetail?boardId=";
 
     @PostMapping(value ="/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseDto<Board> createPost(@ModelAttribute @Valid CreateBoardRequest request,
+    public ResponseDto<Void> createPost(@ModelAttribute @Valid CreateBoardRequest request,
                                          @RequestPart(value = "image", required = false) List<MultipartFile> images) {
 
         if (images == null || images.isEmpty()) {
             images = new ArrayList<>();  // 이미지 없음으로 처리하거나, 기본값 설정
         }
 
-        Board board = boardService.createBoard(request,images); // DTO를 Service로 전달
-
-        String boardUrl = ALARM_API_URL + board.getId();
-
-        alarmService.send(board.getUser(), APPLYPERMIT, ALARM_CONTENT, boardUrl);
+        boardService.createBoard(request,images); // DTO를 Service로 전달
 
         return ResponseDto.of(null,"성공적으로 글이 작성되었습니다.");
     }

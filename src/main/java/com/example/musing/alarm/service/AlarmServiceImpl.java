@@ -51,7 +51,7 @@ public class AlarmServiceImpl implements AlarmService{
 
     @Transactional
     @Override
-    public void send(User user, AlarmType alarmType, String content, String relatedUrl) {
+    public void send(User user, AlarmType alarmType, String relatedUrl) {
         Alarm alarm = alarmRepository
                 .save(createNotification(user, alarmType, relatedUrl));
 

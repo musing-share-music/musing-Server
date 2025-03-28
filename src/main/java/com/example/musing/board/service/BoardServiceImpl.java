@@ -1,5 +1,6 @@
 package com.example.musing.board.service;
 
+import com.example.musing.alarm.event.SentAlarmEvent;
 import com.example.musing.artist.dto.ArtistDto;
 import com.example.musing.artist.entity.Artist;
 import com.example.musing.artist.entity.Artist_Music;
@@ -32,6 +33,7 @@ import com.example.musing.user.entity.User;
 import com.example.musing.user.repository.UserRepository;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -45,6 +47,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.example.musing.alarm.entity.AlarmType.APPLYPERMIT;
 import static com.example.musing.exception.ErrorCode.*;
 
 @Transactional(readOnly = true)
@@ -58,6 +61,8 @@ public class BoardServiceImpl implements BoardService {
     private static int PAGESIZE = 8;
     private static String S3BUCKETURL = "board";
 
+    private static final String ALARM_API_URL = "/musing/board/selectDetail?boardId=";
+
     private final UserRepository userRepository;
     private final BoardRepository boardRepository;
     private final ArtistRepository artistRepository;
@@ -69,6 +74,7 @@ public class BoardServiceImpl implements BoardService {
     private final ReplyService replyService;
     private final Like_MusicService likeMusicService;
     private final AWS_S3_Util awsS3Util;
+    private final ApplicationEventPublisher publisher;
 
     @Override
     public List<GenreBoardDto> findBy5GenreBoard(String genre) { //장르로 검색한 게시글들을 엔티티에서 Dto로 전환
@@ -125,7 +131,7 @@ public class BoardServiceImpl implements BoardService {
     //게시판 등록 로직
     @Override
     @Transactional
-    public Board createBoard(CreateBoardRequest request, List<MultipartFile> images) {
+    public void createBoard(CreateBoardRequest request, List<MultipartFile> images) {
         // Music 저장
         Music music = Music.of(request);
         musicRepository.save(music);
@@ -176,7 +182,11 @@ public class BoardServiceImpl implements BoardService {
         String imageString = uploadImages(images) == null ? null : uploadImages(images).toString();
 
         Board board = Board.of(user, music, request.getTitle(), request.getContent(), imageString);
-        return boardRepository.save(board); // Board 저장 (최종적으로 Board를 저장)
+        boardRepository.save(board); // Board 저장 (최종적으로 Board를 저장)
+
+        String boardUrl = ALARM_API_URL + board.getId();
+
+        publisher.publishEvent(SentAlarmEvent.of(board.getUser(), APPLYPERMIT, boardUrl));
     }
 
 

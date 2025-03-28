@@ -7,7 +7,6 @@ import org.springframework.data.domain.Page;
 
 public interface AdminBoardService {
 
-    Board findByBoardId(long boardId);
     DetailResponse selectDetail(long boardId);
     Page<AdminBoardResponseDto.AdminBoardListDto> getRegisterPermitSearchPage(int page, String searchType, String keyword);
     Page<AdminBoardResponseDto.AdminBoardListDto> getDeletedSearchPage(int page, String searchType, String keyword);
