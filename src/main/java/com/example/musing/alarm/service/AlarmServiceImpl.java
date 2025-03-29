@@ -18,7 +18,6 @@ import java.util.Map;
 
 import static com.example.musing.exception.ErrorCode.NOT_FOUND_ALARM_TYPE;
 
-@Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service
 public class AlarmServiceImpl implements AlarmService{
@@ -30,7 +29,7 @@ public class AlarmServiceImpl implements AlarmService{
     private final String ADMINDENY_CONTENT = "작성하신 게시글의 관리자 확인이 거절되었어요.";
     private final String APPLYPERMIT_CONTENT = "승인 요청이 접수된 게시글이 있어요.";
 
-    @Transactional
+    // SSE Connection Pool의 Active 할당을 최소화 하기위해 @Transactional 제거
     @Override
     public SseEmitter subscribe(String userId, String lastEventId) {
         String emitterId = makeTimeIncludeId(userId);

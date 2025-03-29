@@ -31,6 +31,7 @@ public class Alarm {
     private AlarmType alarmType;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "userid", nullable = false)
     private User user;
 
     @Builder
