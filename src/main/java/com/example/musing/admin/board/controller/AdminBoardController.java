@@ -7,12 +7,14 @@ import com.example.musing.board.dto.DetailResponse;
 import com.example.musing.board.entity.Board;
 import com.example.musing.common.dto.ResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import static com.example.musing.alarm.entity.AlarmType.APPLYPERMIT;
 
+@Tag(name = "관리자 게시글 관련 API")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/musing/admin/board")
