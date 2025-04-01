@@ -7,6 +7,7 @@ import lombok.Builder;
 
 @Builder
 public record AlarmDto(
+        Long id,
         String content,
 
         String urlLink,
@@ -17,6 +18,7 @@ public record AlarmDto(
 
     public static AlarmDto from(Alarm alarm) {
         return AlarmDto.builder()
+                .id(alarm.getId())
                 .content(alarm.getContent())
                 .urlLink(alarm.getUrlLink())
                 .isRead(alarm.isRead())

@@ -1,6 +1,7 @@
 package com.example.musing.alarm.controller;
 
 import com.example.musing.alarm.dto.AlarmDto;
+import com.example.musing.alarm.entity.Alarm;
 import com.example.musing.alarm.service.AlarmService;
 import com.example.musing.common.dto.ResponseDto;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -18,6 +21,14 @@ import java.util.List;
 public class AlarmController {
 
     private final AlarmService alarmService;
+
+    @PutMapping
+    public void redirectAlarmUrl(@RequestParam long alarmId, HttpServletResponse response) throws IOException {
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        Alarm alarm = alarmService.redirectAlarmUrl(userId, alarmId);
+
+        response.sendRedirect(alarm.getUrlLink());
+    }
 
     @GetMapping("/list")
     public ResponseDto<List<AlarmDto>> findAlarms(){
