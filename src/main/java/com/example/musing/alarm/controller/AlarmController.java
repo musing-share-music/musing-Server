@@ -1,5 +1,6 @@
 package com.example.musing.alarm.controller;
 
+import com.example.musing.alarm.dto.AlarmDto;
 import com.example.musing.alarm.service.AlarmService;
 import com.example.musing.common.dto.ResponseDto;
 import lombok.RequiredArgsConstructor;
@@ -9,12 +10,21 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/musing/alarm")
 public class AlarmController {
 
     private final AlarmService alarmService;
+
+    @GetMapping("/list")
+    public ResponseDto<List<AlarmDto>> findAlarms(){
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        List<AlarmDto> alarmDtos = alarmService.findAlarms(userId);
+        return ResponseDto.of(alarmDtos);
+    }
 
     @GetMapping(value ="/create", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public ResponseEntity<SseEmitter> subcribe(

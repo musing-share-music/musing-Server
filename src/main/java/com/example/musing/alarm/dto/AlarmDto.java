@@ -13,9 +13,7 @@ public record AlarmDto(
 
         boolean isRead,
 
-        AlarmType alarmType,
-
-        User user) {
+        AlarmType alarmType) {
 
     public static AlarmDto from(Alarm alarm) {
         return AlarmDto.builder()
@@ -23,7 +21,6 @@ public record AlarmDto(
                 .urlLink(alarm.getUrlLink())
                 .isRead(alarm.isRead())
                 .alarmType(alarm.getAlarmType())
-                .user(alarm.getUser())
                 .build();
     }
 }

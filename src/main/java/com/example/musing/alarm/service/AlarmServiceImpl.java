@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import static com.example.musing.exception.ErrorCode.NOT_FOUND_ALARM_TYPE;
@@ -28,6 +29,14 @@ public class AlarmServiceImpl implements AlarmService{
     private final String ADMINPERMIT_CONTEMT = "작성하신 게시글의 관리자 확인이 완료되었어요.";
     private final String ADMINDENY_CONTENT = "작성하신 게시글의 관리자 확인이 거절되었어요.";
     private final String APPLYPERMIT_CONTENT = "승인 요청이 접수된 게시글이 있어요.";
+
+    @Override
+    public List<AlarmDto> findAlarms(String userId) {
+        return alarmRepository.findByUserId(userId)
+                .stream()
+                .map(AlarmDto::from)
+                .toList();
+    }
 
     // SSE Connection Pool의 Active 할당을 최소화 하기위해 @Transactional 제거
     @Override
