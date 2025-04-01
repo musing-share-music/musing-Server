@@ -24,6 +24,10 @@ public class ReplyController {
 
     private final ReplyService replyService;
 
+    @Operation(summary = "음악 추천 게시글의 작성한 내 리뷰 조회",
+            description = "음악 추천 게시글의 작성한 리뷰를 조회합니다." +
+                    "로그인을 하지않았거나 작성한 Reply이 없을 경우 null을 반환하며," +
+                    "작성한 리뷰가 있을 시 해당 내용을 Dto로 보여줍니다.")
     @GetMapping("/reply/myReply")
     public ResponseDto<ReplyResponseDto.ReplyDto> findMyReply(@RequestParam("boardId") long boardId) {
         if (checkUserEmail()) {
@@ -36,6 +40,8 @@ public class ReplyController {
         return ResponseDto.of(null, "로그인 이후 작성 가능합니다.");
     }
 
+    @Operation(summary = "음악 추천 게시글의 리뷰 작성",
+            description = "해당 게시글의 별점과 리뷰를 남깁니다.")
     @PostMapping("/reply/write")
     public ResponseDto<ReplyResponseDto.ReplyAndUpdatedBoardDto> writeReply(@RequestParam("boardId") long boardId,
                                                                             ReplyRequestDto replyDto) {
@@ -45,12 +51,17 @@ public class ReplyController {
         return ResponseDto.of(replyAndUpdatedBoardDto, "성공적으로 작성하였습니다.");
     }
 
+    @Operation(summary = "음악 추천 게시글의 리뷰 수정 페이지",
+            description = "수정하기를 누르면 이전에 작성한 리뷰를 가져옵니다.")
     @GetMapping("/reply/modify")
     public ResponseDto<ReplyResponseDto.ReplyDto> modifyReplyForm(@RequestParam("replyId") long replyId) {
         ReplyResponseDto.ReplyDto replyDto = replyService.findMyReplyByReplyId(replyId);
         return ResponseDto.of(replyDto, "작성했던 리뷰를 불러옵니다.");
     }
 
+    @Operation(summary = "음악 추천 게시글의 리뷰 수정",
+            description = "해당 게시글의 별점과 리뷰를 수정합니다." +
+                    "수정을 하면서 변경되는 리뷰 내용과 게시글의 평균 별점을 같이 반환합니다")
     @PutMapping("/reply/modify")
     public ResponseDto<BoardReplyDto> modifyReply(@RequestParam("replyId") long replyId, ReplyRequestDto replyDto) {
         Reply reply = replyService.findByReplyId(replyId);
@@ -58,13 +69,14 @@ public class ReplyController {
         BoardReplyDto boardReplyDto = replyService.modifyReply(replyId, replyDto);
         return ResponseDto.of(boardReplyDto, "성공적으로 리뷰를 수정했습니다.");
     }
-
-    @DeleteMapping("/reply")
+    
+    @Operation(summary = "음악 추천 게시글의 리뷰 삭제",
+            description = "해당 게시글의 별점과 리뷰를 삭제합니다." +
+                    "수정을 하면서 변경되는 리뷰 내용과 게시글의 평균 별점, 댓글 수를 같이 반환합니다")
     public ResponseDto<BoardReplyDto> deleteReply(@RequestParam("replyId") long replyId) {
         Reply reply = replyService.findByReplyId(replyId);
 
         BoardReplyDto boardReplyDto = replyService.deleteReply(replyId);
-        ;
         return ResponseDto.of(boardReplyDto, "성공적으로 리뷰를 삭제했습니다.");
     }
 
