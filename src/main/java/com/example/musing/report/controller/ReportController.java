@@ -5,10 +5,12 @@ import com.example.musing.notice.dto.NoticeDto;
 import com.example.musing.report.dto.ReportRequestDto;
 import com.example.musing.report.dto.ReportResponseDto;
 import com.example.musing.report.service.ReportService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "신고 관련 API (관리자 기능 포함)")
 @RequestMapping("/musing")
 @RequiredArgsConstructor
 @RestController
