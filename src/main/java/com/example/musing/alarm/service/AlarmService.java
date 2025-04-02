@@ -12,8 +12,6 @@ public interface AlarmService {
 
     Alarm redirectAlarmUrl(String userId, long alarmId);
 
-    List<AlarmDto> findAlarms(String userId);
-
     SseEmitter subscribe(String userId, String lastEventId);
 
     void send(User user, AlarmType alarmType, String relatedUrl);

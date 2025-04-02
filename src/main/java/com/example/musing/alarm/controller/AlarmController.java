@@ -30,13 +30,6 @@ public class AlarmController {
         response.sendRedirect(alarm.getUrlLink());
     }
 
-    @GetMapping("/list")
-    public ResponseDto<List<AlarmDto>> findAlarms(){
-        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-        List<AlarmDto> alarmDtos = alarmService.findAlarms(userId);
-        return ResponseDto.of(alarmDtos);
-    }
-
     @GetMapping(value ="/create", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public ResponseEntity<SseEmitter> subcribe(
             @RequestHeader(value = "Last-Event-ID", required = false, defaultValue = "") String lastEventId) {
