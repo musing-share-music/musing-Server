@@ -2,11 +2,15 @@ package com.example.musing.admin.board.controller;
 
 import com.example.musing.admin.board.dto.AdminBoardResponseDto;
 import com.example.musing.admin.board.service.AdminBoardService;
+import com.example.musing.alarm.service.AlarmService;
 import com.example.musing.board.dto.DetailResponse;
+import com.example.musing.board.entity.Board;
 import com.example.musing.common.dto.ResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
+
+import static com.example.musing.alarm.entity.AlarmType.APPLYPERMIT;
 
 @RequiredArgsConstructor
 @RestController
@@ -19,6 +23,7 @@ public class AdminBoardController {
         DetailResponse responseDto = adminBoardService.selectDetail(boardId);
         return ResponseDto.of(responseDto);
     }
+
     @GetMapping("/list/removed")
     public ResponseDto<Page<AdminBoardResponseDto.AdminBoardListDto>> getDeletedBoards(
             @RequestParam(name = "page", defaultValue = "1") int page) {
@@ -54,14 +59,14 @@ public class AdminBoardController {
     }
 
     @PutMapping("/non/permit")
-    public ResponseDto<String> updateBoardStateNeedFix(@RequestParam long boardId) {
+    public ResponseDto<Void> updateBoardStateNeedFix(@RequestParam long boardId) {
         adminBoardService.updateBoardStateNeedFix(boardId);
-        return ResponseDto.of("", "관리자 확인 결과 수정이 필요합니다.");
+        return ResponseDto.of(null, "관리자 확인 결과 수정이 필요합니다.");
     }
 
     @PutMapping("permit")
-    public ResponseDto<String> updateBoardStatePermit(@RequestParam long boardId) {
+    public ResponseDto<Void> updateBoardStatePermit(@RequestParam long boardId) {
         adminBoardService.updateBoardStatePermit(boardId);
-        return ResponseDto.of("", "관리자 확인 결과 승인되었습니다.");
+        return ResponseDto.of(null, "관리자 확인 결과 승인되었습니다.");
     }
 }

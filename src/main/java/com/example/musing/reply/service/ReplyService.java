@@ -1,6 +1,7 @@
 package com.example.musing.reply.service;
 
 import com.example.musing.board.dto.BoardReplyDto;
+import com.example.musing.board.entity.Board;
 import com.example.musing.reply.dto.ReplyRequestDto;
 import com.example.musing.reply.dto.ReplyResponseDto;
 import com.example.musing.reply.entity.Reply;

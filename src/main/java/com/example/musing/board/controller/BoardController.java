@@ -1,5 +1,6 @@
 package com.example.musing.board.controller;
 
+import com.example.musing.alarm.service.AlarmService;
 import com.example.musing.board.dto.*;
 import com.example.musing.board.entity.Board;
 import com.example.musing.board.service.BoardService;
@@ -14,6 +15,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.example.musing.alarm.entity.AlarmType.APPLYPERMIT;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/musing/board")
@@ -22,7 +25,7 @@ public class BoardController {
     private final BoardService boardService;
 
     @PostMapping(value ="/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseDto<Board> createPost(@ModelAttribute @Valid CreateBoardRequest request,
+    public ResponseDto<Void> createPost(@ModelAttribute @Valid CreateBoardRequest request,
                                          @RequestPart(value = "image", required = false) List<MultipartFile> images) {
 
         if (images == null || images.isEmpty()) {
@@ -30,6 +33,7 @@ public class BoardController {
         }
 
         boardService.createBoard(request,images); // DTO를 Service로 전달
+
         return ResponseDto.of(null,"성공적으로 글이 작성되었습니다.");
     }
 

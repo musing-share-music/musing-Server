@@ -40,7 +40,7 @@ public interface ReplyRepository extends JpaRepository<Reply, Long> {
     Page<Reply> findPageByUserIdAndArtistName(@Param("id") String id, @Param("artistName") String artistName, Pageable pageable);
 
     boolean existsByBoard_IdAndUser(long boardId, User user);
-    boolean existsByIdAndUser(long boardId, User user);
+
     @EntityGraph(attributePaths = {"board"})
     Page<Reply> findByBoard_Id(long boardId, Pageable pageable);
 
