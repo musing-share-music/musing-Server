@@ -9,6 +9,7 @@ import com.example.musing.reply.dto.ReplyResponseDto;
 import com.example.musing.reply.entity.Reply;
 import com.example.musing.reply.service.ReplyService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import static com.example.musing.alarm.entity.AlarmType.APPLYPERMIT;
 
+@Tag(name = "별점 및 리뷰 관련 API")
 @RequestMapping("/musing")
 @RequiredArgsConstructor
 @RestController
@@ -69,10 +71,11 @@ public class ReplyController {
         BoardReplyDto boardReplyDto = replyService.modifyReply(replyId, replyDto);
         return ResponseDto.of(boardReplyDto, "성공적으로 리뷰를 수정했습니다.");
     }
-    
+
     @Operation(summary = "음악 추천 게시글의 리뷰 삭제",
             description = "해당 게시글의 별점과 리뷰를 삭제합니다." +
                     "수정을 하면서 변경되는 리뷰 내용과 게시글의 평균 별점, 댓글 수를 같이 반환합니다")
+    @DeleteMapping("/reply")
     public ResponseDto<BoardReplyDto> deleteReply(@RequestParam("replyId") long replyId) {
         Reply reply = replyService.findByReplyId(replyId);
 
