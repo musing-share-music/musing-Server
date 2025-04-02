@@ -45,14 +45,6 @@ public class AlarmServiceImpl implements AlarmService {
         return alarm;
     }
 
-    @Override
-    public List<AlarmDto> findAlarms(String userId) {
-        return alarmRepository.findByUserId(userId)
-                .stream()
-                .map(AlarmDto::from)
-                .toList();
-    }
-
     // SSE Connection Pool의 Active 할당을 최소화 하기위해 @Transactional 제거
     @Override
     public SseEmitter subscribe(String userId, String lastEventId) {
@@ -64,6 +56,13 @@ public class AlarmServiceImpl implements AlarmService {
         String eventId = makeTimeIncludeId(userId);
         sendAlarm(emitter, eventId,
                 emitterId, "EventStream Created. [userId=" + userId + "]");
+
+        List<Alarm> previousAlarms = alarmRepository.findByUserId(userId); // DB에서 사용자 알람 조회
+
+        previousAlarms.forEach(alarm -> {
+            String alarmEventId = makeTimeIncludeId(String.valueOf(alarm.getId()));
+            sendAlarm(emitter, alarmEventId, emitterId, AlarmDto.from(alarm));
+        });
 
         if (hasLostData(lastEventId)) {
             sendLostData(lastEventId, userId, emitterId, emitter);
