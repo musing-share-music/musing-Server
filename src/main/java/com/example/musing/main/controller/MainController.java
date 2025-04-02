@@ -23,10 +23,10 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.util.List;
 
+@Tag(name = "메인 페이지 API", description = "메인 페이지 및 모달 창")
 @RestController
 @RequestMapping("/musing")
 @RequiredArgsConstructor
-@Tag(name = "메인 페이지 API", description = "메인 페이지 및 모달 창")
 public class MainController {
     //http://localhost:8090/oauth2/authorization/google //구글 로그인
     //http://localhost:8090/swagger-ui/index.html //스웨거
