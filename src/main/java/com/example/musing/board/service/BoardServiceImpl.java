@@ -69,31 +69,6 @@ public class BoardServiceImpl implements BoardService {
     private final Like_MusicService likeMusicService;
     private final AWS_S3_Util awsS3Util;
 
-    @Transactional
-    public BoardReplyDto updateReplyBydelete(long boardId, float replyRating) {
-        if (!boardRepository.existsById(boardId)) {
-            throw new CustomException(NOT_FOUND_BOARD);
-        }
-
-        boardRepository.updateReplyStatsOnDelete(boardId, replyRating);
-        Board board = boardRepository.findById(boardId).orElseThrow(() -> new CustomException(NOT_FOUND_BOARD));
-
-        return BoardReplyDto.of(board.getReplyCount(), board.getRating());
-    }
-
-
-    @Transactional
-    public BoardReplyDto updateReplyByCreate(long boardId, float replyRating) {
-        if (!boardRepository.existsById(boardId)) {
-            throw new CustomException(NOT_FOUND_BOARD);
-        }
-
-        boardRepository.updateReplyStatsOnCreate(boardId, replyRating);
-        Board board = boardRepository.findById(boardId).orElseThrow(() -> new CustomException(NOT_FOUND_BOARD));
-
-        return BoardReplyDto.of(board.getReplyCount(), board.getRating());
-    }
-
     @Override
     public List<GenreBoardDto> findBy5GenreBoard(String genre) { //장르로 검색한 게시글들을 엔티티에서 Dto로 전환
         Specification<Board> spec = Specification.where(BoardSpecificaion.hasGenre(genre))
@@ -108,8 +83,8 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public RecommendBoardLeft findHotMusicBoard() {
         //한달이내 생성이 되었고, 추천수가 제일 많으며, 삭제 처리가 되지않음을 확인
-        Specification<Board> spec = Specification.where(BoardSpecificaion.isCreateAtAfterMonth())
-                .and(BoardSpecificaion.isActiveCheckTrue()).and(BoardSpecificaion.orderByRecommendCountDesc());
+        Specification<Board> spec = Specification.where(BoardSpecificaion.isActiveCheckTrue())
+                .and(BoardSpecificaion.orderByRecommendCountDesc());
 
         List<Board> boards = findBySpecBoard(spec, pageRequest);
 
@@ -477,8 +452,8 @@ public class BoardServiceImpl implements BoardService {
 
     // 음악 추천 게시판 상단
     private BoardListResponseDto.BoardPopUpDto findBoardPopUp() {
-        Specification<Board> spec = Specification.where(BoardSpecificaion.isCreateAtAfterMonth())
-                .and(BoardSpecificaion.isActiveCheckTrue()).and(BoardSpecificaion.findBoardsWithAtLeastTenRecommend());
+        Specification<Board> spec = Specification.where(BoardSpecificaion.isActiveCheckTrue())
+                .and(BoardSpecificaion.findBoardsWithAtLeastTenRecommend());
 
         List<Board> boards = findBySpecBoard(spec);
 
