@@ -7,6 +7,7 @@ import com.example.musing.artist.repository.ArtistRepository;
 import com.example.musing.artist.repository.Artist_MusicRepository;
 import com.example.musing.board.dto.*;
 import com.example.musing.board.entity.Board;
+import com.example.musing.board.event.CommitState;
 import com.example.musing.board.repository.BoardRepository;
 import com.example.musing.common.utils.S3.AWS_S3_Util;
 import com.example.musing.exception.CustomException;
@@ -29,8 +30,8 @@ import com.example.musing.reply.dto.ReplyResponseDto;
 import com.example.musing.reply.service.ReplyService;
 import com.example.musing.user.entity.User;
 import com.example.musing.user.repository.UserRepository;
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -38,6 +39,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -55,6 +57,7 @@ public class BoardServiceImpl implements BoardService {
             of(0, 5, Sort.by(Sort.Direction.DESC, "createdAt"));
     private static PageRequest pageRequest = PageRequest.of(0, 1);
     private static int PAGESIZE = 8;
+    private static int MAX_RETRY_COUNT =3;
     private static String S3BUCKETURL = "board";
 
     private final UserRepository userRepository;
@@ -68,6 +71,37 @@ public class BoardServiceImpl implements BoardService {
     private final ReplyService replyService;
     private final Like_MusicService likeMusicService;
     private final AWS_S3_Util awsS3Util;
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updateReplyState(Board board, Float oldRating, Float newRating, CommitState state) {
+        switch (state) {
+            case CREATE -> board.updateReplyStatsOnCreate(newRating);
+            case DELETE -> board.updateReplyStatsOnDelete(newRating); // 삭제 시 newRating = deletedRating
+            case UPDATE -> board.updateReplyStatsOnUpdate(oldRating, newRating);
+            default -> throw new CustomException(ERROR);
+        }
+        boardRepository.save(board); // 변경 사항 저장
+    }
+
+    @Transactional
+    @Override
+    public void updateReplyStateWithRetry(Board board, Float oldRating, Float newRating, CommitState state) {
+        int attempt = 0;
+
+        while (attempt < MAX_RETRY_COUNT) {
+            try {
+                // 상태 업데이트 및 저장
+                updateReplyState(board, oldRating, newRating, state);
+                return; // 성공 시 메서드 종료
+
+            } catch (OptimisticLockingFailureException e) {
+                attempt++;
+                if (attempt >= MAX_RETRY_COUNT) {
+                    throw new CustomException(ERROR);
+                }
+            }
+        }
+    }
 
     @Override
     public List<GenreBoardDto> findBy5GenreBoard(String genre) { //장르로 검색한 게시글들을 엔티티에서 Dto로 전환

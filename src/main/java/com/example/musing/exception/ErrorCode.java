@@ -9,6 +9,9 @@ import static org.springframework.http.HttpStatus.*;
 @Getter
 @RequiredArgsConstructor
 public enum ErrorCode {
+    // 임시 사용 예외처리
+    ERROR(BAD_REQUEST, "예기치 못한 에러가 발생했습니다."),
+
     // JWT관련 예외처리
     TOKEN_EXPIRED(UNAUTHORIZED, "토큰이 만료되었습니다."),
     INVALID_TOKEN(UNAUTHORIZED, "올바르지 않은 토큰입니다."),
