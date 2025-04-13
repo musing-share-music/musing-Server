@@ -178,7 +178,7 @@ public class ReportServiceImpl implements ReportService {
     private Page<ReportReply> searchReplys(SearchType searchType, String keyword, Pageable pageable) {
         return switch (searchType) {
             case username -> reportReplyRepository.findByUsername(keyword, pageable);
-            case title -> reportReplyRepository.findByContent(keyword, pageable);
+            case content -> reportReplyRepository.findByContent(keyword, pageable);
             default -> throw new CustomException(NOT_FOUND_KEYWORD);
         };
     }
