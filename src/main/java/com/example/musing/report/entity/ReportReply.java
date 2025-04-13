@@ -1,6 +1,5 @@
 package com.example.musing.report.entity;
 
-import com.example.musing.board.entity.Board;
 import com.example.musing.reply.entity.Reply;
 import com.example.musing.user.entity.User;
 import jakarta.persistence.*;
