@@ -3,6 +3,7 @@ package com.example.musing.reply.service;
 import com.example.musing.alarm.event.SentAlarmEvent;
 import com.example.musing.board.dto.BoardReplyDto;
 import com.example.musing.board.entity.Board;
+import com.example.musing.board.event.UpdateReplyStateEvent;
 import com.example.musing.board.repository.BoardRepository;
 import com.example.musing.exception.CustomException;
 import com.example.musing.reply.dto.ReplyRequestDto;
@@ -25,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 import static com.example.musing.alarm.entity.AlarmType.APPLYPERMIT;
+import static com.example.musing.board.event.CommitState.*;
 import static com.example.musing.exception.ErrorCode.*;
 
 @RequiredArgsConstructor
@@ -32,12 +34,12 @@ import static com.example.musing.exception.ErrorCode.*;
 @Service
 public class ReplyServiceImpl implements ReplyService {
 
+    private static final int PAGE_SIZE = 10;
+    private static final String ALARM_API_URL = "/musing/board/selectDetail?boardId=";
     private final ReplyRepository replyRepository;
     private final UserRepository userRepository;
     private final BoardRepository boardRepository;
     private final ApplicationEventPublisher publisher;
-    private static final int PAGE_SIZE = 10;
-    private static final String ALARM_API_URL = "/musing/board/selectDetail?boardId=";
 
     @Override
     public Reply findByReplyId(long replyId) {
@@ -60,14 +62,14 @@ public class ReplyServiceImpl implements ReplyService {
 
         Reply reply = replyRepository.save(Reply.from(replyDto, user, board));
 
-        boardRepository.updateReplyStatsOnCreate(boardId, (float) replyDto.starScore());
+        publisher.publishEvent(UpdateReplyStateEvent.of(board, null, (float) replyDto.starScore(), CREATE));
+        // 이벤트 내에서 변경된 데이터를 다시 갱신하기 위해 한번 더 조회를 시도
         Board updatedBoard = boardRepository.findById(boardId).orElseThrow(() -> new CustomException(NOT_FOUND_BOARD));
-        
-        String boardUrl = ALARM_API_URL + board.getId();
 
+        String boardUrl = ALARM_API_URL + board.getId();
         // 게시글 작성자에게 알람 전송
         publisher.publishEvent(SentAlarmEvent.of(board.getUser(), APPLYPERMIT, boardUrl));
-        
+
         return ReplyResponseDto.ReplyAndUpdatedBoardDto.of(updatedBoard.getReplyCount(), updatedBoard.getRating(), reply);
     }
 
@@ -77,10 +79,12 @@ public class ReplyServiceImpl implements ReplyService {
         Reply reply = replyRepository.findByIdAndUser(replyId, getUser())
                 .orElseThrow(() -> new CustomException(NOT_FOUND_REPLY));
 
-        boardRepository.updateReplyStatsOnUpdate(reply.getBoard().getId(), reply.getStarScore(), replyDto.starScore());
-
         reply.updateReply(replyDto.starScore(), replyDto.content());
 
+        publisher.publishEvent(UpdateReplyStateEvent
+                .of(reply.getBoard(), (float) reply.getStarScore(), (float) replyDto.starScore(), UPDATE));
+
+        // 이벤트 내에서 변경된 데이터를 다시 갱신하기 위해 한번 더 조회를 시도
         Board updatedBoard = boardRepository.findById(reply.getBoard().getId())
                 .orElseThrow(() -> new CustomException(NOT_FOUND_BOARD));
 
@@ -93,10 +97,12 @@ public class ReplyServiceImpl implements ReplyService {
         Reply reply = replyRepository.findByIdAndUser(replyId, getUser())
                 .orElseThrow(() -> new CustomException(NOT_FOUND_REPLY));
 
-        boardRepository.updateReplyStatsOnDelete(reply.getBoard().getId(), reply.getStarScore());
-
         replyRepository.delete(reply);
 
+        publisher.publishEvent(UpdateReplyStateEvent
+                .of(reply.getBoard(), (float) reply.getStarScore(), null, DELETE));
+
+        // 이벤트 내에서 변경된 데이터를 다시 갱신하기 위해 한번 더 조회를 시도
         Board updatedBoard = boardRepository.findById(reply.getBoard().getId())
                 .orElseThrow(() -> new CustomException(NOT_FOUND_BOARD));
 
@@ -148,7 +154,7 @@ public class ReplyServiceImpl implements ReplyService {
 
     private Pageable createPageable(int page, String sort, String sortType) {
         Sort.Direction direction = (sort != null && sort.equals("ASC")) ? Sort.Direction.ASC : Sort.Direction.DESC;
-        String properties = (sortType.equals("starScore")? "starScore" : "createdAt");
+        String properties = (sortType.equals("starScore") ? "starScore" : "createdAt");
         return PageRequest.of(page, PAGE_SIZE, Sort.by(direction, properties));
     }
 

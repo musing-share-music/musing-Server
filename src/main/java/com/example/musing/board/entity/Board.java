@@ -11,7 +11,6 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.util.ArrayList;
@@ -19,29 +18,30 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.example.musing.board.entity.CheckRegister.NON_CHECK;
-import static com.example.musing.exception.ErrorCode.NOT_FOUND_USER;
+import static com.example.musing.exception.ErrorCode.*;
 
-@Getter // Lombok 어노테이션 : 클래스 내 모든 필드의 Getter 메소드 자동 생성
-@NoArgsConstructor// Lombok 어노테이션 : 기본 생성자 자동 추가
+@Getter
+@NoArgsConstructor
 @Entity
 @Table(name = "board")
 public class Board extends BaseEntity {
-    //글번호(자동증가)
+    @Version
+    private int version; // 낙관적 락
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "boardid")
     private long id;
-    //글 제목
-    @Column(nullable = false, length = 100)
-    private String title;
-    //글 내용
-    @Column(nullable = false, columnDefinition = "TEXT")
-    private String content;
 
-    //추천수
+    @Column(nullable = false, length = 100)
+    private String title; //글 제목
+
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String content; //글 내용
+
     @ColumnDefault("0")
     @Column(nullable = false)
-    private int recommendCount;
+    private int recommendCount; //추천수
 
     @ColumnDefault("0")
     @Column(nullable = false)
@@ -127,6 +127,28 @@ public class Board extends BaseEntity {
         this.images = image;
         return this;
     }
+
+    public void updateReplyStatsOnCreate(float newRating) {
+        this.rating = (this.rating * this.replyCount + newRating) / (this.replyCount + 1);
+        this.replyCount += 1;
+    }
+
+    public void updateReplyStatsOnUpdate(float oldRating, float newRating) {
+        this.rating = ((this.rating * this.replyCount) - oldRating + newRating) / this.replyCount;
+    }
+
+    public void updateReplyStatsOnDelete(float deletedRating) {
+        if (this.replyCount <= 0) {
+            throw new CustomException(ERROR);
+        }
+        if (this.replyCount > 1) {
+            this.rating = ((this.rating * this.replyCount) - deletedRating) / (this.replyCount - 1);
+        } else {
+            this.rating = 0; // 댓글이 모두 삭제되면 별점 초기화
+        }
+        this.replyCount -= 1;
+    }
+
     public void updateRegister(CheckRegister checkRegister) {
         this.permitRegister = checkRegister;
     }
