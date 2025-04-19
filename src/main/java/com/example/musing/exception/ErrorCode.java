@@ -9,11 +9,17 @@ import static org.springframework.http.HttpStatus.*;
 @Getter
 @RequiredArgsConstructor
 public enum ErrorCode {
+    // 임시 사용 예외처리
+    ERROR(BAD_REQUEST, "예기치 못한 에러가 발생했습니다."),
+
     // JWT관련 예외처리
     TOKEN_EXPIRED(UNAUTHORIZED, "토큰이 만료되었습니다."),
     INVALID_TOKEN(UNAUTHORIZED, "올바르지 않은 토큰입니다."),
     INVALID_JWT_SIGNATURE(UNAUTHORIZED, "잘못된 JWT 시그니처입니다."),
     NEW_ENVIRONMENT_LOGIN(UNAUTHORIZED, "새로운 환경에 로그인했습니다."),
+
+    // 잘못된 접근 예외처리
+    INVALID_ACCESS(FORBIDDEN, "잘못된 접근입니다."),
 
     // 권한 설정 예외처리
     INVALID_AUTHORITY(UNAUTHORIZED, "잘못된 권한 설정입니다"),
@@ -46,6 +52,10 @@ public enum ErrorCode {
 
     //신고 관련 예외처리
     BAD_REQUEST_REPORT_PAGE(BAD_REQUEST, "해당 페이지는 존재하지 않습니다."),
+
+    // 알람 관련 예외처리
+    NOT_FOUND_ALARM(NOT_FOUND, "알람이 없습니다."),
+    NOT_FOUND_ALARM_TYPE(NOT_FOUND, "지정되지 않은 알람 종류 입니다."),
 
     //좋아하는 장르 관련 예외처리
     NOT_FOUND_LIKE_GENRE(NOT_FOUND, "최소 한개 이상의 좋아하는 장르는 선택해야합니다."),

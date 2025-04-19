@@ -9,6 +9,7 @@ import com.example.musing.report.dto.ReportRequestDto;
 import com.example.musing.report.dto.ReportResponseDto;
 import com.example.musing.report.entity.ReportBoard;
 import com.example.musing.report.entity.ReportReply;
+import com.example.musing.report.entity.SearchType;
 import com.example.musing.report.repository.ReportBoardRepository;
 import com.example.musing.report.repository.ReportReplyRepository;
 import com.example.musing.user.entity.User;
@@ -22,6 +23,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static com.example.musing.exception.ErrorCode.*;
@@ -31,7 +33,8 @@ import static com.example.musing.exception.ErrorCode.*;
 @Service
 public class ReportServiceImpl implements ReportService {
 
-    private static int PAGESIZE = 10;
+    private static final int PAGESIZE = 10;
+
     private final ReportBoardRepository reportBoardRepository;
     private final ReportReplyRepository reportReplyRepository;
     private final BoardRepository boardRepository;
@@ -60,6 +63,47 @@ public class ReportServiceImpl implements ReportService {
                 .build();
 
         reportReplyRepository.save(reportReply);
+    }
+
+    @Override
+    @Transactional
+    public Page<ReportResponseDto.ReportBoardResponseDto> getSearchReportBoardList(
+            int page, String searchType, String keyword) {
+
+        if (page < 1) { // 잘못된 접근으로 throw할때 쿼리문 실행을 안하기 위해 나눠서 체크
+            throw new CustomException(BAD_REQUEST_REPORT_PAGE);
+        }
+
+        Pageable pageable = PageRequest.of(page - 1, PAGESIZE);
+        Page<ReportBoard> boards = searchBoards(parseEnumSearchType(searchType), keyword, pageable);
+
+        int totalPages = boards.getTotalPages();
+
+        if (page - 1 > totalPages) {
+            throw new CustomException(BAD_REQUEST_REPORT_PAGE);
+        }
+
+        return boards.map(this::entityToDto);
+    }
+
+    @Override
+    @Transactional
+    public Page<ReportResponseDto.ReportReplyResponseDto> getSearchReportReplyList(
+            int page, String searchType, String keyword) {
+        if (page < 1) { // 잘못된 접근으로 throw할때 쿼리문 실행을 안하기 위해 나눠서 체크
+            throw new CustomException(BAD_REQUEST_REPORT_PAGE);
+        }
+
+        Pageable pageable = PageRequest.of(page - 1, PAGESIZE);
+        Page<ReportReply> replies = searchReplys(parseEnumSearchType(searchType), keyword, pageable);
+
+        int totalPages = replies.getTotalPages();
+
+        if (page - 1 > totalPages) {
+            throw new CustomException(BAD_REQUEST_REPORT_PAGE);
+        }
+
+        return replies.map(this::entityToDto);
     }
 
     @Override
@@ -114,6 +158,29 @@ public class ReportServiceImpl implements ReportService {
 
         Reply reply = replyRepository.findById(replyId).orElseThrow(() -> new CustomException(NOT_FOUND_REPLY));
         replyRepository.delete(reply);
+    }
+
+    private SearchType parseEnumSearchType(String searchType) {
+        return Arrays.stream(SearchType.values())
+                .filter(e -> e.name().equalsIgnoreCase(searchType))
+                .findFirst()
+                .orElseThrow(() -> new CustomException(NOT_FOUND_KEYWORD));
+    }
+
+    private Page<ReportBoard> searchBoards(SearchType searchType, String keyword, Pageable pageable) {
+        return switch (searchType) {
+            case username -> reportBoardRepository.findByUsername(keyword, pageable);
+            case title -> reportBoardRepository.findByTitle(keyword, pageable);
+            default -> throw new CustomException(NOT_FOUND_KEYWORD);
+        };
+    }
+
+    private Page<ReportReply> searchReplys(SearchType searchType, String keyword, Pageable pageable) {
+        return switch (searchType) {
+            case username -> reportReplyRepository.findByUsername(keyword, pageable);
+            case content -> reportReplyRepository.findByContent(keyword, pageable);
+            default -> throw new CustomException(NOT_FOUND_KEYWORD);
+        };
     }
 
     private void deleteBoardReports(long boardId) {

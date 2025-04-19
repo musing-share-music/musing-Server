@@ -1,6 +1,8 @@
 package com.example.musing.reply.controller;
 
+import com.example.musing.alarm.service.AlarmService;
 import com.example.musing.board.dto.BoardReplyDto;
+import com.example.musing.board.entity.Board;
 import com.example.musing.common.dto.ResponseDto;
 import com.example.musing.reply.dto.ReplyRequestDto;
 import com.example.musing.reply.dto.ReplyResponseDto;
@@ -11,6 +13,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import static com.example.musing.alarm.entity.AlarmType.APPLYPERMIT;
 
 @RequestMapping("/musing")
 @RequiredArgsConstructor
@@ -36,6 +40,7 @@ public class ReplyController {
                                                                             ReplyRequestDto replyDto) {
         // 서비스단에서 User 정보 확인함
         ReplyResponseDto.ReplyAndUpdatedBoardDto replyAndUpdatedBoardDto = replyService.writeReply(boardId, replyDto);
+
         return ResponseDto.of(replyAndUpdatedBoardDto, "성공적으로 작성하였습니다.");
     }
 

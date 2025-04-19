@@ -33,7 +33,7 @@ public interface AdminBoardRepository extends JpaRepository<Board, Long>, JpaSpe
 
     @EntityGraph(attributePaths = {"music", "user"})
     @Query("SELECT b FROM Board b WHERE b.activeCheck = true AND b.permitRegister = NON_CHECK AND b.id = :boardId")
-    Optional<Board> findById(@Param("boardId") long boardId);
+    Optional<Board> findNonCheckBoardById(@Param("boardId") long boardId);
 
     @EntityGraph(attributePaths = {"music", "user"})
     @Query("SELECT b FROM Board b WHERE b.activeCheck = true AND b.permitRegister = NON_CHECK ORDER BY b.createdAt DESC")

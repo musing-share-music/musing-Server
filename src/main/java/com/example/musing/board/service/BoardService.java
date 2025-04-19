@@ -1,14 +1,17 @@
 package com.example.musing.board.service;
 
 import com.example.musing.board.dto.*;
+import com.example.musing.board.entity.Board;
+import com.example.musing.board.event.CommitState;
 import com.example.musing.main.dto.RecommendBoardRight;
-import com.example.musing.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 public interface BoardService {
+    void updateReplyStateWithRetry(Board board, Float oldRating, Float newRating, CommitState state);
+
     List<GenreBoardDto> findBy5GenreBoard(String genre);
 
     RecommendBoardLeft findHotMusicBoard();
