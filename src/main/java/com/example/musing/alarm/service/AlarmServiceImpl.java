@@ -8,6 +8,8 @@ import com.example.musing.alarm.repository.EmitterRepository;
 import com.example.musing.exception.CustomException;
 import com.example.musing.user.entity.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -73,12 +75,17 @@ public class AlarmServiceImpl implements AlarmService {
 
     @Transactional
     @Override
-    public void send(User user, AlarmType alarmType, String relatedUrl) {
-        Alarm alarm = alarmRepository
+    public Alarm send(User user, AlarmType alarmType, String relatedUrl) {
+        return alarmRepository
                 .save(createNotification(user, alarmType, relatedUrl));
+    }
 
-        String userId = String.valueOf(user.getId());
-        String eventId = makeTimeIncludeId(user.getId());
+    // 네트워크 I/O로 동작하기에 트랜잭션 필요x
+    @Override
+    public void sendSSE(Alarm alarm) {
+        String userId = String.valueOf(alarm.getUser().getId());
+        String eventId = makeTimeIncludeId(alarm.getUser().getId());
+
         Map<String, SseEmitter> emitters = emitterRepository.findAllEmitterByUserId(userId);
         emitters.forEach(
                 (id, emitter) -> {

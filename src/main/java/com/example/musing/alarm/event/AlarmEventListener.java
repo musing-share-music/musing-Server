@@ -1,6 +1,7 @@
 package com.example.musing.alarm.event;
 
 
+import com.example.musing.alarm.entity.Alarm;
 import com.example.musing.alarm.service.AlarmService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,7 @@ public class AlarmEventListener {
     @TransactionalEventListener
     @Async
     public void sendAlarm(SentAlarmEvent sentAlarmEvent) {
-        alarmService.send(sentAlarmEvent.getUser(), sentAlarmEvent.getAlarmType(), sentAlarmEvent.getRelatedUrl());
+        Alarm alarm = alarmService.send(sentAlarmEvent.getUser(), sentAlarmEvent.getAlarmType(), sentAlarmEvent.getRelatedUrl());
+        alarmService.sendSSE(alarm);
     }
 }
