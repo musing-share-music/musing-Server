@@ -1,6 +1,7 @@
 package com.example.musing.playlist.service;
 
 import com.example.musing.exception.CustomException;
+import com.example.musing.exception.ErrorCode;
 import com.example.musing.music.entity.Music;
 import com.example.musing.music.repository.MusicRepository;
 import com.example.musing.playlist.dto.*;
@@ -8,6 +9,10 @@ import com.example.musing.playlist.entity.PlayList;
 import com.example.musing.playlist.repository.PlayListRepository;
 import com.example.musing.user.entity.User;
 import com.example.musing.user.repository.UserRepository;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.services.youtube.YouTube;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -15,34 +20,35 @@ import com.google.gson.JsonParser;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import net.minidev.json.JSONObject;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-
-
-import java.io.BufferedReader;
+import org.slf4j.Logger;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.example.musing.exception.ErrorCode.NOT_FOUND_USER;
+
 
 @RequiredArgsConstructor
 @Service
 public class PlaylistServiceImpl implements PlaylistService {
 
-    private static final Logger logger = Logger.getLogger(PlaylistService.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(PlaylistService.class);
     private String apiKey = "AIzaSyAc04gbKGheprJjcXPfnXu4l0tdBuzxowE";
     private final RestTemplate restTemplate = new RestTemplate();
 
-    private static final String YOUTUBE_PATTERN_STRING = "^(https?://)?(www\\.)?youtube\\.com/watch\\?v=[A-Za-z0-9_-]{11}$";
+    private static final String YOUTUBE_PATTERN_STRING = "^(https?://)?(www\\.)?(youtube\\.com/watch\\?v=|youtu\\.be/)[\\w-]{11}.*$";
     private static final Pattern YOUTUBE_PATTERN = Pattern.compile(YOUTUBE_PATTERN_STRING);
     private static final String YOUTUBE_API_URL = "https://www.googleapis.com/youtube/v3/videos?id=%s&key=%s";
 
@@ -145,15 +151,7 @@ public class PlaylistServiceImpl implements PlaylistService {
         return null;
     }
 
-    private String extractPlaylistId(String url) {
-        // URL에서 "list=" 파라미터를 기준으로 분리
-        String[] urlParts = url.split("list=");
-        if (urlParts.length > 1) {
-            // "list=" 뒤의 값이 playlist ID입니다.
-            return urlParts[1].split("&")[0];  // &로 구분된 경우에 대비
-        }
-        return null;  // playlist ID가 없는 경우 null 반환
-    }
+
 
     public String getPlayTime(String youtubeUrl){
 
@@ -193,102 +191,57 @@ public class PlaylistServiceImpl implements PlaylistService {
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         return userRepository.findById(userId).orElse(null);// 임시로 ID가 1인 사용자 반환
     }
+
     @Override
     public PlaylistResponse getUserPlaylists(String url) {
-        String id = extractPlaylistId(url);
-        List<PlaylistListResponse> playlists = new ArrayList<>();
-        PlaylistRepresentativeDto representative = null;
-
-        User user = userRepository.findById(SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getName()).orElseThrow(() -> new CustomException(NOT_FOUND_USER));
-
-        if (id.equals("RDMM")) {
-            logger.info("추천 재생목록(RDMM)은 API에서 지원되지 않음.");
+        String playlistId = extractPlaylistId(url);
+        if ("RDMM".equals(playlistId)) {
+            logger.info("추천 재생목록(RDMM)은 API에서 지원되지 않습니다.");
             return null;
         }
 
-        try {
-            String urlString = "https://www.googleapis.com/youtube/v3/playlists?part=snippet&id=" + id + "&key=" + apiKey;
-            URL listUrl = new URL(urlString);
-            HttpURLConnection connection = (HttpURLConnection) listUrl.openConnection();
-            connection.setRequestMethod("GET");
+        User user = getCurrentUser();
 
-            int status = connection.getResponseCode();
-            if (status != 200) {
-                System.out.println("HTTP 요청 실패: " + status);
-                return null;
-            }
+        JsonObject playlistInfo = fetchPlaylistInfo(playlistId);
+        if (playlistInfo == null) {
+            throw new CustomException(ErrorCode.FAILED_TO_FETCH_PLAYLIST);
+        }
 
-            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            StringBuilder response = new StringBuilder();
-            String inputLine;
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-            in.close();
+        PlayList playList = new PlayList(
+                "https://www.youtube.com/playlist?list=" + playlistId,
+                playlistInfo.getAsJsonObject("snippet").get("title").getAsString(),
+                (long) playlistInfo.getAsJsonArray("items").size(),
+                playlistId,
+                user
+        );
 
-            JsonObject jsonResponse = JsonParser.parseString(response.toString()).getAsJsonObject();
-            JsonArray items = jsonResponse.getAsJsonArray("items");
+        List<PlaylistListResponse> playlists = new ArrayList<>();
+        PlaylistRepresentativeDto representative = null;
 
-            PlayList playList = new PlayList("https://www.youtube.com/playlist?list=" + id, "사용자 재생목록", (long) items.size(), id, user);
+        // 페이징 로직으로 전체 영상 가져오기
+        List<String> videoUrls = fetchAllPlaylistVideos(playlistId, playList,
+                playlistInfo.getAsJsonObject("snippet").get("title").getAsString(),
+                playlistInfo.getAsJsonObject("snippet").getAsJsonObject("thumbnails").getAsJsonObject("medium").get("url").getAsString()
+        );
 
-            for (JsonElement item : items) {
-                JsonObject snippet = item.getAsJsonObject().getAsJsonObject("snippet");
-                String playlistId = item.getAsJsonObject().get("id").getAsString();
-                String title = snippet.get("title").getAsString();  // 타이틀
-                String thumbnailUrl = snippet.getAsJsonObject("thumbnails").getAsJsonObject("medium").get("url").getAsString();  // 이미지 URL
-                String channelTitle = snippet.get("channelTitle").getAsString();
+        // DTO 구성
+        PlaylistListResponse listResponse = new PlaylistListResponse(
+                playlistId,
+                playlistInfo.getAsJsonObject("snippet").getAsJsonObject("thumbnails").getAsJsonObject("medium").get("url").getAsString(),
+                playlistInfo.getAsJsonObject("snippet").get("title").getAsString(),
+                playlistInfo.getAsJsonObject("snippet").get("channelTitle").getAsString(),
+                new ArrayList<>(),
+                videoUrls
+        );
+        playlists.add(listResponse);
 
-                String image = thumbnailUrl; // 이미지 변수에 이미지 URL 할당
-                // title 변수에는 제목을 그대로 넣어둡니다.
-
-                List<String> videoUrls = new ArrayList<>();
-                String playlistItemsUrlString = "https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=5&playlistId=" + playlistId + "&key=" + apiKey;
-                URL playlistItemsUrl = new URL(playlistItemsUrlString);
-                HttpURLConnection playlistItemsConnection = (HttpURLConnection) playlistItemsUrl.openConnection();
-                playlistItemsConnection.setRequestMethod("GET");
-
-                int itemsStatus = playlistItemsConnection.getResponseCode();
-                if (itemsStatus == 200) {
-                    BufferedReader playlistItemsIn = new BufferedReader(new InputStreamReader(playlistItemsConnection.getInputStream()));
-                    StringBuilder playlistItemsResponse = new StringBuilder();
-                    while ((inputLine = playlistItemsIn.readLine()) != null) {
-                        playlistItemsResponse.append(inputLine);
-                    }
-                    playlistItemsIn.close();
-
-                    JsonObject playlistItemsJsonResponse = JsonParser.parseString(playlistItemsResponse.toString()).getAsJsonObject();
-                    JsonArray videoItems = playlistItemsJsonResponse.getAsJsonArray("items");
-
-                    for (JsonElement videoItem : videoItems) {
-                        JsonObject videoSnippet = videoItem.getAsJsonObject().getAsJsonObject("snippet");
-                        JsonObject resourceId = videoSnippet.getAsJsonObject("resourceId");
-
-                        if (resourceId != null && resourceId.has("videoId")) {
-                            String videoId = resourceId.get("videoId").getAsString();
-                            String videoUrl = "https://www.youtube.com/watch?v=" + videoId;
-                            videoUrls.add(videoUrl);
-
-                            Music music = new Music(0, title, "00:00", videoUrl, thumbnailUrl);
-                            musicRepository.save(music);
-                            playList.addMusic(music);
-                        }
-                    }
-                }
-
-                PlaylistListResponse playlist = new PlaylistListResponse(playlistId,thumbnailUrl ,title , channelTitle, new ArrayList<>(), videoUrls);
-                playlists.add(playlist);
-
-                // Set the first video's details as the representative
-                if (representative == null && !videoUrls.isEmpty()) {
-                    representative = new PlaylistRepresentativeDto(title, image, videoUrls.get(0));  // 첫 번째 영상 정보를 representative에 설정
-                }
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
+        // 대표 영상
+        if (!videoUrls.isEmpty()) {
+            representative = new PlaylistRepresentativeDto(
+                    listResponse.getTitle(),
+                    listResponse.getThumbnailUrl(),
+                    videoUrls.get(0)
+            );
         }
 
         return new PlaylistResponse(playlists, representative);
@@ -322,30 +275,23 @@ public class PlaylistServiceImpl implements PlaylistService {
     public String createPlaylist(String accessToken, YoutubePlaylistRequestDto dto) {
         RestTemplate restTemplate = new RestTemplate();
 
-        JSONObject body = new JSONObject();
-        JSONObject snippet = new JSONObject();
-        snippet.put("title", dto.getTitle());
-        snippet.put("description", dto.getDescription());
+        // 요청 바디 구성
+        JSONObject body = createRequestBody(dto);
 
-        JSONObject status = new JSONObject();
-        status.put("privacyStatus", "public");
-
-        body.put("snippet", snippet);
-        body.put("status", status);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(accessToken);
-        headers.setContentType(MediaType.APPLICATION_JSON);
+        // 요청 헤더 구성
+        HttpHeaders headers = createHeaders(accessToken);
 
         HttpEntity<String> entity = new HttpEntity<>(body.toString(), headers);
 
+        // 유튜브 API 호출
         ResponseEntity<String> response = restTemplate.postForEntity(
                 API_BASE_URL + "/playlists?part=snippet,status",
                 entity,
                 String.class
         );
 
-        return response.getBody();
+        // 응답 상태 체크 및 처리
+        return handleResponse(response);
     }
 
     public String addVideoToPlaylist(String accessToken, YoutubeVideoRequestDto dto) {
@@ -378,23 +324,144 @@ public class PlaylistServiceImpl implements PlaylistService {
         return response.getBody();
     }
 
-    public String deleteVideoFromPlaylist(String accessToken, String playlistItemId) {
-        RestTemplate restTemplate = new RestTemplate();
 
+    @Override
+    public void deletePlaylistFromYouTube(String playlistId,String accessToken) throws IOException, GeneralSecurityException {
+        // 1. accessToken을 이용해 인증된 YouTube 객체를 생성합니다.
+        GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);
+
+        // 인증된 YouTube 객체 생성
+        YouTube youtubeService = new YouTube.Builder(
+                GoogleNetHttpTransport.newTrustedTransport(),
+                JacksonFactory.getDefaultInstance(),
+                credential
+        ).setApplicationName("musing").build();
+
+        // 2. API 요청을 통해 플레이리스트 삭제
+        YouTube.Playlists.Delete request = youtubeService.playlists().delete(playlistId);
+
+        // 3. 실제 삭제 요청 실행
+        try {
+            request.execute();  // 삭제 요청을 유튜브에 보냄
+        } catch (IOException e) {
+            // 예외 처리 (예: 네트워크 문제, 권한 부족 등)
+            throw new IOException("Failed to delete playlist from YouTube: " + e.getMessage(), e);
+        }
+
+    }
+
+    private JSONObject createRequestBody(YoutubePlaylistRequestDto dto) {
+        JSONObject snippet = new JSONObject();
+        snippet.put("title", dto.getTitle());
+        snippet.put("description", dto.getDescription());
+
+        JSONObject status = new JSONObject();
+        status.put("privacyStatus", "public");
+
+        JSONObject body = new JSONObject();
+        body.put("snippet", snippet);
+        body.put("status", status);
+
+        return body;
+    }
+
+    private HttpHeaders createHeaders(String accessToken) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
-
-        HttpEntity<Void> entity = new HttpEntity<>(headers);
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                API_BASE_URL + "/playlistItems?id=" + playlistItemId,
-                HttpMethod.DELETE,
-                entity,
-                String.class
-        );
-
-        return response.getStatusCode().is2xxSuccessful() ? "삭제 완료" : "삭제 실패";
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        return headers;
     }
+
+    private String handleResponse(ResponseEntity<String> response) {
+        HttpStatus statusCode = (HttpStatus) response.getStatusCode();
+
+        // 성공적인 응답 (200 OK)
+        if (statusCode.is2xxSuccessful()) {
+            // 성공 시에는 API에서 제공한 데이터를 반환
+            return "✅ 유튜브 플레이리스트 생성 완료!";
+        }
+
+        // 오류 응답 처리
+        if (statusCode.is4xxClientError()) {
+            // 클라이언트 오류: 예를 들어, 잘못된 요청
+            return "❌ 잘못된 요청입니다. 입력값을 확인해주세요.";
+        } else if (statusCode.is5xxServerError()) {
+            // 서버 오류: 유튜브 API 서버에서 발생한 문제
+            return "❌ 유튜브 서버에 문제가 발생했습니다. 잠시 후 다시 시도해주세요.";
+        }
+
+        // 기타 오류 응답
+        return "❌ 예상치 못한 오류가 발생했습니다. 다시 시도해주세요.";
+    }
+
+    private List<String> fetchAllPlaylistVideos(String playlistId,
+                                                PlayList playList,
+                                                String playlistTitle,
+                                                String thumbnailUrl) {
+        List<String> videoUrls = new ArrayList<>();
+        String nextPageToken = null;
+
+        do {
+            String url = API_BASE_URL + "/playlistItems?part=snippet"
+                    + "&maxResults=50"
+                    + "&playlistId=" + playlistId
+                    + "&key=" + apiKey
+                    + (nextPageToken != null ? "&pageToken=" + nextPageToken : "");
+
+            JsonObject response = fetchJsonResponse(url);
+            if (response == null) break;
+
+            JsonArray items = response.getAsJsonArray("items");
+            for (JsonElement videoItem : items) {
+                JsonObject snippet = videoItem.getAsJsonObject().getAsJsonObject("snippet");
+                JsonObject resourceId = snippet.getAsJsonObject("resourceId");
+                if (resourceId != null && resourceId.has("videoId")) {
+                    String videoId = resourceId.get("videoId").getAsString();
+                    String videoUrl = "https://www.youtube.com/watch?v=" + videoId;
+                    videoUrls.add(videoUrl);
+
+                    Music music = new Music(0, playlistTitle, "00:00", videoUrl, thumbnailUrl);
+                    musicRepository.save(music);
+                    playList.addMusic(music);
+                }
+            }
+
+            nextPageToken = response.has("nextPageToken") ?
+                    response.get("nextPageToken").getAsString() : null;
+        } while (nextPageToken != null);
+
+        return videoUrls;
+    }
+
+    private JsonObject fetchJsonResponse(String url) {
+        try {
+            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+            if (response.getStatusCode().is2xxSuccessful()) {
+                return JsonParser.parseString(response.getBody()).getAsJsonObject();
+            } else {
+                logger.error("YouTube API 호출 실패. Status: {}", response.getStatusCode());
+            }
+        } catch (Exception e) {
+            logger.error("YouTube API 요청 실패", e);
+        }
+        return null;
+    }
+
+    private User getCurrentUser() {
+        return userRepository.findById(
+                SecurityContextHolder.getContext().getAuthentication().getName()
+        ).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
+    }
+
+    private String extractPlaylistId(String url) {
+        return URI.create(url).getQuery()
+                .replaceFirst(".*list=", "");
+    }
+    private JsonObject fetchPlaylistInfo(String playlistId) {
+        String url = "https://www.googleapis.com/youtube/v3/playlists?part=snippet&id=" + playlistId + "&key=" + apiKey;
+        return fetchJsonResponse(url);
+    }
+
 }
 
 

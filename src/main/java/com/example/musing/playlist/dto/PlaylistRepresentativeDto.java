@@ -8,6 +8,6 @@ import lombok.*;
 @Builder
 public class PlaylistRepresentativeDto {
     private String id;
-    private String image;
+    private String thumbnailUrl;
     private String content;
 }

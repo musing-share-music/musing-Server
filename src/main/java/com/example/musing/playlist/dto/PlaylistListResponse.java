@@ -13,9 +13,10 @@ import java.util.List;
 @Builder
 public class PlaylistListResponse {
     private String id;
-    private String image;
+    private String thumbnailUrl;
     private String title;
     private String name;
     private List<GenreDto> genres;
     private List<String> videoUrls;
+
 }

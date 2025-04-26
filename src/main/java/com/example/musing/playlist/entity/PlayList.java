@@ -22,13 +22,15 @@ public class PlayList {
     @Column(name="playlistid")
     private long id;
 
+
+
     @Column(nullable = false)
     private String listname;
 
     @Column(nullable = false)
     private Long itemCount;
 
-    @Column(nullable = false)
+    @Column(nullable = false,unique = true)
     private String youtubePlaylistId;
 
     @Column(nullable = false)

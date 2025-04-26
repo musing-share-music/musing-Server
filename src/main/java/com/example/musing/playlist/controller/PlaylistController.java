@@ -19,7 +19,8 @@ import org.springframework.web.bind.annotation.*;
 
 import static com.example.musing.exception.ErrorCode.NOT_FOUND_USER;
 
-@RestController("/musing/playlist")
+@RestController
+@RequestMapping("/musing/playlist")
 public class PlaylistController {
 
     private final PlaylistService playlistService;
@@ -83,13 +84,6 @@ public class PlaylistController {
         return playlistService.addVideoToPlaylist(accessToken, dto);
     }
 
-    @DeleteMapping("/video")
-    public String deleteVideoFromPlaylist(@RequestHeader("Authorization") String authHeader,
-                                          @RequestParam String playlistItemId) {
-        String accessToken = authHeader.replace("Bearer ", "");
-        return playlistService.deleteVideoFromPlaylist(accessToken, playlistItemId);
-    }
-
     @GetMapping("/getVideoInfo")
     public ResponseDto<YouTubeVideoResponse> getVideoInfo(@RequestParam("videoUrl") String videoUrl) {
 
@@ -130,6 +124,26 @@ public class PlaylistController {
         PlayList savedPlaylist = playlistService.savePlaylistWithMusic(playlistResponse, user);
 
         return ResponseDto.of(savedPlaylist,"성공적으로 저장되었습니다.");
+    }
+
+    @DeleteMapping("/delete")
+    public ResponseDto<String> deletePlaylist(
+            @RequestParam("playlistId") String playlistId,
+            @RequestHeader("Authorization") String authHeader
+    ) {
+        try {
+            String accessToken = authHeader.replace("Bearer ", "");
+
+            // 유튜브에서 삭제
+            playlistService.deletePlaylistFromYouTube(playlistId, accessToken);
+
+            // DB에서도 삭제
+            playListRepository.deleteByYoutubePlaylistId(playlistId);
+
+            return ResponseDto.of("삭제 완료", "플레이리스트가 성공적으로 삭제되었습니다.");
+        } catch (Exception e) {
+            return ResponseDto.of(null, "삭제 실패: " + e.getMessage());
+        }
     }
 
 }
