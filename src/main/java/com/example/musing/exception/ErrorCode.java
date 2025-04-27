@@ -12,8 +12,13 @@ public enum ErrorCode {
     // 임시 사용 예외처리
     ERROR(BAD_REQUEST, "예기치 못한 에러가 발생했습니다."),
     //플레이리스트 예외처리
+
     FAILED_TO_FETCH_PLAYLIST(NOT_FOUND,"플레이 리스트를 불러오지 못했습니다."),
     PRIVATE_PLAYLIST(NOT_FOUND,"플레이리스트가 비공개상태입니다."),
+    MISSING_PLAYLIST_THUMBNAIL(NOT_FOUND,"섬네일 이미지를 찾을 수 없습니다."),
+    MISSING_PLAYLIST_SNIPPET(NOT_FOUND,"재생목록 정보를 불러올 수 없습니다."),
+    MISSING_PRIVACY_STATUS(NOT_FOUND,"공개여부 조회가 불가능합니다."),
+    MISSING_PLAYLIST_STATUS(NOT_FOUND,"상태여부를 확인 할 수 없습니다."),
     // JWT관련 예외처리
     TOKEN_EXPIRED(UNAUTHORIZED, "토큰이 만료되었습니다."),
     INVALID_TOKEN(UNAUTHORIZED, "올바르지 않은 토큰입니다."),

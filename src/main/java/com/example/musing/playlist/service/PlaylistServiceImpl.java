@@ -17,6 +17,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import net.minidev.json.JSONObject;
@@ -36,6 +38,7 @@ import java.net.URI;
 import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -46,6 +49,9 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 @Service
 public class PlaylistServiceImpl implements PlaylistService {
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     private static final Logger logger = LoggerFactory.getLogger(PlaylistService.class);
     private String apiKey = "AIzaSyAc04gbKGheprJjcXPfnXu4l0tdBuzxowE";
@@ -189,63 +195,77 @@ public class PlaylistServiceImpl implements PlaylistService {
                 .replace("S", "s");
     }
     private User fetchUser() {
-        // 예시로 현재 로그인한 사용자를 가져오는 로직
-        // Spring Security나 다른 방법으로 사용자의 정보를 가져오는 로직을 구현해야 합니다.
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         return userRepository.findById(userId).orElse(null);// 임시로 ID가 1인 사용자 반환
     }
 
+
     @Override
     public PlaylistResponse getUserPlaylists(String url) {
+        // 1. 플레이리스트 ID 추출
         String playlistId = extractPlaylistId(url);
-        if ("RDMM".equals(playlistId)) {
-            logger.info("추천 재생목록(RDMM)은 API에서 지원되지 않습니다.");
-            return null;
+        if (playlistId == null || playlistId.isEmpty()) {
+            return null; // 잘못된 playlistId일 경우 null 반환
         }
 
-        User user = getCurrentUser();
+        // 2. 추출한 playlistId 로그로 출력
+        logger.info("Extracted Playlist ID: " + playlistId);
 
+        // 3. API에서 플레이리스트 정보 가져오기
         JsonObject playlistInfo = fetchPlaylistInfo(playlistId);
         if (playlistInfo == null) {
-            throw new CustomException(ErrorCode.FAILED_TO_FETCH_PLAYLIST);
+            return null; // 플레이리스트 정보를 가져올 수 없으면 null 반환
         }
 
-        // 💥 비공개 체크 추가
-        String privacyStatus = playlistInfo.getAsJsonObject("status").get("privacyStatus").getAsString();
+        // 4. 플레이리스트 상태 확인
+        JsonObject statusObj = playlistInfo.getAsJsonObject("status");
+        String privacyStatus = (statusObj != null && statusObj.get("privacyStatus") != null)
+                ? statusObj.get("privacyStatus").getAsString()
+                : "";
+
         if ("private".equalsIgnoreCase(privacyStatus)) {
-            throw new CustomException(ErrorCode.PRIVATE_PLAYLIST);
-            // ErrorCode에 PRIVATE_PLAYLIST 추가 필요
+            return null; // 비공개라면 null 반환
         }
 
+        // 5. 플레이리스트 제목, 영상 수 가져오기
+        JsonObject snippetObj = playlistInfo.getAsJsonObject("snippet");
+        String title = snippetObj != null && snippetObj.get("title") != null
+                ? snippetObj.get("title").getAsString()
+                : "Untitled";
+        int videoCount = playlistInfo.getAsJsonArray("items") != null
+                ? playlistInfo.getAsJsonArray("items").size()
+                : 0;
+
+        // 6. 플레이리스트 객체 생성 (DB 저장 로직 제외)
         PlayList playList = new PlayList(
                 "https://www.youtube.com/playlist?list=" + playlistId,
-                playlistInfo.getAsJsonObject("snippet").get("title").getAsString(),
-                (long) playlistInfo.getAsJsonArray("items").size(),
+                title,
+                (long) videoCount,
                 playlistId,
-                user
+                getCurrentUser() // 사용자 정보 가져오기
         );
 
-        List<PlaylistListResponse> playlists = new ArrayList<>();
-        PlaylistRepresentativeDto representative = null;
+        // 7. 비디오 URL 목록 가져오기
+        List<String> videoUrls = fetchAllPlaylistVideos(playlistId, title, snippetObj != null && snippetObj.getAsJsonObject("thumbnails") != null
+                ? snippetObj.getAsJsonObject("thumbnails").getAsJsonObject("medium").get("url").getAsString()
+                : "");
 
-        // 페이징 로직으로 전체 영상 가져오기
-        List<String> videoUrls = fetchAllPlaylistVideos(playlistId, playList,
-                playlistInfo.getAsJsonObject("snippet").get("title").getAsString(),
-                playlistInfo.getAsJsonObject("snippet").getAsJsonObject("thumbnails").getAsJsonObject("medium").get("url").getAsString()
-        );
-
-        // DTO 구성
+        // 8. DTO 구성
         PlaylistListResponse listResponse = new PlaylistListResponse(
                 playlistId,
-                playlistInfo.getAsJsonObject("snippet").getAsJsonObject("thumbnails").getAsJsonObject("medium").get("url").getAsString(),
-                playlistInfo.getAsJsonObject("snippet").get("title").getAsString(),
-                playlistInfo.getAsJsonObject("snippet").get("channelTitle").getAsString(),
+                snippetObj != null && snippetObj.getAsJsonObject("thumbnails") != null
+                        ? snippetObj.getAsJsonObject("thumbnails").getAsJsonObject("medium").get("url").getAsString()
+                        : "",
+                title,
+                snippetObj != null && snippetObj.get("channelTitle") != null
+                        ? snippetObj.get("channelTitle").getAsString()
+                        : "",
                 new ArrayList<>(),
                 videoUrls
         );
-        playlists.add(listResponse);
 
-        // 대표 영상
+        // 9. 대표 영상 설정
+        PlaylistRepresentativeDto representative = null;
         if (!videoUrls.isEmpty()) {
             representative = new PlaylistRepresentativeDto(
                     listResponse.getTitle(),
@@ -254,8 +274,14 @@ public class PlaylistServiceImpl implements PlaylistService {
             );
         }
 
-        return new PlaylistResponse(playlists, representative);
+        // 10. 최종 응답 반환
+        return new PlaylistResponse(Collections.singletonList(listResponse), representative);
     }
+
+
+
+
+
 
 
     @Transactional
@@ -427,51 +453,53 @@ public class PlaylistServiceImpl implements PlaylistService {
         return "❌ 예상치 못한 오류가 발생했습니다. 다시 시도해주세요.";
     }
 
-    private List<String> fetchAllPlaylistVideos(String playlistId,
-                                                PlayList playList,
-                                                String playlistTitle,
-                                                String thumbnailUrl) {
+    private List<String> fetchAllPlaylistVideos(String playlistId, String playlistTitle, String thumbnailUrl) {
         List<String> videoUrls = new ArrayList<>();
         String nextPageToken = null;
 
         do {
+            // API URL 설정
             String url = API_BASE_URL + "/playlistItems?part=snippet"
-                    + "&maxResults=50"
+                    + "&maxResults=20"
                     + "&playlistId=" + playlistId
                     + "&key=" + apiKey
                     + (nextPageToken != null ? "&pageToken=" + nextPageToken : "");
 
+            // API 호출
             JsonObject response = fetchJsonResponse(url);
-            if (response == null) break;
+            if (response == null) {
+                logger.error("API response is null for URL: " + url);
+                break; // 응답이 null일 경우 루프 종료
+            }
 
+            // 'items' 배열 추출
             JsonArray items = response.getAsJsonArray("items");
+            if (items == null || items.size() == 0) {
+                logger.warn("No items found in the playlist response.");
+                break; // 'items' 배열이 없거나 비어있으면 종료
+            }
+
+            // 'items' 배열을 순회하면서 비디오 URL 추출
             for (JsonElement videoItem : items) {
                 JsonObject snippet = videoItem.getAsJsonObject().getAsJsonObject("snippet");
+                if (snippet == null) {
+                    logger.warn("Missing 'snippet' field in one of the video items.");
+                    continue; // 'snippet'이 없으면 다음 아이템으로 넘어감
+                }
+
                 JsonObject resourceId = snippet.getAsJsonObject("resourceId");
                 if (resourceId != null && resourceId.has("videoId")) {
                     String videoId = resourceId.get("videoId").getAsString();
                     String videoUrl = "https://www.youtube.com/watch?v=" + videoId;
-                    videoUrls.add(videoUrl);
-
-                    // 1. videoUrl로 이미 있는 Music 있는지 확인
-                    Optional<Music> existingMusic = musicRepository.findBySongLink(videoUrl);
-
-                    Music music;
-                    if (existingMusic.isPresent()) {
-                        music = existingMusic.get(); // 이미 있으면 가져오기
-                    } else {
-                        music = new Music(0, playlistTitle, "00:00", videoUrl, thumbnailUrl);
-                        musicRepository.save(music); // 없으면 새로 저장
-                    }
-
-                    // 2. PlayList에 Music 추가
-                    playList.addMusic(music);
+                    videoUrls.add(videoUrl); // 비디오 URL 추가
+                } else {
+                    logger.warn("No videoId found for video item.");
                 }
             }
 
-            nextPageToken = response.has("nextPageToken") ?
-                    response.get("nextPageToken").getAsString() : null;
-        } while (nextPageToken != null);
+            // 다음 페이지가 있으면 페이지 토큰을 업데이트
+            nextPageToken = response.has("nextPageToken") ? response.get("nextPageToken").getAsString() : null;
+        } while (nextPageToken != null); // 페이지 토큰이 있으면 계속 반복
 
         return videoUrls;
     }
@@ -497,8 +525,13 @@ public class PlaylistServiceImpl implements PlaylistService {
     }
 
     private String extractPlaylistId(String url) {
-        return URI.create(url).getQuery()
-                .replaceFirst(".*list=", "");
+        Pattern pattern = Pattern.compile("[?&]list=([a-zA-Z0-9_-]+)");
+        Matcher matcher = pattern.matcher(url);
+
+        if (matcher.find()) {
+            return matcher.group(1); // 'list=' 뒤의 Playlist ID 추출
+        }
+        return null; // Playlist ID를 찾을 수 없으면 null 반환
     }
     private JsonObject fetchPlaylistInfo(String playlistId) {
         String url = "https://www.googleapis.com/youtube/v3/playlists?part=snippet&id=" + playlistId + "&key=" + apiKey;
