@@ -108,7 +108,7 @@ public class PlaylistController {
     @GetMapping("/getUserPlaylists")
     public ResponseDto<PlaylistResponse> getUserPlaylists(@RequestParam("url") String url) {
         PlaylistResponse playlistResponse = playlistService.getUserPlaylists(url);
-        if(playlistResponse.getPlaylists() == null || playlistResponse.getPlaylists().isEmpty()) {
+        if(playlistResponse.getVideoList() == null || playlistResponse.getVideoList().isEmpty()) {
             return ResponseDto.of(null,"플레이리스트를 불러오지 못했습니다.");
         }
         return ResponseDto.of(playlistResponse,"성공적으로 플레이 리스트를 받아왔습니다.");

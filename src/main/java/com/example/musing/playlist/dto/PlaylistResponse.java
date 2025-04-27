@@ -10,6 +10,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class PlaylistResponse {
-    private List<PlaylistListResponse> playlists;  // 플레이리스트 목록
+    private List<PlaylistListResponse> videoList;  // 플레이리스트 목록
     private PlaylistRepresentativeDto representative;
 }

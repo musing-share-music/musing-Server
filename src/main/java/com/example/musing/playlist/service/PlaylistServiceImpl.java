@@ -22,8 +22,11 @@ import lombok.RequiredArgsConstructor;
 import net.minidev.json.JSONObject;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.slf4j.Logger;
 import java.io.IOException;
@@ -207,6 +210,13 @@ public class PlaylistServiceImpl implements PlaylistService {
             throw new CustomException(ErrorCode.FAILED_TO_FETCH_PLAYLIST);
         }
 
+        // 💥 비공개 체크 추가
+        String privacyStatus = playlistInfo.getAsJsonObject("status").get("privacyStatus").getAsString();
+        if ("private".equalsIgnoreCase(privacyStatus)) {
+            throw new CustomException(ErrorCode.PRIVATE_PLAYLIST);
+            // ErrorCode에 PRIVATE_PLAYLIST 추가 필요
+        }
+
         PlayList playList = new PlayList(
                 "https://www.youtube.com/playlist?list=" + playlistId,
                 playlistInfo.getAsJsonObject("snippet").get("title").getAsString(),
@@ -254,13 +264,13 @@ public class PlaylistServiceImpl implements PlaylistService {
                 .listname(playlistResponse.getRepresentative().getContent())
                 .youtubePlaylistId(playlistResponse.getRepresentative().getId())
                 .youtubeLink("https://www.youtube.com/playlist?list=" + playlistResponse.getRepresentative().getId())
-                .itemCount((long) playlistResponse.getPlaylists().size())
+                .itemCount((long) playlistResponse.getVideoList().size())
                 .user(user)
                 .build();
 
         playListRepository.save(playList);
 
-        for (PlaylistListResponse playlistItem : playlistResponse.getPlaylists()) {
+        for (PlaylistListResponse playlistItem : playlistResponse.getVideoList()) {
             for (String videoUrl : playlistItem.getVideoUrls()) {
                 Optional<Music> existingMusic = musicRepository.findBySongLink(videoUrl);
                 if (existingMusic.isPresent()) {
@@ -273,7 +283,11 @@ public class PlaylistServiceImpl implements PlaylistService {
     }
 
     public String createPlaylist(String accessToken, YoutubePlaylistRequestDto dto) {
-        RestTemplate restTemplate = new RestTemplate();
+        // RestTemplate 설정 (옵션으로 타임아웃, 에러 처리 추가)
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(5000);
+        factory.setReadTimeout(5000);
+        RestTemplate restTemplate = new RestTemplate(factory);
 
         // 요청 바디 구성
         JSONObject body = createRequestBody(dto);
@@ -281,17 +295,32 @@ public class PlaylistServiceImpl implements PlaylistService {
         // 요청 헤더 구성
         HttpHeaders headers = createHeaders(accessToken);
 
+        // HttpEntity 구성 (헤더와 바디 포함)
         HttpEntity<String> entity = new HttpEntity<>(body.toString(), headers);
 
-        // 유튜브 API 호출
-        ResponseEntity<String> response = restTemplate.postForEntity(
-                API_BASE_URL + "/playlists?part=snippet,status",
-                entity,
-                String.class
-        );
+        try {
+            // 유튜브 API 호출
+            ResponseEntity<String> response = restTemplate.postForEntity(
+                    API_BASE_URL + "/playlists?part=snippet,status",
+                    entity,
+                    String.class
+            );
 
-        // 응답 상태 체크 및 처리
-        return handleResponse(response);
+            // 응답 상태 체크 및 처리
+            return handleResponse(response);
+
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            // 상태 코드와 응답 본문을 출력하여 에러 메시지 확인
+            System.err.println("Error: " + e.getStatusCode() + " - " + e.getResponseBodyAsString());
+
+            // 권한 문제 (401 Unauthorized) 처리
+            if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
+                return "권한이 없습니다. 유효한 액세스 토큰을 확인하세요.";
+            }
+
+            // 그 외의 예외 처리
+            throw new RuntimeException("Playlist creation failed: " + e.getMessage());
+        }
     }
 
     public String addVideoToPlaylist(String accessToken, YoutubeVideoRequestDto dto) {
@@ -351,14 +380,18 @@ public class PlaylistServiceImpl implements PlaylistService {
     }
 
     private JSONObject createRequestBody(YoutubePlaylistRequestDto dto) {
-        JSONObject snippet = new JSONObject();
-        snippet.put("title", dto.getTitle());
-        snippet.put("description", dto.getDescription());
-
-        JSONObject status = new JSONObject();
-        status.put("privacyStatus", "public");
-
         JSONObject body = new JSONObject();
+
+        // snippet 객체 생성
+        JSONObject snippet = new JSONObject();
+        snippet.put("title", dto.getTitle()); // 플레이리스트 제목
+        snippet.put("description", dto.getDescription()); // 플레이리스트 설명
+
+        // status 객체 생성
+        JSONObject status = new JSONObject();
+        status.put("privacyStatus", "private"); // 기본은 비공개로 생성
+
+        // 최종 body 구성
         body.put("snippet", snippet);
         body.put("status", status);
 
@@ -420,8 +453,18 @@ public class PlaylistServiceImpl implements PlaylistService {
                     String videoUrl = "https://www.youtube.com/watch?v=" + videoId;
                     videoUrls.add(videoUrl);
 
-                    Music music = new Music(0, playlistTitle, "00:00", videoUrl, thumbnailUrl);
-                    musicRepository.save(music);
+                    // 1. videoUrl로 이미 있는 Music 있는지 확인
+                    Optional<Music> existingMusic = musicRepository.findBySongLink(videoUrl);
+
+                    Music music;
+                    if (existingMusic.isPresent()) {
+                        music = existingMusic.get(); // 이미 있으면 가져오기
+                    } else {
+                        music = new Music(0, playlistTitle, "00:00", videoUrl, thumbnailUrl);
+                        musicRepository.save(music); // 없으면 새로 저장
+                    }
+
+                    // 2. PlayList에 Music 추가
                     playList.addMusic(music);
                 }
             }
