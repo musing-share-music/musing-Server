@@ -26,7 +26,7 @@ import static com.example.musing.exception.ErrorCode.*;
 public class AlarmServiceImpl implements AlarmService {
     private final AlarmRepository alarmRepository;
     private final EmitterRepository emitterRepository;
-    private final Long timeoutMillis = 600_000L;
+    private final Long timeoutMillis = 30 * 60 * 1000L;
     private final String REPLY_CONTEMT = "게시글에 별점이 달렸어요.";
     private final String ADMINPERMIT_CONTEMT = "작성하신 게시글의 관리자 확인이 완료되었어요.";
     private final String ADMINDENY_CONTENT = "작성하신 게시글의 관리자 확인이 거절되었어요.";
@@ -52,12 +52,19 @@ public class AlarmServiceImpl implements AlarmService {
     public SseEmitter subscribe(String userId, String lastEventId) {
         String emitterId = makeTimeIncludeId(userId);
         SseEmitter emitter = emitterRepository.save(emitterId, new SseEmitter(timeoutMillis));
-        emitter.onCompletion(() -> emitterRepository.deleteById(emitterId));
-        emitter.onTimeout(() -> emitterRepository.deleteById(emitterId));
+
+        emitter.onCompletion(() -> {
+            emitterRepository.deleteById(emitterId);
+        });
+
+
+        emitter.onTimeout(() -> {
+            emitterRepository.deleteById(emitterId);
+        });
 
         String eventId = makeTimeIncludeId(userId);
         sendAlarm(emitter, eventId,
-                emitterId, "EventStream Created. [userId=" + userId + "]");
+                emitterId, "sse 연결확인 ID:" + userId);
 
         List<Alarm> previousAlarms = alarmRepository.findByUserId(userId); // DB에서 사용자 알람 조회
 

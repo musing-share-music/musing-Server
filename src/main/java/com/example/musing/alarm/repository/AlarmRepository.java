@@ -10,6 +10,6 @@ import java.util.List;
 
 public interface AlarmRepository extends JpaRepository<Alarm, Long> {
     @EntityGraph(attributePaths = {"user"})
-    @Query("SELECT a FROM Alarm a WHERE a.isRead = false AND a.user.id = :userId")
+    @Query("SELECT a FROM Alarm a JOIN FETCH a.user WHERE a.isRead = false AND a.user.id = :userId")
     List<Alarm> findByUserId(@Param("userId") String userId);
 }
