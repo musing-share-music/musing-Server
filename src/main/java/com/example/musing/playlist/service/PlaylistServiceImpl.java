@@ -37,10 +37,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -244,12 +241,17 @@ public class PlaylistServiceImpl implements PlaylistService {
                 playlistId,
                 getCurrentUser() // 사용자 정보 가져오기
         );
+        logger.info(playList.getListname());
+        logger.info(playList.getYoutubePlaylistId());
+        logger.info(playList.getYoutubeLink());
+        logger.info(String.valueOf(playList.getItemCount()));
+        logger.info(getCurrentUser().getEmail());
 
         // 7. 비디오 URL 목록 가져오기
         List<String> videoUrls = fetchAllPlaylistVideos(playlistId, title, snippetObj != null && snippetObj.getAsJsonObject("thumbnails") != null
                 ? snippetObj.getAsJsonObject("thumbnails").getAsJsonObject("medium").get("url").getAsString()
                 : "");
-
+        logger.info(playList.getYoutubeLink());
         // 8. DTO 구성
         PlaylistListResponse listResponse = new PlaylistListResponse(
                 playlistId,
@@ -263,7 +265,7 @@ public class PlaylistServiceImpl implements PlaylistService {
                 new ArrayList<>(),
                 videoUrls
         );
-
+        logger.info(listResponse.getTitle());
         // 9. 대표 영상 설정
         PlaylistRepresentativeDto representative = null;
         if (!videoUrls.isEmpty()) {
@@ -273,7 +275,7 @@ public class PlaylistServiceImpl implements PlaylistService {
                     videoUrls.get(0)
             );
         }
-
+        logger.info(Objects.requireNonNull(representative).getContent());
         // 10. 최종 응답 반환
         return new PlaylistResponse(Collections.singletonList(listResponse), representative);
     }
@@ -519,6 +521,7 @@ public class PlaylistServiceImpl implements PlaylistService {
     }
 
     private User getCurrentUser() {
+
         return userRepository.findById(
                 SecurityContextHolder.getContext().getAuthentication().getName()
         ).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
@@ -529,9 +532,17 @@ public class PlaylistServiceImpl implements PlaylistService {
         Matcher matcher = pattern.matcher(url);
 
         if (matcher.find()) {
-            return matcher.group(1); // 'list=' 뒤의 Playlist ID 추출
+            String playlistId = matcher.group(1);
+
+            // 유효한 플레이리스트 ID인지 검증 (PL로 시작하고 길이가 충분한지)
+            if (playlistId.startsWith("PL") && playlistId.length() >= 16) {
+                return playlistId;
+            } else {
+                logger.warn("Invalid or auto-generated playlist ID: " + playlistId);
+                return null;
+            }
         }
-        return null; // Playlist ID를 찾을 수 없으면 null 반환
+        return null; // list 파라미터가 아예 없을 때
     }
     private JsonObject fetchPlaylistInfo(String playlistId) {
         String url = "https://www.googleapis.com/youtube/v3/playlists?part=snippet&id=" + playlistId + "&key=" + apiKey;
