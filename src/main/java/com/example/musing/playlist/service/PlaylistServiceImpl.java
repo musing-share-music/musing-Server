@@ -7,6 +7,8 @@ import com.example.musing.music.repository.MusicRepository;
 import com.example.musing.playlist.dto.*;
 import com.example.musing.playlist.entity.PlayList;
 import com.example.musing.playlist.repository.PlayListRepository;
+import com.example.musing.playlist_music.entity.PlaylistMusic;
+import com.example.musing.playlist_music.repository.PlayListMusicRepository;
 import com.example.musing.user.entity.User;
 import com.example.musing.user.repository.UserRepository;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
@@ -64,6 +66,7 @@ public class PlaylistServiceImpl implements PlaylistService {
     private final UserRepository userRepository;
     private final PlayListRepository playListRepository;
     private final MusicRepository musicRepository;
+    private final PlayListMusicRepository playlistMusicRepository;
 
 
 
@@ -108,6 +111,46 @@ public class PlaylistServiceImpl implements PlaylistService {
         return null;
     }
 
+    @Override
+    @Transactional
+    public void savePlayList(PlayListSaveRequestDto dto) {
+        User user = getCurrentUser();
+
+        // 1️⃣ PlayList 저장
+        PlayList playList = PlayList.builder()
+                .listname(dto.getListname())
+                .itemCount(dto.getItemCount())
+                .youtubePlaylistId(dto.getYoutubePlaylistId())
+                .youtubeLink(dto.getYoutubeLink())
+                .user(user)
+                .build();
+
+        playListRepository.save(playList);
+
+        // 2️⃣ Music 저장 or 재사용
+        for (PlayListSaveRequestDto.MusicDto musicDto : dto.getMusicList()) {
+            // 곡명 + 링크 기준으로 중복 확인
+            Music music = musicRepository.findByNameAndSongLink(
+                            musicDto.getName(), musicDto.getSongLink())
+                    .orElseGet(() -> musicRepository.save(
+                            Music.builder()
+                                    .name(musicDto.getName())
+                                    .playtime(musicDto.getPlaytime())
+                                    .albumName(musicDto.getAlbumName())
+                                    .songLink(musicDto.getSongLink())
+                                    .thumbNailLink(musicDto.getThumbNailLink())
+                                    .build()
+                    ));
+
+            // 3️⃣ 중간 테이블 저장
+            PlaylistMusic playlistMusic = PlaylistMusic.builder()
+                    .playList(playList)
+                    .music(music)
+                    .build();
+
+            playlistMusicRepository.save(playlistMusic);
+        }
+    }
     public String getThumailLink(String url){
         String videoId = extractVideoId(url);
         return "https://img.youtube.com/vi/" + videoId + "/hqdefault.jpg";

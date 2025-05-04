@@ -4,16 +4,17 @@ package com.example.musing.playlist.controller;
 import com.example.musing.common.dto.ResponseDto;
 import com.example.musing.common.utils.youtube.YouTubeUrlValidator;
 import com.example.musing.exception.CustomException;
-import com.example.musing.playlist.dto.PlaylistResponse;
-import com.example.musing.playlist.dto.YouTubeVideoResponse;
-import com.example.musing.playlist.dto.YoutubePlaylistRequestDto;
-import com.example.musing.playlist.dto.YoutubeVideoRequestDto;
+import com.example.musing.playlist.dto.*;
 import com.example.musing.playlist.entity.PlayList;
 import com.example.musing.playlist.repository.PlayListRepository;
 import com.example.musing.playlist.service.PlaylistService;
 import com.example.musing.user.entity.User;
 import com.example.musing.user.repository.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,23 +35,24 @@ public class PlaylistController {
     }
 
 
-//    @GetMapping("/getMyPlaylists")
-//    public ResponseDto<List<PlayList>> getMyPlaylists(@RequestParam("id") String id) {
-//
-//
-//        // YouTube API 호출 및 재생목록 가져오기
-////        List<PlayList> playlists = playlistService.getUserPlaylists(id);
-//
-//        // 데이터베이스에 저장
-//        playlists.forEach(playList -> {
-//            if (!playListRepository.existsByYoutubePlaylistId(playList.getYoutubePlaylistId())) {
-//                playListRepository.save(playList);
-//            }
-//        });
-//
-//        return ResponseDto.of(playlists, "성공적으로 유저 재생목록을 불러왔습니다.");
-//    }
-
+    @Operation(
+            summary = "플레이리스트 저장",
+            description = """
+                사용자의 유튜브 플레이리스트 ID 및 곡 리스트를 받아 새로운 플레이리스트를 저장합니다.
+                곡명(name)과 링크(songLink)를 기준으로 중복 여부를 확인하여 기존 곡을 재사용하거나 새로 저장합니다.
+                """)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "플레이리스트 저장 성공"),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청 형식 또는 유효성 검사 실패"),
+            @ApiResponse(responseCode = "401", description = "인증 실패"),
+            @ApiResponse(responseCode = "500", description = "서버 오류")
+    })
+    @PostMapping("/savePlaylist")
+    public ResponseDto<String> savePlaylist(
+            @RequestBody @Valid PlayListSaveRequestDto playListDto) {
+        playlistService.savePlayList(playListDto);
+        return ResponseDto.of("OK", "플리저장성공");
+    }
 
     @Operation(summary = "음악 링크 등록 테스트용" ,
             description = "localhost:8090 기준 http://localhost:8090/youtube/search 로 접근<br>")

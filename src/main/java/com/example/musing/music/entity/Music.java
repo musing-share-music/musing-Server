@@ -69,12 +69,13 @@ public class Music {
 
     @Builder
     public Music(long id, String name, String playtime,
-                 String songLink, String thumbNailLink) {
+                 String songLink, String thumbNailLink,String albumName) {
         this.id = id;
         this.name = name;
         this.playtime = playtime;
         this.songLink = songLink;
         this.thumbNailLink = thumbNailLink;
+        this.albumName = (albumName != null) ? albumName : "정보 없음";
     }
 
     public static Music of(CreateBoardRequest request) {
