@@ -30,8 +30,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    public final TokenAuthenticationFilter tokenAuthenticationFilter;
-    public final CustomOauth2UserService userService;
+    private final TokenAuthenticationFilter tokenAuthenticationFilter;
+    private final CustomOauth2UserService userService;
     private final Oauth2SuccessHandler oauth2SuccessHandler;
 
     @Value("${client.host}")
@@ -65,6 +65,7 @@ public class SecurityConfig {
                         .requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**", "/v3/api-docs/**").permitAll()
                         //사용자 전체 허용
                         .requestMatchers("/musing/main").permitAll()
+                        .requestMatchers("/musing/alarm/create").permitAll()
                         .requestMatchers("/musing/signup").permitAll() //회원가입 도메인 1단계가 필요없이 구글 로그인 부분으로 되면 이렇게 적용
                         .requestMatchers("/musing/auth/**").permitAll()
                         .requestMatchers("/musing/notice/**").permitAll()
@@ -85,11 +86,10 @@ public class SecurityConfig {
                         .deleteCookies("accessToken")
                         .logoutSuccessUrl(clientHost)
                 )
-                //JWT 관련 설정, 하단 필터 실행
+                // JWT 관련 설정, 하단 필터 실행
                 .addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(new TokenExceptionFilter(), tokenAuthenticationFilter.getClass())
-
-                //인증 관련 커스텀 예외처리 추가하기
+                // 인증 관련 커스텀 예외처리 추가하기
                 .exceptionHandling((exceptions) -> exceptions
                         .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
                         .accessDeniedHandler(new CustomAccessDeniedHandler()));

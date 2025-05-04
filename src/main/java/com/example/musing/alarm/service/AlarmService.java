@@ -14,5 +14,7 @@ public interface AlarmService {
 
     SseEmitter subscribe(String userId, String lastEventId);
 
-    void send(User user, AlarmType alarmType, String relatedUrl);
+    Alarm send(User user, AlarmType alarmType, String relatedUrl);
+
+    void sendSSE(Alarm alarm);
 }
