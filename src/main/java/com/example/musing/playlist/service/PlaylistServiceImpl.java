@@ -15,6 +15,8 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.youtube.YouTube;
+import com.google.api.services.youtube.model.PlaylistItem;
+import com.google.api.services.youtube.model.PlaylistItemListResponse;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -36,7 +38,6 @@ import org.slf4j.Logger;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.URI;
 import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.util.*;
@@ -62,6 +63,7 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     private final String API_BASE_URL = "https://www.googleapis.com/youtube/v3";
 
+    private final YouTube youtube;
 
     private final UserRepository userRepository;
     private final PlayListRepository playListRepository;
@@ -69,6 +71,51 @@ public class PlaylistServiceImpl implements PlaylistService {
     private final PlayListMusicRepository playlistMusicRepository;
 
 
+    public void modifyPlaylistInfo(String url) {
+        // 플레이리스트 제목 및 설명 칸 수정하기
+        // 플레이리스트 영상 삭제 및 count fix하기
+        // 반환값 확인하기
+
+
+        String playlistId = extractPlaylistId(url);
+
+    }
+
+    private void removeVideoFromPlaylist(String playlistId, List<String> videoIds) throws IOException {
+        // DB상의 Dto 변경사항도 반영하도록 수정하기
+
+
+        // Youtube 실제 플레이리스트 수정 작업
+        // 1. 플레이리스트 아이템 목록 조회
+        YouTube.PlaylistItems.List request = youtube.playlistItems()
+                .list(Arrays.asList("id", "snippet"))
+                .setPlaylistId(playlistId)
+                .setMaxResults(20L);
+
+        PlaylistItemListResponse response = request.execute();
+        List<PlaylistItem> items = response.getItems();
+
+        // 2. videoId와 매칭되는 playlistItemId 수집
+        Map<String, String> videoIdMap = new HashMap<>();
+        for (PlaylistItem item : items) {
+            String itemVideoId = item.getSnippet().getResourceId().getVideoId();
+            videoIdMap.put(itemVideoId, item.getId());
+        }
+
+        // 3. 각 비디오 ID별로 삭제 처리
+        for (String videoId : videoIds) {
+            String playlistItemId = videoIdMap.get(videoId);
+
+            if (playlistItemId == null) {
+                continue;
+            }
+
+            // YouTube 삭제 요청
+            youtube.playlistItems().delete(playlistItemId).execute();
+
+            // 4. DB 업데이트 (saveAll 하기)
+        }
+    }
 
     @Override
     public YouTubeVideoResponse getVideoInfo(String videoId) {
@@ -591,7 +638,6 @@ public class PlaylistServiceImpl implements PlaylistService {
         String url = "https://www.googleapis.com/youtube/v3/playlists?part=snippet&id=" + playlistId + "&key=" + apiKey;
         return fetchJsonResponse(url);
     }
-
 }
 
 

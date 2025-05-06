@@ -56,9 +56,6 @@ public class PlaylistController {
 
     @Operation(summary = "음악 링크 등록 테스트용" ,
             description = "localhost:8090 기준 http://localhost:8090/youtube/search 로 접근<br>")
-
-
-
     @GetMapping("/checkURL")
     public String validateYouTubeUrl(@RequestParam String url) {
         return playlistService.checkUrl(url);
