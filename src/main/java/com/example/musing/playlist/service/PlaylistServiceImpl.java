@@ -72,6 +72,26 @@ public class PlaylistServiceImpl implements PlaylistService {
     private final PlayListMusicRepository playlistMusicRepository;
     private final Oauth2ProviderTokenService oauth2ProviderTokenService;
 
+    @Transactional
+    public void removePlaylist(String playlistId) throws IOException, GeneralSecurityException, InterruptedException {
+        // DB반영하도록 로직 추가하기
+        // 1. 사용자 인증 정보 획득
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        String accessToken = oauth2ProviderTokenService.getGoogleProviderAccessToken(userId);
+
+        GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);
+
+        // 2. 인증된 YouTube 객체 생성
+        YouTube youtubeService = new YouTube.Builder(
+                GoogleNetHttpTransport.newTrustedTransport(),
+                JacksonFactory.getDefaultInstance(),
+                credential
+        ).setApplicationName("musing").build();
+
+        // 3. 플레이리스트 삭제 요청
+        youtubeService.playlists().delete(playlistId).execute();
+    }
+
     @Override
     @Transactional
     public void modifyPlaylistInfo(String playlistId, List<String> videoIds)

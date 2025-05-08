@@ -41,8 +41,13 @@ public class PlaylistController {
         this.userRepository = userRepository;
     }
 
+    @PostMapping("playlist/remove")
+    public ResponseDto<String> modifyPlaylist(@RequestParam String playlistId)
+            throws IOException, GeneralSecurityException, InterruptedException {
+        playlistService.removePlaylist(playlistId);
+        return ResponseDto.of(null, "플레이리스트를 삭제했습니다.");
+    }
 
-    //
     @PutMapping("/playlist/modify")
     public ResponseDto<String> modifyPlaylist(@RequestParam String playlistId,
                                               @RequestParam List<String> removeVideoIds)
