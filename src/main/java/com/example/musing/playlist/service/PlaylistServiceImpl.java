@@ -1,5 +1,6 @@
 package com.example.musing.playlist.service;
 
+import com.example.musing.auth.oauth2.service.Oauth2ProviderTokenService;
 import com.example.musing.exception.CustomException;
 import com.example.musing.exception.ErrorCode;
 import com.example.musing.music.entity.Music;
@@ -27,6 +28,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import net.minidev.json.JSONObject;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -54,7 +56,8 @@ public class PlaylistServiceImpl implements PlaylistService {
     private EntityManager entityManager;
 
     private static final Logger logger = LoggerFactory.getLogger(PlaylistService.class);
-    private String apiKey = "AIzaSyAc04gbKGheprJjcXPfnXu4l0tdBuzxowE";
+    @Value("${youtube.api.key}")
+    private String apiKey;
     private final RestTemplate restTemplate = new RestTemplate();
 
     private static final String YOUTUBE_PATTERN_STRING = "^(https?://)?(www\\.)?(youtube\\.com/watch\\?v=|youtu\\.be/)[\\w-]{11}.*$";
@@ -63,31 +66,42 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     private final String API_BASE_URL = "https://www.googleapis.com/youtube/v3";
 
-    private final YouTube youtube;
-
     private final UserRepository userRepository;
     private final PlayListRepository playListRepository;
     private final MusicRepository musicRepository;
     private final PlayListMusicRepository playlistMusicRepository;
+    private final Oauth2ProviderTokenService oauth2ProviderTokenService;
 
-
-    public void modifyPlaylistInfo(String url) {
+    @Override
+    @Transactional
+    public void modifyPlaylistInfo(String playlistId, List<String> videoIds)
+            throws IOException, GeneralSecurityException, InterruptedException {
+        // 변경사항 조건문 확인하기
         // 플레이리스트 제목 및 설명 칸 수정하기
         // 플레이리스트 영상 삭제 및 count fix하기
         // 반환값 확인하기
-
-
-        String playlistId = extractPlaylistId(url);
-
+        removeVideoFromPlaylist(playlistId, videoIds);
     }
 
-    private void removeVideoFromPlaylist(String playlistId, List<String> videoIds) throws IOException {
+    private void removeVideoFromPlaylist(String playlistId, List<String> videoIds)
+            throws IOException, GeneralSecurityException, InterruptedException {
         // DB상의 Dto 변경사항도 반영하도록 수정하기
 
 
         // Youtube 실제 플레이리스트 수정 작업
         // 1. 플레이리스트 아이템 목록 조회
-        YouTube.PlaylistItems.List request = youtube.playlistItems()
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        String accessToken = oauth2ProviderTokenService.getGoogleProviderAccessToken(userId);
+        GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);
+
+        // 인증된 YouTube 객체 생성
+        YouTube youtubeService = new YouTube.Builder(
+                GoogleNetHttpTransport.newTrustedTransport(),
+                JacksonFactory.getDefaultInstance(),
+                credential
+        ).setApplicationName("musing").build();
+
+        YouTube.PlaylistItems.List request = youtubeService.playlistItems()
                 .list(Arrays.asList("id", "snippet"))
                 .setPlaylistId(playlistId)
                 .setMaxResults(20L);
@@ -111,7 +125,7 @@ public class PlaylistServiceImpl implements PlaylistService {
             }
 
             // YouTube 삭제 요청
-            youtube.playlistItems().delete(playlistItemId).execute();
+            youtubeService.playlistItems().delete(playlistItemId).execute();
 
             // 4. DB 업데이트 (saveAll 하기)
         }

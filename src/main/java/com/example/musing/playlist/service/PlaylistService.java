@@ -13,6 +13,7 @@ import java.util.List;
 
 public interface PlaylistService {
 
+    void modifyPlaylistInfo(String playlistId, List<String> videoIds) throws IOException, GeneralSecurityException, InterruptedException;
     YouTubeVideoResponse getVideoInfo(String videoId);
 
     String checkUrl(String url);

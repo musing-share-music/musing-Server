@@ -13,10 +13,17 @@ import com.example.musing.user.repository.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.util.Arrays;
+import java.util.List;
 
 import static com.example.musing.exception.ErrorCode.NOT_FOUND_USER;
 
@@ -34,6 +41,15 @@ public class PlaylistController {
         this.userRepository = userRepository;
     }
 
+
+    //
+    @PutMapping("/playlist/modify")
+    public ResponseDto<String> modifyPlaylist(@RequestParam String playlistId,
+                                              @RequestParam List<String> removeVideoIds)
+            throws IOException, GeneralSecurityException, InterruptedException {
+        playlistService.modifyPlaylistInfo(playlistId, removeVideoIds);
+        return ResponseDto.of(null, "플레이리스트를 수정했습니다.");
+    }
 
     @Operation(
             summary = "플레이리스트 저장",
