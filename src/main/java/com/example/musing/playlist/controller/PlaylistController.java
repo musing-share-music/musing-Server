@@ -13,10 +13,17 @@ import com.example.musing.user.repository.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.util.Arrays;
+import java.util.List;
 
 import static com.example.musing.exception.ErrorCode.NOT_FOUND_USER;
 
@@ -34,6 +41,20 @@ public class PlaylistController {
         this.userRepository = userRepository;
     }
 
+    @PostMapping("playlist/remove")
+    public ResponseDto<String> modifyPlaylist(@RequestParam String playlistId)
+            throws IOException, GeneralSecurityException, InterruptedException {
+        playlistService.removePlaylist(playlistId);
+        return ResponseDto.of(null, "플레이리스트를 삭제했습니다.");
+    }
+
+    @PutMapping("/playlist/modify")
+    public ResponseDto<String> modifyPlaylist(@RequestParam String playlistId,
+                                              @RequestParam List<String> removeVideoIds)
+            throws IOException, GeneralSecurityException, InterruptedException {
+        playlistService.modifyPlaylistInfo(playlistId, removeVideoIds);
+        return ResponseDto.of(null, "플레이리스트를 수정했습니다.");
+    }
 
     @Operation(
             summary = "플레이리스트 저장",
@@ -56,9 +77,6 @@ public class PlaylistController {
 
     @Operation(summary = "음악 링크 등록 테스트용" ,
             description = "localhost:8090 기준 http://localhost:8090/youtube/search 로 접근<br>")
-
-
-
     @GetMapping("/checkURL")
     public String validateYouTubeUrl(@RequestParam String url) {
         return playlistService.checkUrl(url);

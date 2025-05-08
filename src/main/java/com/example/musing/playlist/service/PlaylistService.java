@@ -12,7 +12,8 @@ import java.util.List;
 
 
 public interface PlaylistService {
-
+    void removePlaylist(String playlistId) throws IOException, GeneralSecurityException, InterruptedException;
+    void modifyPlaylistInfo(String playlistId, List<String> videoIds) throws IOException, GeneralSecurityException, InterruptedException;
     YouTubeVideoResponse getVideoInfo(String videoId);
 
     String checkUrl(String url);

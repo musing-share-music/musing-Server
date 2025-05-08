@@ -4,6 +4,7 @@ import com.example.musing.auth.jwt.CookieService;
 import com.example.musing.auth.jwt.Token;
 import com.example.musing.auth.jwt.TokenService;
 import com.example.musing.auth.exception.AuthorityException;
+import com.example.musing.auth.oauth2.service.Oauth2ProviderTokenService;
 import com.example.musing.exception.ErrorCode;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -15,6 +16,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -28,13 +33,34 @@ import java.util.Optional;
 public class Oauth2SuccessHandler implements AuthenticationSuccessHandler {
     private final CookieService cookieService;
     private final TokenService tokenService;
-
+    private final OAuth2AuthorizedClientManager OAuth2AuthorizedClientManager;
+    private final Oauth2ProviderTokenService oauth2ProviderTokenService;
     @Value("${client.host}")
     private String clientHost;
     private static final String ADMIN_URL = "/admin/notice";
 
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
+                                        Authentication authentication) throws IOException {
+
+        String googleId = authentication.getName();
+
+        OAuth2AuthenticationToken oauth2Token = (OAuth2AuthenticationToken) authentication;
+        String clientRegistrationId = oauth2Token.getAuthorizedClientRegistrationId();
+
+        OAuth2AuthorizedClient authorizedClient = OAuth2AuthorizedClientManager.authorize(
+                OAuth2AuthorizeRequest.withClientRegistrationId(clientRegistrationId)
+                        .principal(authentication)
+                        .build()
+        );
+
+        if (authorizedClient != null && authorizedClient.getRefreshToken() != null) {
+            // 구글은 최초 로그인에만 가져와짐
+            String refreshToken = authorizedClient.getRefreshToken().getTokenValue();
+            log.info(refreshToken + "구글 리프래시 토큰");
+            oauth2ProviderTokenService.renewOauth2ProviderToken(refreshToken, googleId);
+        }
+
         String authorization = null;
 
         for (Cookie cookie : request.getCookies()) {//쿠키 여부 체크
