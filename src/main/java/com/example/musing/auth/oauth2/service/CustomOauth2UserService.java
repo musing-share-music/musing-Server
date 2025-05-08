@@ -1,4 +1,4 @@
-package com.example.musing.auth.oauth2;
+package com.example.musing.auth.oauth2.service;
 
 import com.example.musing.auth.jwt.dto.Oauth2Google;
 import com.example.musing.auth.jwt.dto.PrincipalDetails;

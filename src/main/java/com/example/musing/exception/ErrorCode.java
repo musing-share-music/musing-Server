@@ -30,6 +30,7 @@ public enum ErrorCode {
 
     // 권한 설정 예외처리
     INVALID_AUTHORITY(UNAUTHORIZED, "잘못된 권한 설정입니다"),
+    UNAUTHORIZED_OAUTH2_PROVIDER_TOKEN(UNAUTHORIZED, "Oauth2 프로바이더의 토큰을 발급 받을 수 없습니다."),
 
     // 유저 정보를 읽을 수 없을 때
     NOT_FOUND_USER(NOT_FOUND, "유저 정보를 찾을 수 없습니다."),
