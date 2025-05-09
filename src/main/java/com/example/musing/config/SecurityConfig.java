@@ -1,6 +1,7 @@
 package com.example.musing.config;
 
-import com.example.musing.auth.oauth2.CustomOauth2UserService;
+import com.example.musing.auth.oauth2.service.OAuth2RequestResolver;
+import com.example.musing.auth.oauth2.service.CustomOauth2UserService;
 import com.example.musing.auth.handler.CustomAccessDeniedHandler;
 import com.example.musing.auth.handler.CustomAuthenticationEntryPoint;
 import com.example.musing.auth.handler.OAuth2FailureHandler;
@@ -18,6 +19,8 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -46,7 +49,10 @@ public class SecurityConfig {
                 .requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**", "/v3/api-docs/**");
     }
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
+    public SecurityFilterChain filterChain(HttpSecurity http, ClientRegistrationRepository clientRegistrationRepository) throws Exception{
+        OAuth2AuthorizationRequestResolver customResolver =
+                new OAuth2RequestResolver(clientRegistrationRepository, "/oauth2/authorization");
+
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable) // csrf 차단, jwt사용으로 차단
@@ -77,7 +83,10 @@ public class SecurityConfig {
 
                 //oauth2 인증 관련 코드
                 .oauth2Login(oauth ->
-                        oauth.userInfoEndpoint(c -> c.userService(userService))
+                        oauth.authorizationEndpoint(authorization ->
+                                        authorization.authorizationRequestResolver(customResolver))
+                                .loginProcessingUrl("/login/oauth2/code/*")
+                                .userInfoEndpoint(c -> c.userService(userService))
                                 .successHandler(oauth2SuccessHandler)
                                 .failureHandler(new OAuth2FailureHandler())
                 )
