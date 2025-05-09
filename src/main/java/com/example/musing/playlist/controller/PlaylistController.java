@@ -116,17 +116,7 @@ public class PlaylistController {
         return ResponseDto.of(playlistResponse,"성공적으로 플레이 리스트를 받아왔습니다.");
     }
 
-    @PostMapping("/save-playlist")
-    public ResponseDto<PlayList> savePlaylist(@RequestBody PlaylistResponse playlistResponse) {
 
-        User user = userRepository.findById(SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getName()).orElseThrow(() -> new CustomException(NOT_FOUND_USER)); // 현재 로그인한 유저 가져오기
-        PlayList savedPlaylist = playlistService.savePlaylistWithMusic(playlistResponse, user);
-
-        return ResponseDto.of(savedPlaylist,"성공적으로 저장되었습니다.");
-    }
 
     @DeleteMapping("/delete")
     public ResponseDto<String> deletePlaylist(
