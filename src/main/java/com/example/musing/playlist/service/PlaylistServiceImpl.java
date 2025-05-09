@@ -74,7 +74,10 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     @Transactional
     public void removePlaylist(String playlistId) throws IOException, GeneralSecurityException, InterruptedException {
-        // DB반영하도록 로직 추가하기
+        // DB를 우선삭제하여 롤백상황일때 유튜브 내에서의 플레이리스트만 삭제되는 경우를 막음
+        // 고아 객체를 이용하여 중간 매핑 테이블 삭제 처리
+        deletePlaylistInDB(playlistId);
+
         // 1. 사용자 인증 정보 획득
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         String accessToken = oauth2ProviderTokenService.getGoogleProviderAccessToken(userId);
@@ -92,6 +95,10 @@ public class PlaylistServiceImpl implements PlaylistService {
         youtubeService.playlists().delete(playlistId).execute();
     }
 
+    private void deletePlaylistInDB(String youtubePlId) {
+        playListRepository.deleteByYoutubePlaylistId(youtubePlId);
+    }
+
     @Override
     @Transactional
     public void modifyPlaylistInfo(String playlistId, List<String> videoIds)
@@ -106,7 +113,6 @@ public class PlaylistServiceImpl implements PlaylistService {
     private void removeVideoFromPlaylist(String playlistId, List<String> videoIds)
             throws IOException, GeneralSecurityException, InterruptedException {
         // DB상의 Dto 변경사항도 반영하도록 수정하기
-
 
         // Youtube 실제 플레이리스트 수정 작업
         // 1. 플레이리스트 아이템 목록 조회
@@ -508,6 +514,7 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     @Override
     public void deletePlaylistFromYouTube(String playlistId,String accessToken) throws IOException, GeneralSecurityException {
+/*
         // 1. accessToken을 이용해 인증된 YouTube 객체를 생성합니다.
         GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);
 
@@ -528,6 +535,7 @@ public class PlaylistServiceImpl implements PlaylistService {
             // 예외 처리 (예: 네트워크 문제, 권한 부족 등)
             throw new IOException("Failed to delete playlist from YouTube: " + e.getMessage(), e);
         }
+*/
 
     }
 

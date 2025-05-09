@@ -22,8 +22,6 @@ public class PlayList {
     @Column(name="playlistid")
     private long id;
 
-
-
     @Column(nullable = false)
     private String listname;
 
