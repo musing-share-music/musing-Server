@@ -511,34 +511,6 @@ public class PlaylistServiceImpl implements PlaylistService {
         return response.getBody();
     }
 
-
-    @Override
-    public void deletePlaylistFromYouTube(String playlistId,String accessToken) throws IOException, GeneralSecurityException {
-/*
-        // 1. accessToken을 이용해 인증된 YouTube 객체를 생성합니다.
-        GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);
-
-        // 인증된 YouTube 객체 생성
-        YouTube youtubeService = new YouTube.Builder(
-                GoogleNetHttpTransport.newTrustedTransport(),
-                JacksonFactory.getDefaultInstance(),
-                credential
-        ).setApplicationName("musing").build();
-
-        // 2. API 요청을 통해 플레이리스트 삭제
-        YouTube.Playlists.Delete request = youtubeService.playlists().delete(playlistId);
-
-        // 3. 실제 삭제 요청 실행
-        try {
-            request.execute();  // 삭제 요청을 유튜브에 보냄
-        } catch (IOException e) {
-            // 예외 처리 (예: 네트워크 문제, 권한 부족 등)
-            throw new IOException("Failed to delete playlist from YouTube: " + e.getMessage(), e);
-        }
-*/
-
-    }
-
     private JSONObject createRequestBody(YoutubePlaylistRequestDto dto) {
         JSONObject body = new JSONObject();
 

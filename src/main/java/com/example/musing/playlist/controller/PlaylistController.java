@@ -41,14 +41,14 @@ public class PlaylistController {
         this.userRepository = userRepository;
     }
 
-    @DeleteMapping("playlist/remove")
+    @PostMapping("/remove")
     public ResponseDto<String> modifyPlaylist(@RequestParam String playlistId)
             throws IOException, GeneralSecurityException, InterruptedException {
         playlistService.removePlaylist(playlistId);
         return ResponseDto.of(null, "플레이리스트를 삭제했습니다.");
     }
 
-    @PutMapping("/playlist/modify")
+    @PutMapping("/modify")
     public ResponseDto<String> modifyPlaylist(@RequestParam String playlistId,
                                               @RequestParam List<String> removeVideoIds)
             throws IOException, GeneralSecurityException, InterruptedException {
