@@ -125,8 +125,20 @@ public class PlaylistController {
         return ResponseDto.of(videoResponse,"유효한 URL입니다.");
     }
 
-    @GetMapping("/getUserPlaylists")
+    @GetMapping("/getUserPlaylist")
     public ResponseDto<PlaylistResponse> getUserPlaylists(@RequestParam("url") String url) {
+        PlaylistResponse playlistResponse = playlistService.getUserPlaylists(url);
+        if(playlistResponse.getVideoList() == null || playlistResponse.getVideoList().isEmpty()) {
+            return ResponseDto.of(null,"플레이리스트를 불러오지 못했습니다.");
+        }
+        return ResponseDto.of(playlistResponse,"성공적으로 플레이 리스트를 받아왔습니다.");
+    }
+
+
+
+
+    @GetMapping("/getPlayListInfo")
+    public ResponseDto<PlaylistResponse> getPlayListInfo(@RequestParam("url") String url) {
         PlaylistResponse playlistResponse = playlistService.getUserPlaylists(url);
         if(playlistResponse.getVideoList() == null || playlistResponse.getVideoList().isEmpty()) {
             return ResponseDto.of(null,"플레이리스트를 불러오지 못했습니다.");
@@ -154,6 +166,12 @@ public class PlaylistController {
         } catch (Exception e) {
             return ResponseDto.of(null, "삭제 실패: " + e.getMessage());
         }
+    }
+
+    @GetMapping("/selectMyPlayLists")
+    public  ResponseDto<List<PlayList>> selectMyPlayLists(){
+        SelectPlayListsDto dto = playlistService.selectMyPlayList();
+        return ResponseDto.of(null, "플레이리스트 목록 가져오기 성공 " );
     }
 
 }

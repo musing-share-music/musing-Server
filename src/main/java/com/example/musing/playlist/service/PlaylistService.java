@@ -21,9 +21,9 @@ public interface PlaylistService {
     public PlaylistResponse getUserPlaylists(String url);
     String getPlayTime(String url);
     String getThumailLink(String url);
-    PlayList savePlaylistWithMusic(PlaylistResponse playlistResponse, User user);
     void savePlayList(PlayListSaveRequestDto playListDto);
     String createPlaylist(String accessToken, YoutubePlaylistRequestDto dto);
     String addVideoToPlaylist(String accessToken, YoutubeVideoRequestDto dto);
     void deletePlaylistFromYouTube(String playlistId,String authHeader) throws IOException, GeneralSecurityException;
+    SelectPlayListsDto selectMyPlayList();
 }
