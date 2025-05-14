@@ -44,6 +44,8 @@ public class PlaylistController {
         this.playListSaveService = playListSaveService;
     }
 
+    @Operation(summary = "플레이리스트 삭제" ,
+            description = "플레이리스트 삭제을 위해 유튜브 플레이리스트 Id 값을 받습니다.")
     @PostMapping("/remove")
     public ResponseDto<String> modifyPlaylist(@RequestParam String playlistId)
             throws IOException, GeneralSecurityException, InterruptedException {
@@ -51,6 +53,10 @@ public class PlaylistController {
         return ResponseDto.of(null, "플레이리스트를 삭제했습니다.");
     }
 
+    @Operation(summary = "플레이리스트 수정" ,
+            description = "플레이리스트 수정을 위해 유튜브 플레이리스트 Id 값과 제외할 영상 링크들을 리스트로 받습니다.<br>" +
+                    "본문 데이터로는 playlistRequestDto가 있으며, title과 description를 담고있습니다.<br>" +
+                    "이 부분은 변경하지 않았더라도 기존 데이터를 담아 넘겨주면됩니다.")
     @PutMapping("/modify")
     public ResponseDto<String> modifyPlaylist(@RequestBody @Valid YoutubePlaylistRequestDto playlistRequestDto,
                                               @RequestParam String playlistId,
