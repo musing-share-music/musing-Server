@@ -49,10 +49,10 @@ public class PlaylistController {
     }
 
     @PutMapping("/modify")
-    public ResponseDto<String> modifyPlaylist(@RequestParam String playlistId,
-                                              @RequestParam List<String> removeVideoIds)
-            throws IOException, GeneralSecurityException, InterruptedException {
-        playlistService.modifyPlaylistInfo(playlistId, removeVideoIds);
+    public ResponseDto<String> modifyPlaylist(@RequestBody @Valid YoutubePlaylistRequestDto playlistRequestDto,
+                                              @RequestParam String playlistId,
+                                              @RequestParam List<String> removeVideoIds) {
+        playlistService.modifyPlaylist(playlistRequestDto, playlistId, removeVideoIds);
         return ResponseDto.of(null, "플레이리스트를 수정했습니다.");
     }
 

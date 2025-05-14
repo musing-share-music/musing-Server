@@ -7,6 +7,8 @@ import com.example.musing.music.entity.Music;
 import com.example.musing.music.repository.MusicRepository;
 import com.example.musing.playlist.dto.*;
 import com.example.musing.playlist.entity.PlayList;
+import com.example.musing.playlist.event.DeleteVideoEvent;
+import com.example.musing.playlist.event.ModifyPlaylistEvent;
 import com.example.musing.playlist.repository.PlayListRepository;
 import com.example.musing.playlist_music.entity.PlaylistMusic;
 import com.example.musing.playlist_music.repository.PlayListMusicRepository;
@@ -16,8 +18,10 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.youtube.YouTube;
+import com.google.api.services.youtube.model.Playlist;
 import com.google.api.services.youtube.model.PlaylistItem;
 import com.google.api.services.youtube.model.PlaylistItemListResponse;
+import com.google.api.services.youtube.model.PlaylistSnippet;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -29,6 +33,7 @@ import lombok.RequiredArgsConstructor;
 import net.minidev.json.JSONObject;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.*;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -46,6 +51,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.example.musing.exception.ErrorCode.ERROR;
 
 
 @RequiredArgsConstructor
@@ -59,6 +65,7 @@ public class PlaylistServiceImpl implements PlaylistService {
     @Value("${youtube.api.key}")
     private String apiKey;
     private final RestTemplate restTemplate = new RestTemplate();
+    private final ApplicationEventPublisher publisher;
 
     private static final String YOUTUBE_PATTERN_STRING = "^(https?://)?(www\\.)?(youtube\\.com/watch\\?v=|youtu\\.be/)[\\w-]{11}.*$";
     private static final Pattern YOUTUBE_PATTERN = Pattern.compile(YOUTUBE_PATTERN_STRING);
@@ -101,19 +108,68 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     @Override
     @Transactional
-    public void modifyPlaylistInfo(String playlistId, List<String> videoIds)
-            throws IOException, GeneralSecurityException, InterruptedException {
-        // 변경사항 조건문 확인하기
-        // 플레이리스트 제목 및 설명 칸 수정하기
-        // 플레이리스트 영상 삭제 및 count fix하기
-        // 반환값 확인하기
-        removeVideoFromPlaylist(playlistId, videoIds);
+    public void modifyPlaylist(YoutubePlaylistRequestDto dto, String playlistId, List<String> deleteVideoLinks) {
+        removeVideoFromDbPlaylist(deleteVideoLinks);
+        publisher.publishEvent(DeleteVideoEvent.of(playlistId, deleteVideoLinks));
+        publisher.publishEvent(ModifyPlaylistEvent.of(dto, playlistId));
     }
 
-    private void removeVideoFromPlaylist(String playlistId, List<String> videoIds)
-            throws IOException, GeneralSecurityException, InterruptedException {
-        // DB상의 Dto 변경사항도 반영하도록 수정하기
+    private void removeVideoFromDbPlaylist(List<String> deleteVideoLinks) {
+         playlistMusicRepository.deleteAllByMusic_SongLinkIn(deleteVideoLinks);
+    }
 
+    // 스프링 이벤트를 사용해서 트랜잭션 분리 및 비동기로 작업되도록 함
+    @Override
+    public void modifyYoutubePlaylistInfo(YoutubePlaylistRequestDto dto, String playlistId)
+            throws IOException, InterruptedException, GeneralSecurityException {
+
+        PlayList playlist = playListRepository.findByYoutubePlaylistId(playlistId)
+                .orElseThrow(() -> new CustomException(ERROR));
+
+        if(!playlist.getListname().equals(dto.getTitle()) ||
+                !playlist.getDescription().equals(dto.getDescription())) {
+
+            playlist.modifyTitleAndDescription(dto.getTitle(), dto.getDescription());
+
+            // 1. 플레이리스트 아이템 목록 조회
+            String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+            String accessToken = oauth2ProviderTokenService.getGoogleProviderAccessToken(userId);
+            GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);
+
+            // 인증된 YouTube 객체 생성
+            YouTube youtubeService = new YouTube.Builder(
+                    GoogleNetHttpTransport.newTrustedTransport(),
+                    JacksonFactory.getDefaultInstance(),
+                    credential
+            ).setApplicationName("musing").build();
+
+            YouTube.Playlists.List getRequest = youtubeService.playlists()
+                    .list(List.of("snippet"))
+                    .setId(Collections.singletonList(playlistId));
+
+            com.google.api.services.youtube.model.PlaylistListResponse getResponse = getRequest.execute();
+            Playlist youtubePlaylist = getResponse.getItems().get(0);
+
+            // snippet 객체 수정
+            PlaylistSnippet snippet = youtubePlaylist.getSnippet();
+            snippet.setTitle(dto.getTitle()); // 변경할 제목
+            snippet.setDescription(dto.getDescription()); // 변경할 설명
+
+            // 변경된 snippet을 playlist에 다시 세팅
+            youtubePlaylist.setSnippet(snippet);
+
+            // update 요청 실행
+            YouTube.Playlists.Update updateRequest = youtubeService.playlists()
+                    .update(List.of("snippet"), youtubePlaylist);
+            Playlist updateResponse = updateRequest.execute();
+        }
+    }
+
+    // 스프링 이벤트를 사용해서 트랜잭션 분리 및 비동기로 작업되도록 함
+    // 유튜브 내의 플레이리스트 영상을 제외하는 메서드
+    @Override
+    public void removeVideoFromYoutubePlaylist(String playlistId, List<String> deleteVideoLinks)
+            throws IOException, GeneralSecurityException, InterruptedException {
         // Youtube 실제 플레이리스트 수정 작업
         // 1. 플레이리스트 아이템 목록 조회
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -143,7 +199,8 @@ public class PlaylistServiceImpl implements PlaylistService {
         }
 
         // 3. 각 비디오 ID별로 삭제 처리
-        for (String videoId : videoIds) {
+        for (String videoLink: deleteVideoLinks) {
+            String videoId = extractVideoId(videoLink);
             String playlistItemId = videoIdMap.get(videoId);
 
             if (playlistItemId == null) {
@@ -152,8 +209,6 @@ public class PlaylistServiceImpl implements PlaylistService {
 
             // YouTube 삭제 요청
             youtubeService.playlistItems().delete(playlistItemId).execute();
-
-            // 4. DB 업데이트 (saveAll 하기)
         }
     }
 

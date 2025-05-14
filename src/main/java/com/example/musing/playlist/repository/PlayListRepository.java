@@ -10,6 +10,6 @@ public interface PlayListRepository extends JpaRepository<PlayList, Long> {
     boolean existsByYoutubePlaylistId(String youtubePlaylistId);
     void deleteByYoutubePlaylistId(String playlistId);
 
-
+    Optional<PlayList> findByYoutubePlaylistId(String playlistId);
 
 }
