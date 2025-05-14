@@ -13,7 +13,11 @@ import java.util.List;
 
 public interface PlaylistService {
     void removePlaylist(String playlistId) throws IOException, GeneralSecurityException, InterruptedException;
-    void modifyPlaylistInfo(String playlistId, List<String> videoIds) throws IOException, GeneralSecurityException, InterruptedException;
+    void removeVideoFromYoutubePlaylist(String playlistId, List<String> deleteVideoLinks)
+            throws IOException, GeneralSecurityException, InterruptedException;
+    void modifyPlaylist(YoutubePlaylistRequestDto dto, String playlistId, List<String> deleteVideoLinks);
+    void modifyYoutubePlaylistInfo(YoutubePlaylistRequestDto dto, String playlistId)
+            throws IOException, InterruptedException, GeneralSecurityException;
     YouTubeVideoResponse getVideoInfo(String videoId);
 
     String checkUrl(String url);
@@ -26,4 +30,6 @@ public interface PlaylistService {
     String addVideoToPlaylist(String accessToken, YoutubeVideoRequestDto dto);
     void deletePlaylistFromYouTube(String playlistId,String authHeader) throws IOException, GeneralSecurityException;
     SelectPlayListsDto selectMyPlayList();
+
+
 }

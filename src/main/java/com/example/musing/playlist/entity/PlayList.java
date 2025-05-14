@@ -24,10 +24,11 @@ public class PlayList {
     @Column(name="playlistid")
     private long id;
 
-
-
     @Column(nullable = false)
     private String listname;
+
+    @Column
+    private String description;
 
     @Column(nullable = false)
     private Long itemCount;
@@ -58,7 +59,13 @@ public class PlayList {
         this.description = description == null ? "N/A" : description;
     }
 
-    // 🎯 플레이리스트에 음악 추가
+    // 플레이리스트 제목 및 내용 수정
+    public void modifyTitleAndDescription(String title, String description) {
+        this.listname = title;
+        this.description = description;
+    }
+
+    // 플레이리스트에 음악 추가
     public void addMusic(Music music) {
         PlaylistMusic playlistMusic = new PlaylistMusic(this, music);
         this.playlistMusicList.add(playlistMusic);

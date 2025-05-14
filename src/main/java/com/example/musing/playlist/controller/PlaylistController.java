@@ -41,18 +41,18 @@ public class PlaylistController {
         this.userRepository = userRepository;
     }
 
-    @PostMapping("playlist/remove")
+    @PostMapping("/remove")
     public ResponseDto<String> modifyPlaylist(@RequestParam String playlistId)
             throws IOException, GeneralSecurityException, InterruptedException {
         playlistService.removePlaylist(playlistId);
         return ResponseDto.of(null, "플레이리스트를 삭제했습니다.");
     }
 
-    @PutMapping("/playlist/modify")
-    public ResponseDto<String> modifyPlaylist(@RequestParam String playlistId,
-                                              @RequestParam List<String> removeVideoIds)
-            throws IOException, GeneralSecurityException, InterruptedException {
-        playlistService.modifyPlaylistInfo(playlistId, removeVideoIds);
+    @PutMapping("/modify")
+    public ResponseDto<String> modifyPlaylist(@RequestBody @Valid YoutubePlaylistRequestDto playlistRequestDto,
+                                              @RequestParam String playlistId,
+                                              @RequestParam List<String> deleteVideoLinks) {
+        playlistService.modifyPlaylist(playlistRequestDto, playlistId, deleteVideoLinks);
         return ResponseDto.of(null, "플레이리스트를 수정했습니다.");
     }
 
@@ -137,6 +137,7 @@ public class PlaylistController {
 
 
 
+
     @GetMapping("/getPlayListInfo")
     public ResponseDto<PlaylistResponse> getPlayListInfo(@RequestParam("url") String url) {
         PlaylistResponse playlistResponse = playlistService.getUserPlaylists(url);
@@ -173,5 +174,6 @@ public class PlaylistController {
         SelectPlayListsDto dto = playlistService.selectMyPlayList();
         return ResponseDto.of(null, "플레이리스트 목록 가져오기 성공 " );
     }
+
 
 }

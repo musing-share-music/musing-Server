@@ -13,7 +13,7 @@ public interface PlayListRepository extends JpaRepository<PlayList, Long> {
     void deleteByYoutubePlaylistId(String playlistId);
     long countByUser(User user);
     Optional<PlayList> findByYoutubePlaylistId(String youtubePlaylistId);
+    Optional<PlayList> findByYoutubePlaylistId(String playlistId);
 
-    List<PlayList> findByUser(User user);
 
 }
