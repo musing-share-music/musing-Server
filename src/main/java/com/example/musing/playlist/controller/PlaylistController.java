@@ -41,18 +41,18 @@ public class PlaylistController {
         this.userRepository = userRepository;
     }
 
-    @PostMapping("playlist/remove")
+    @PostMapping("/remove")
     public ResponseDto<String> modifyPlaylist(@RequestParam String playlistId)
             throws IOException, GeneralSecurityException, InterruptedException {
         playlistService.removePlaylist(playlistId);
         return ResponseDto.of(null, "플레이리스트를 삭제했습니다.");
     }
 
-    @PutMapping("/playlist/modify")
-    public ResponseDto<String> modifyPlaylist(@RequestParam String playlistId,
-                                              @RequestParam List<String> removeVideoIds)
-            throws IOException, GeneralSecurityException, InterruptedException {
-        playlistService.modifyPlaylistInfo(playlistId, removeVideoIds);
+    @PutMapping("/modify")
+    public ResponseDto<String> modifyPlaylist(@RequestBody @Valid YoutubePlaylistRequestDto playlistRequestDto,
+                                              @RequestParam String playlistId,
+                                              @RequestParam List<String> deleteVideoLinks) {
+        playlistService.modifyPlaylist(playlistRequestDto, playlistId, deleteVideoLinks);
         return ResponseDto.of(null, "플레이리스트를 수정했습니다.");
     }
 
@@ -134,26 +134,5 @@ public class PlaylistController {
         return ResponseDto.of(playlistResponse,"성공적으로 플레이 리스트를 받아왔습니다.");
     }
 
-
-
-    @DeleteMapping("/delete")
-    public ResponseDto<String> deletePlaylist(
-            @RequestParam("playlistId") String playlistId,
-            @RequestHeader("Authorization") String authHeader
-    ) {
-        try {
-            String accessToken = authHeader.replace("Bearer ", "");
-
-            // 유튜브에서 삭제
-            playlistService.deletePlaylistFromYouTube(playlistId, accessToken);
-
-            // DB에서도 삭제
-            playListRepository.deleteByYoutubePlaylistId(playlistId);
-
-            return ResponseDto.of("삭제 완료", "플레이리스트가 성공적으로 삭제되었습니다.");
-        } catch (Exception e) {
-            return ResponseDto.of(null, "삭제 실패: " + e.getMessage());
-        }
-    }
 
 }
