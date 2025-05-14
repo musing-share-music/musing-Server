@@ -51,8 +51,8 @@ public class PlaylistController {
     @PutMapping("/modify")
     public ResponseDto<String> modifyPlaylist(@RequestBody @Valid YoutubePlaylistRequestDto playlistRequestDto,
                                               @RequestParam String playlistId,
-                                              @RequestParam List<String> removeVideoIds) {
-        playlistService.modifyPlaylist(playlistRequestDto, playlistId, removeVideoIds);
+                                              @RequestParam List<String> deleteVideoLinks) {
+        playlistService.modifyPlaylist(playlistRequestDto, playlistId, deleteVideoLinks);
         return ResponseDto.of(null, "플레이리스트를 수정했습니다.");
     }
 
