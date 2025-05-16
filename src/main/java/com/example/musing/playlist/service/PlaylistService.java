@@ -22,11 +22,10 @@ public interface PlaylistService {
 
     String checkUrl(String url);
 
-    public PlaylistResponse getUserPlaylists(String url);
+    public PlaylistResponse getUserPlaylist(String url);
     String getPlayTime(String url);
     String getThumailLink(String url);
-    void savePlayList(PlayListSaveRequestDto playListDto);
-    String createPlaylist(String accessToken, YoutubePlaylistRequestDto dto);
+    void savePlayList(PlaylistResponse dto);
     String addVideoToPlaylist(String accessToken, YoutubeVideoRequestDto dto);
     SelectPlayListsDto selectMyPlayList();
 

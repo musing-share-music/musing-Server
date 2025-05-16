@@ -255,7 +255,7 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     @Override
     @Transactional
-    public void savePlayList(PlayListSaveRequestDto dto) {
+    public void savePlayList(PlaylistResponse dto) {
         User user = getCurrentUser();
 
         // 사용자 플레이리스트 개수 확인
@@ -264,42 +264,30 @@ public class PlaylistServiceImpl implements PlaylistService {
             throw new IllegalArgumentException("사용자는 최대 3개의 플레이리스트만 가질 수 있습니다.");
         }
 
-        String playListId = extractPlaylistId(dto.getYoutubePlaylistId());
+        PlaylistRepresentativeDto representative = dto.getRepresentative();
 
-        PlayList playList;
+        // PlayList Entity 저장
+        PlayList playList = PlayList.builder()
+                .listname(representative.getContent())
+                .itemCount((long) dto.getVideoList().size())
+                .youtubePlaylistId(representative.getId())
+                .youtubeLink(representative.getThumbnailUrl())
+                .description(representative.getContent())
+                .user(user)
+                .build();
 
-        // 플레이리스트 중복 체크
-        if (checkPlayList(playListId)) {
-            // 중복일 경우 업데이트
-            playList = playListRepository.findByYoutubePlaylistId(playListId)
-                    .orElseThrow(() -> new IllegalArgumentException("플레이리스트가 존재하지 않습니다."));
-            playList.setListname(dto.getListname());
-            playList.setItemCount(dto.getItemCount());
-            playList.setYoutubeLink(dto.getYoutubeLink());
-        } else {
-            // 새 플레이리스트 생성
-            playList = PlayList.builder()
-                    .listname(dto.getListname())
-                    .itemCount(dto.getItemCount())
-                    .youtubePlaylistId(playListId)
-                    .youtubeLink(dto.getYoutubeLink())
-                    .user(user)
-                    .build();
+        playListRepository.save(playList);
 
-            playListRepository.save(playList);
-        }
-
-        // Music 저장 or 재사용
-        for (PlayListSaveRequestDto.MusicDto musicDto : dto.getMusicList()) {
+        // Music 저장
+        for (PlaylistListResponse video : dto.getVideoList()) {
             Music music = musicRepository.findByNameAndSongLink(
-                            musicDto.getName(), musicDto.getSongLink())
+                            video.getTitle(), video.getVideoUrls().get(0))
                     .orElseGet(() -> musicRepository.save(
                             Music.builder()
-                                    .name(musicDto.getName())
-                                    .playtime(musicDto.getPlaytime())
-                                    .albumName(musicDto.getAlbumName())
-                                    .songLink(musicDto.getSongLink())
-                                    .thumbNailLink(musicDto.getThumbNailLink())
+                                    .name(video.getTitle())
+                                    .albumName(video.getName())
+                                    .songLink(video.getVideoUrls().get(0))
+                                    .thumbNailLink(video.getThumbnailUrl())
                                     .build()
                     ));
 
@@ -312,6 +300,7 @@ public class PlaylistServiceImpl implements PlaylistService {
             playlistMusicRepository.save(playlistMusic);
         }
     }
+
 
     public String getThumailLink(String url){
         String videoId = extractVideoId(url);
@@ -403,7 +392,7 @@ public class PlaylistServiceImpl implements PlaylistService {
 
 
     @Override
-    public PlaylistResponse getUserPlaylists(String url) {
+    public PlaylistResponse getUserPlaylist(String url) {
         // 1. 플레이리스트 ID 추출
         String playlistId = extractPlaylistId(url);
         if (playlistId == null || playlistId.isEmpty()) {
@@ -452,17 +441,11 @@ public class PlaylistServiceImpl implements PlaylistService {
                 getCurrentUser(),
                 description// 사용자 정보 가져오기
         );
-        logger.info(playList.getListname());
-        logger.info(playList.getYoutubePlaylistId());
-        logger.info(playList.getYoutubeLink());
-        logger.info(String.valueOf(playList.getItemCount()));
-        logger.info(getCurrentUser().getEmail());
 
         // 7. 비디오 URL 목록 가져오기
         List<String> videoUrls = fetchAllPlaylistVideos(playlistId, title, snippetObj != null && snippetObj.getAsJsonObject("thumbnails") != null
                 ? snippetObj.getAsJsonObject("thumbnails").getAsJsonObject("medium").get("url").getAsString()
                 : "");
-        logger.info(playList.getYoutubeLink());
         // 8. DTO 구성
         PlaylistListResponse listResponse = new PlaylistListResponse(
                 playlistId,
@@ -476,7 +459,7 @@ public class PlaylistServiceImpl implements PlaylistService {
                 new ArrayList<>(),
                 videoUrls
         );
-        logger.info(listResponse.getTitle());
+
         // 9. 대표 영상 설정
         PlaylistRepresentativeDto representative = null;
         if (!videoUrls.isEmpty()) {
@@ -486,7 +469,7 @@ public class PlaylistServiceImpl implements PlaylistService {
                     videoUrls.get(0)
             );
         }
-        logger.info(Objects.requireNonNull(representative).getContent());
+
         // 10. 최종 응답 반환
         return new PlaylistResponse(Collections.singletonList(listResponse), representative);
     }
@@ -524,46 +507,6 @@ public class PlaylistServiceImpl implements PlaylistService {
     }
 
 
-    public String createPlaylist(String accessToken, YoutubePlaylistRequestDto dto) {
-        // RestTemplate 설정 (옵션으로 타임아웃, 에러 처리 추가)
-        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(5000);
-        factory.setReadTimeout(5000);
-        RestTemplate restTemplate = new RestTemplate(factory);
-
-        // 요청 바디 구성
-        JSONObject body = createRequestBody(dto);
-
-        // 요청 헤더 구성
-        HttpHeaders headers = createHeaders(accessToken);
-
-        // HttpEntity 구성 (헤더와 바디 포함)
-        HttpEntity<String> entity = new HttpEntity<>(body.toString(), headers);
-
-        try {
-            // 유튜브 API 호출
-            ResponseEntity<String> response = restTemplate.postForEntity(
-                    API_BASE_URL + "/playlists?part=snippet,status",
-                    entity,
-                    String.class
-            );
-
-            // 응답 상태 체크 및 처리
-            return handleResponse(response);
-
-        } catch (HttpClientErrorException | HttpServerErrorException e) {
-            // 상태 코드와 응답 본문을 출력하여 에러 메시지 확인
-            System.err.println("Error: " + e.getStatusCode() + " - " + e.getResponseBodyAsString());
-
-            // 권한 문제 (401 Unauthorized) 처리
-            if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
-                return "권한이 없습니다. 유효한 액세스 토큰을 확인하세요.";
-            }
-
-            // 그 외의 예외 처리
-            throw new RuntimeException("Playlist creation failed: " + e.getMessage());
-        }
-    }
 
     public String addVideoToPlaylist(String accessToken, YoutubeVideoRequestDto dto) {
         RestTemplate restTemplate = new RestTemplate();

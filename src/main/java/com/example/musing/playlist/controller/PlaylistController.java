@@ -70,7 +70,7 @@ public class PlaylistController {
     })
     @PostMapping("/savePlaylist")
     public ResponseDto<String> savePlaylist(
-            @RequestBody @Valid PlayListSaveRequestDto playListDto) {
+            @RequestBody @Valid PlaylistResponse playListDto) {
         playlistService.savePlayList(playListDto);
         return ResponseDto.of("OK", "플리저장성공");
     }
@@ -90,19 +90,6 @@ public class PlaylistController {
 
     }
 
-    @PostMapping("/playlist")
-    public String createPlaylist(@RequestHeader("Authorization") String authHeader,
-                                 @RequestBody YoutubePlaylistRequestDto dto) {
-        String accessToken = authHeader.replace("Bearer ", "");
-        return playlistService.createPlaylist(accessToken, dto);
-    }
-
-    @PostMapping("/video")
-    public String addVideoToPlaylist(@RequestHeader("Authorization") String authHeader,
-                                     @RequestBody YoutubeVideoRequestDto dto) {
-        String accessToken = authHeader.replace("Bearer ", "");
-        return playlistService.addVideoToPlaylist(accessToken, dto);
-    }
 
     @GetMapping("/getVideoInfo")
     public ResponseDto<YouTubeVideoResponse> getVideoInfo(@RequestParam("videoUrl") String videoUrl) {
@@ -125,18 +112,10 @@ public class PlaylistController {
         return ResponseDto.of(videoResponse,"유효한 URL입니다.");
     }
 
-    @GetMapping("/getUserPlaylist")
-    public ResponseDto<PlaylistResponse> getUserPlaylists(@RequestParam("url") String url) {
-        PlaylistResponse playlistResponse = playlistService.getUserPlaylists(url);
-        if(playlistResponse.getVideoList() == null || playlistResponse.getVideoList().isEmpty()) {
-            return ResponseDto.of(null,"플레이리스트를 불러오지 못했습니다.");
-        }
-        return ResponseDto.of(playlistResponse,"성공적으로 플레이 리스트를 받아왔습니다.");
-    }
 
     @GetMapping("/getPlayListInfo")
     public ResponseDto<PlaylistResponse> getPlayListInfo(@RequestParam("url") String url) {
-        PlaylistResponse playlistResponse = playlistService.getUserPlaylists(url);
+        PlaylistResponse playlistResponse = playlistService.getUserPlaylist(url);
         if(playlistResponse.getVideoList() == null || playlistResponse.getVideoList().isEmpty()) {
             return ResponseDto.of(null,"플레이리스트를 불러오지 못했습니다.");
         }
