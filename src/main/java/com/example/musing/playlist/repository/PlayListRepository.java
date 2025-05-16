@@ -12,8 +12,6 @@ public interface PlayListRepository extends JpaRepository<PlayList, Long> {
     boolean existsByYoutubePlaylistId(String youtubePlaylistId);
     void deleteByYoutubePlaylistId(String playlistId);
     long countByUser(User user);
+    List<PlayList> findByUser(User user);
     Optional<PlayList> findByYoutubePlaylistId(String youtubePlaylistId);
-    Optional<PlayList> findByYoutubePlaylistId(String playlistId);
-
-
 }

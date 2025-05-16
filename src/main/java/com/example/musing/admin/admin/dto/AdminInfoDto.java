@@ -1,6 +1,5 @@
 package com.example.musing.admin.admin.dto;
 
-import com.example.musing.user.dto.UserResponseDto;
 import com.example.musing.user.entity.User;
 import lombok.Builder;
 

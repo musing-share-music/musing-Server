@@ -39,9 +39,6 @@ public class PlayList {
     @Column(nullable = false)
     private String youtubeLink;
 
-    @Column(nullable = true)
-    private String description;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "userid", nullable = false)
     private User user; // 작성자

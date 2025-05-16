@@ -28,7 +28,6 @@ public interface PlaylistService {
     void savePlayList(PlayListSaveRequestDto playListDto);
     String createPlaylist(String accessToken, YoutubePlaylistRequestDto dto);
     String addVideoToPlaylist(String accessToken, YoutubeVideoRequestDto dto);
-    void deletePlaylistFromYouTube(String playlistId,String authHeader) throws IOException, GeneralSecurityException;
     SelectPlayListsDto selectMyPlayList();
 
 

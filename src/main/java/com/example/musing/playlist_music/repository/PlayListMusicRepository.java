@@ -9,12 +9,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface PlayListMusicRepository extends JpaRepository<PlaylistMusic, Long> {
-
-
-    public Boolean findByplaylistu(Long playlistId);
-    public List<PlayList> findByPlaylistId(Long playlistId);
-
-
     @EntityGraph("music")
     void deleteAllByMusic_SongLinkIn(List<String> deleteVideoUrl);
 
