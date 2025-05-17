@@ -31,15 +31,14 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import net.minidev.json.JSONObject;
+import org.hibernate.validator.internal.util.stereotypes.Lazy;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.*;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.slf4j.Logger;
 import java.io.IOException;
@@ -50,6 +49,7 @@ import java.security.GeneralSecurityException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.springframework.aop.framework.AopContext;
 
 import static com.example.musing.exception.ErrorCode.ERROR;
 
@@ -60,6 +60,9 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    @Autowired
+    private PlayListSaveService saveService;
 
     private static final Logger logger = LoggerFactory.getLogger(PlaylistService.class);
     @Value("${youtube.api.key}")
@@ -78,6 +81,26 @@ public class PlaylistServiceImpl implements PlaylistService {
     private final MusicRepository musicRepository;
     private final PlayListMusicRepository playlistMusicRepository;
     private final Oauth2ProviderTokenService oauth2ProviderTokenService;
+
+
+    @Autowired
+    public PlaylistServiceImpl(
+            UserRepository userRepository,
+            PlayListRepository playListRepository,
+            MusicRepository musicRepository,
+            PlayListMusicRepository playlistMusicRepository,
+            Oauth2ProviderTokenService oauth2ProviderTokenService,
+            ApplicationEventPublisher publisher
+
+    ) {
+        this.userRepository = userRepository;
+        this.playListRepository = playListRepository;
+        this.musicRepository = musicRepository;
+        this.playlistMusicRepository = playlistMusicRepository;
+        this.oauth2ProviderTokenService = oauth2ProviderTokenService;
+        this.publisher = publisher;
+
+    }
 
     @Transactional
     public void removePlaylist(String playlistId) throws IOException, GeneralSecurityException, InterruptedException {
@@ -253,54 +276,6 @@ public class PlaylistServiceImpl implements PlaylistService {
         return null;
     }
 
-    @Override
-    @Transactional
-    public void savePlayList(PlaylistResponse dto) {
-        User user = getCurrentUser();
-
-        // 사용자 플레이리스트 개수 확인
-        long userPlaylistCount = playListRepository.countByUser(user);
-        if (userPlaylistCount >= 3) {
-            throw new IllegalArgumentException("사용자는 최대 3개의 플레이리스트만 가질 수 있습니다.");
-        }
-
-        PlaylistRepresentativeDto representative = dto.getRepresentative();
-
-        // PlayList Entity 저장
-        PlayList playList = PlayList.builder()
-                .listname(representative.getContent())
-                .itemCount((long) dto.getVideoList().size())
-                .youtubePlaylistId(representative.getId())
-                .youtubeLink(representative.getThumbnailUrl())
-                .description(representative.getContent())
-                .user(user)
-                .build();
-
-        playListRepository.save(playList);
-
-        // Music 저장
-        for (PlaylistListResponse video : dto.getVideoList()) {
-            Music music = musicRepository.findByNameAndSongLink(
-                            video.getTitle(), video.getVideoUrls().get(0))
-                    .orElseGet(() -> musicRepository.save(
-                            Music.builder()
-                                    .name(video.getTitle())
-                                    .albumName(video.getName())
-                                    .songLink(video.getVideoUrls().get(0))
-                                    .thumbNailLink(video.getThumbnailUrl())
-                                    .build()
-                    ));
-
-            // 중간 테이블 저장
-            PlaylistMusic playlistMusic = PlaylistMusic.builder()
-                    .playList(playList)
-                    .music(music)
-                    .build();
-
-            playlistMusicRepository.save(playlistMusic);
-        }
-    }
-
 
     public String getThumailLink(String url){
         String videoId = extractVideoId(url);
@@ -399,7 +374,6 @@ public class PlaylistServiceImpl implements PlaylistService {
             return null; // 잘못된 playlistId일 경우 null 반환
         }
 
-        // 2. 추출한 playlistId 로그로 출력
         logger.info("Extracted Playlist ID: " + playlistId);
 
         // 3. API에서 플레이리스트 정보 가져오기
@@ -408,72 +382,51 @@ public class PlaylistServiceImpl implements PlaylistService {
             return null; // 플레이리스트 정보를 가져올 수 없으면 null 반환
         }
 
-        // 4. 플레이리스트 상태 확인
-        JsonObject statusObj = playlistInfo.getAsJsonObject("status");
-        String privacyStatus = (statusObj != null && statusObj.get("privacyStatus") != null)
-                ? statusObj.get("privacyStatus").getAsString()
-                : "";
-
-        if ("private".equalsIgnoreCase(privacyStatus)) {
-            return null; // 비공개라면 null 반환
-        }
-
-        // 5. 플레이리스트 제목, 설명, 영상 수 가져오기
         JsonObject snippetObj = playlistInfo.getAsJsonObject("snippet");
         String title = snippetObj != null && snippetObj.get("title") != null
                 ? snippetObj.get("title").getAsString()
                 : "Untitled";
 
-        String description = snippetObj != null && snippetObj.get("description") != null
-                ? snippetObj.get("description").getAsString()
-                : "No description";
-
         int videoCount = playlistInfo.getAsJsonArray("items") != null
                 ? playlistInfo.getAsJsonArray("items").size()
                 : 0;
 
-        // 6. 플레이리스트 객체 생성 (DB 저장 로직 제외)
-        PlayList playList = new PlayList(
-                "https://www.youtube.com/playlist?list=" + playlistId,
-                title,
-                (long) videoCount,
-                playlistId,
-                getCurrentUser(),
-                description// 사용자 정보 가져오기
-        );
+        // 6. 비디오 URL 목록 가져오기
+        List<String> videoUrls = fetchAllPlaylistVideos(playlistId, title, "");
 
-        // 7. 비디오 URL 목록 가져오기
-        List<String> videoUrls = fetchAllPlaylistVideos(playlistId, title, snippetObj != null && snippetObj.getAsJsonObject("thumbnails") != null
-                ? snippetObj.getAsJsonObject("thumbnails").getAsJsonObject("medium").get("url").getAsString()
-                : "");
-        // 8. DTO 구성
-        PlaylistListResponse listResponse = new PlaylistListResponse(
-                playlistId,
-                snippetObj != null && snippetObj.getAsJsonObject("thumbnails") != null
-                        ? snippetObj.getAsJsonObject("thumbnails").getAsJsonObject("medium").get("url").getAsString()
-                        : "",
-                title,
-                snippetObj != null && snippetObj.get("channelTitle") != null
-                        ? snippetObj.get("channelTitle").getAsString()
-                        : "",
-                new ArrayList<>(),
-                videoUrls
-        );
-
-        // 9. 대표 영상 설정
-        PlaylistRepresentativeDto representative = null;
-        if (!videoUrls.isEmpty()) {
-            representative = new PlaylistRepresentativeDto(
-                    listResponse.getTitle(),
-                    listResponse.getThumbnailUrl(),
-                    videoUrls.get(0)
-            );
+        // 7. Video 정보로 PlaylistListResponse 생성
+        List<PlaylistListResponse> videoList = new ArrayList<>();
+        for (String videoUrl : videoUrls) {
+            PlaylistListResponse videoResponse = PlaylistListResponse.builder()
+                    .name(title)                 // 영상 제목 (기본적으로 플레이리스트 제목 사용)
+                    .albumName("Unknown Album")  // 앨범명 (필요시 변경)
+                    .songLink(videoUrl)
+                    .playtime(getPlayTime(videoUrl))
+                    .thumbNailLink(getThumailLink(videoUrl)) // 썸네일 URL (필요시 변경)
+                    .genres(new ArrayList<>())   // 장르 (필요시 추가)
+                    .build();
+            videoList.add(videoResponse);
         }
 
-        // 10. 최종 응답 반환
-        return new PlaylistResponse(Collections.singletonList(listResponse), representative);
-    }
+        // 8. 대표 플레이리스트 정보 설정 (PlaylistRepresentativeDto)
+        PlaylistRepresentativeDto representative = PlaylistRepresentativeDto.builder()
+                .listName(title)                        // 플레이리스트 이름
+                .thumbnailUrl(videoUrls.isEmpty() ? "" : "대표 썸네일 URL") // 대표 썸네일 (필요시 변경)
+                .youtubePlaylistId(playlistId)                        // 유튜브 플레이리스트 ID
+                .build();
 
+        // 9. DTO 구성
+        PlaylistResponse dto = PlaylistResponse.builder()
+                .videoList(videoList)
+                .representative(representative)
+                .build();
+
+        // ✅ 프록시를 통해 트랜잭션 적용된 savePlayList 호출
+        saveService.savePlayList(dto);
+
+        // 10. 최종 응답 반환
+        return dto;
+    }
 
 
 

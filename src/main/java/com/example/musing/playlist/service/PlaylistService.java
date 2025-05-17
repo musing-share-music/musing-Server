@@ -25,7 +25,7 @@ public interface PlaylistService {
     public PlaylistResponse getUserPlaylist(String url);
     String getPlayTime(String url);
     String getThumailLink(String url);
-    void savePlayList(PlaylistResponse dto);
+
     String addVideoToPlaylist(String accessToken, YoutubeVideoRequestDto dto);
     SelectPlayListsDto selectMyPlayList();
 

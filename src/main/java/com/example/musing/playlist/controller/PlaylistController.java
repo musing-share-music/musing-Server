@@ -7,6 +7,7 @@ import com.example.musing.exception.CustomException;
 import com.example.musing.playlist.dto.*;
 import com.example.musing.playlist.entity.PlayList;
 import com.example.musing.playlist.repository.PlayListRepository;
+import com.example.musing.playlist.service.PlayListSaveService;
 import com.example.musing.playlist.service.PlaylistService;
 import com.example.musing.user.entity.User;
 import com.example.musing.user.repository.UserRepository;
@@ -34,11 +35,13 @@ public class PlaylistController {
     private final PlaylistService playlistService;
     private final PlayListRepository playListRepository;
     private final UserRepository userRepository;
+    private final PlayListSaveService playListSaveService;
 
-    public PlaylistController(UserRepository userRepository,PlaylistService playlistService, PlayListRepository playListRepository) {
+    public PlaylistController(UserRepository userRepository,PlaylistService playlistService, PlayListRepository playListRepository, PlayListSaveService playListSaveService)  {
         this.playlistService = playlistService;
         this.playListRepository = playListRepository;
         this.userRepository = userRepository;
+        this.playListSaveService = playListSaveService;
     }
 
     @PostMapping("/remove")
@@ -72,7 +75,7 @@ public class PlaylistController {
     @PostMapping("/savePlaylist")
     public ResponseDto<String> savePlaylist(
             @RequestBody @Valid PlaylistResponse playListDto) {
-        playlistService.savePlayList(playListDto);
+        playListSaveService.savePlayList(playListDto);
         return ResponseDto.of("OK", "플리저장성공");
     }
 
@@ -142,9 +145,9 @@ public class PlaylistController {
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @GetMapping("/selectMyPlayLists")
-    public ResponseDto<List<PlayList>> selectMyPlayLists() {
+    public ResponseDto<SelectPlayListsDto> selectMyPlayLists() {
         SelectPlayListsDto dto = playlistService.selectMyPlayList();
-        return ResponseDto.of(null, "플레이리스트 목록 가져오기 성공");
+        return ResponseDto.of(dto, "플레이리스트 목록 가져오기 성공");
     }
 
 
