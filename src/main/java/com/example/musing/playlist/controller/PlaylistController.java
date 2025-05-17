@@ -59,8 +59,9 @@ public class PlaylistController {
     @Operation(
             summary = "플레이리스트 저장",
             description = """
-                사용자의 유튜브 플레이리스트 ID 및 곡 리스트를 받아 새로운 플레이리스트를 저장합니다.
-                곡명(name)과 링크(songLink)를 기준으로 중복 여부를 확인하여 기존 곡을 재사용하거나 새로 저장합니다.
+                사용자의 유튜브 플레이리스트 url을 받아 바로 저장하는 api입니다. PlaylistResponse Dto를 직접 보내주거나
+                getUserPlaylist api를 호출하시면 해당 api에서 바로 저장가능한 api입니다.
+                
                 """)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "플레이리스트 저장 성공"),
@@ -113,8 +114,17 @@ public class PlaylistController {
     }
 
 
-    @GetMapping("/getPlayListInfo")
-    public ResponseDto<PlaylistResponse> getPlayListInfo(@RequestParam("url") String url) {
+    @Operation(
+            summary = "플레이리스트 불러오기 및 저장",
+            description = "입력된 플레이리스트 URL을 통해 플레이리스트를 불러오고, 중복 여부를 확인하여 최대 3개까지 저장합니다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "성공적으로 플레이리스트를 받아왔습니다."),
+            @ApiResponse(responseCode = "400", description = "플레이리스트를 불러오지 못했습니다."),
+            @ApiResponse(responseCode = "500", description = "서버 오류")
+    })
+    @GetMapping("/getUserPlaylist")
+    public ResponseDto<PlaylistResponse> getUserPlaylist(@RequestParam("url") String url) {
         PlaylistResponse playlistResponse = playlistService.getUserPlaylist(url);
         if(playlistResponse.getVideoList() == null || playlistResponse.getVideoList().isEmpty()) {
             return ResponseDto.of(null,"플레이리스트를 불러오지 못했습니다.");
@@ -122,10 +132,19 @@ public class PlaylistController {
         return ResponseDto.of(playlistResponse,"성공적으로 플레이 리스트를 받아왔습니다.");
     }
 
+    @Operation(
+            summary = "내 플레이리스트 목록 조회",
+            description = "현재 사용자가 보유한 플레이리스트를 최대 3개까지 조회합니다." +
+                    "반환값은 플레이리스트 객체를 리스트 자료형으로 매핑한 형태로 반환됩니다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "플레이리스트 목록 가져오기 성공"),
+            @ApiResponse(responseCode = "500", description = "서버 오류")
+    })
     @GetMapping("/selectMyPlayLists")
-    public  ResponseDto<List<PlayList>> selectMyPlayLists(){
+    public ResponseDto<List<PlayList>> selectMyPlayLists() {
         SelectPlayListsDto dto = playlistService.selectMyPlayList();
-        return ResponseDto.of(null, "플레이리스트 목록 가져오기 성공 " );
+        return ResponseDto.of(null, "플레이리스트 목록 가져오기 성공");
     }
 
 
