@@ -42,9 +42,9 @@ public class PlayListSaveService {
         User user = getCurrentUser();
 
         long userPlaylistCount = playListRepository.countByUser(user);
-//        if (userPlaylistCount >= 3) {
-//            throw new IllegalArgumentException("사용자는 최대 3개의 플레이리스트만 가질 수 있습니다. 보유 플레이리스트를 정리해주세요");
-//        }
+        if (userPlaylistCount >= 3) {
+            throw new IllegalArgumentException("사용자는 최대 3개의 플레이리스트만 가질 수 있습니다. 보유 플레이리스트를 정리해주세요");
+        }
 
         PlaylistRepresentativeDto representative = dto.getRepresentative();
 

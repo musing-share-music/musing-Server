@@ -428,7 +428,30 @@ public class PlaylistServiceImpl implements PlaylistService {
         return dto;
     }
 
+    @Override
+    public String addMusicToPlaylist(String url, String playlistId) {
+        // 음악 조회
+        Music music = musicRepository.findBySongLink(url)
+                .orElseThrow(() -> new IllegalArgumentException("해당 음악 링크에 해당하는 음악 정보를 DB에서 찾을 수 없습니다."));
 
+        // 플레이리스트 조회
+        PlayList playList = playListRepository.findByYoutubePlaylistId(playlistId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 플레이리스트를 찾을 수 없습니다."));
+
+        // 이미 존재하는지 확인
+        if (playlistMusicRepository.existsByMusicUrlAndPlaylistId(url, playlistId)) {
+            return "이미 해당 음악이 추가하려는 플레이리스트에 존재합니다.";
+        }
+
+        // 음악과 플레이리스트 관계 설정
+        PlaylistMusic playlistMusic = new PlaylistMusic(playList, music);
+        playList.getPlaylistMusicList().add(playlistMusic);
+        music.getPlaylistMusicList().add(playlistMusic);
+
+        // 플레이리스트 저장
+        playListRepository.save(playList); // CascadeType.ALL로 인해 PlaylistMusic 자동 저장
+        return "음악이 플레이리스트에 성공적으로 추가되었습니다.";
+    }
 
 
 

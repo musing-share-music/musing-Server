@@ -116,6 +116,22 @@ public class PlaylistController {
         return ResponseDto.of(videoResponse,"유효한 URL입니다.");
     }
 
+    @Operation(
+            summary = "플레이리스트에 음악을 추가하는 api ",
+            description = "필수적으로 음악에 대한 유튜브링크와 플레이리스트 id(list='PLXS~~~')를 넘겨주면 해당 음악 객체를 플레이리스트 객체와 연결해주는 api입니다." +
+                    "만약 음악객체가 DB에 저장되어있지않거나 이미 플레이리스트에 해당 음악에 존속되어있을경우에는 오류메세지를 반환합니다. "
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "api가 작동함")
+    })
+    @GetMapping("/addMusicToPlaylist")
+    public ResponseDto<String> addMusicToPlaylist(@RequestParam("musicUrl") String musicUrl,@RequestParam("playlistId") String playlistId) {
+
+        String message =  playlistService.addMusicToPlaylist(musicUrl,playlistId);
+
+        return ResponseDto.of(message,"api가 작동함");
+    }
+
 
     @Operation(
             summary = "플레이리스트 불러오기 및 저장",
