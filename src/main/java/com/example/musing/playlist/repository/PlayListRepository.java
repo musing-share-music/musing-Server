@@ -9,10 +9,12 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PlayListRepository extends JpaRepository<PlayList, Long> {
-    boolean existsByYoutubePlaylistId(String youtubePlaylistId);
+    boolean existsByYoutubePlaylistIdAndUserId(String youtubePlaylistId,String userId);
     void deleteByYoutubePlaylistId(String playlistId);
     long countByUser(User user);
     List<PlayList> findByUser(User user);
     Optional<PlayList> findByYoutubePlaylistId(String youtubePlaylistId);
+    Optional<PlayList> findByYoutubePlaylistIdAndUserId(String youtubePlaylistId,String userId);
+    boolean existsByYoutubePlaylistId(String youtubePlaylistId);
 
 }

@@ -25,5 +25,6 @@ public class SelectPlayListsDto {
         private String youtubePlaylistId;
         private String youtubeLink;
         private String description;
+        private String thumbnailUrl;
     }
 }

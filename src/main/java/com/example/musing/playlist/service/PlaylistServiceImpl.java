@@ -1,6 +1,7 @@
 package com.example.musing.playlist.service;
 
 import com.example.musing.auth.oauth2.service.Oauth2ProviderTokenService;
+import com.example.musing.common.dto.ResponseDto;
 import com.example.musing.exception.CustomException;
 import com.example.musing.exception.ErrorCode;
 import com.example.musing.music.entity.Music;
@@ -49,6 +50,8 @@ import java.security.GeneralSecurityException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 import org.springframework.aop.framework.AopContext;
 
 import static com.example.musing.exception.ErrorCode.ERROR;
@@ -353,6 +356,33 @@ public class PlaylistServiceImpl implements PlaylistService {
         }
     }
 
+    // 🎵 영상 제목 가져오는 메서드
+    public String getTitle(String youtubeUrl) {
+        String videoId = extractVideoId(youtubeUrl);
+        if (videoId == null) {
+            return "Invalid YouTube URL";
+        }
+
+        String apiUrl = "https://www.googleapis.com/youtube/v3/videos?part=snippet&id=" + videoId + "&key=" + apiKey;
+
+        try {
+            String response = restTemplate.getForObject(apiUrl, String.class);
+            JsonObject jsonObject = JsonParser.parseString(response).getAsJsonObject();
+            String title = jsonObject.getAsJsonArray("items")
+                    .get(0)
+                    .getAsJsonObject()
+                    .getAsJsonObject("snippet")
+                    .get("title")
+                    .getAsString();
+            if(title == null){
+                return "Undefinded";
+            }
+            return title;
+        } catch (Exception e) {
+            return "Error fetching video title: " + e.getMessage();
+        }
+    }
+
     // ISO 8601 형식(PTHMS)을 HH:mm:ss 형식으로 변환
     private String convertDuration(String isoDuration) {
         return isoDuration.replace("PT", "")
@@ -382,23 +412,23 @@ public class PlaylistServiceImpl implements PlaylistService {
             return null; // 플레이리스트 정보를 가져올 수 없으면 null 반환
         }
 
-        JsonObject snippetObj = playlistInfo.getAsJsonObject("snippet");
-        String title = snippetObj != null && snippetObj.get("title") != null
-                ? snippetObj.get("title").getAsString()
-                : "Untitled";
+        String title = getTitle(url);
+
 
         int videoCount = playlistInfo.getAsJsonArray("items") != null
                 ? playlistInfo.getAsJsonArray("items").size()
                 : 0;
 
         // 6. 비디오 URL 목록 가져오기
-        List<String> videoUrls = fetchAllPlaylistVideos(playlistId, title, "");
+        List<String> videoUrls = fetchAllPlaylistVideos(playlistId);
+
+
 
         // 7. Video 정보로 PlaylistListResponse 생성
         List<PlaylistListResponse> videoList = new ArrayList<>();
         for (String videoUrl : videoUrls) {
             PlaylistListResponse videoResponse = PlaylistListResponse.builder()
-                    .name(title)                 // 영상 제목 (기본적으로 플레이리스트 제목 사용)
+                    .name(getTitle(videoUrl))                 // 영상 제목 (기본적으로 플레이리스트 제목 사용)
                     .albumName("Unknown Album")  // 앨범명 (필요시 변경)
                     .songLink(videoUrl)
                     .playtime(getPlayTime(videoUrl))
@@ -410,8 +440,9 @@ public class PlaylistServiceImpl implements PlaylistService {
 
         // 8. 대표 플레이리스트 정보 설정 (PlaylistRepresentativeDto)
         PlaylistRepresentativeDto representative = PlaylistRepresentativeDto.builder()
-                .listName(title)                        // 플레이리스트 이름
-                .thumbnailUrl(videoUrls.isEmpty() ? "" : "대표 썸네일 URL") // 대표 썸네일 (필요시 변경)
+                .listName(getTitle(url))                        // 플레이리스트 이름
+                .thumbnailUrl(getThumailLink(url)) // 대표 썸네일 (필요시 변경)
+                .youtubePlaylistUrl(url)
                 .youtubePlaylistId(playlistId)                        // 유튜브 플레이리스트 ID
                 .build();
 
@@ -428,6 +459,50 @@ public class PlaylistServiceImpl implements PlaylistService {
         return dto;
     }
 
+    @Override
+    public PlaylistResponse SelectMyDBPlaylist(String listId){
+
+        User user = getCurrentUser();
+
+        PlayList playlist = playListRepository.findByYoutubePlaylistIdAndUserId(listId, user.getId())
+                .orElseThrow(() -> new IllegalArgumentException("해당 플레이리스트가 존재하지 않습니다."));
+
+        // PlaylistRepresentativeDto 생성
+        PlaylistRepresentativeDto representativeDto = new PlaylistRepresentativeDto();
+        representativeDto.setListName(playlist.getListname());
+        representativeDto.setDescription(playlist.getDescription());
+        representativeDto.setItemCount(playlist.getItemCount());
+        representativeDto.setYoutubePlaylistId(playlist.getYoutubePlaylistId());
+        representativeDto.setYoutubePlaylistUrl(playlist.getYoutubeLink());
+        representativeDto.setThumbnailUrl(playlist.getThumbnail());
+
+        // PlaylistListResponse 생성
+        List<PlaylistListResponse> videoList = playlist.getPlaylistMusicList().stream()
+                .map(playlistMusic -> {
+                    Music music = playlistMusic.getMusic();
+                    PlaylistListResponse response = new PlaylistListResponse();
+                    response.setName(music.getName());
+                    response.setPlaytime(music.getPlaytime());
+                    response.setAlbumName(music.getAlbumName());
+                    response.setSongLink(music.getSongLink());
+                    response.setThumbNailLink(music.getThumbNailLink());
+                    return response;
+                })
+                .collect(Collectors.toList());
+
+        // PlaylistResponse 반환
+        PlaylistResponse playlistResponse = new PlaylistResponse();
+        playlistResponse.setVideoList(videoList);
+        playlistResponse.setRepresentative(representativeDto);
+
+        return playlistResponse;
+    }
+    @Override
+    public void addNewPlaylist(String listName,String description){
+        User user = getCurrentUser();
+
+    }
+    @Transactional
     @Override
     public String addMusicToPlaylist(String url, String playlistId) {
         // 음악 조회
@@ -448,8 +523,10 @@ public class PlaylistServiceImpl implements PlaylistService {
         playList.getPlaylistMusicList().add(playlistMusic);
         music.getPlaylistMusicList().add(playlistMusic);
 
+        playList.setItemCount(playList.getItemCount() + 1);
         // 플레이리스트 저장
         playListRepository.save(playList); // CascadeType.ALL로 인해 PlaylistMusic 자동 저장
+
         return "음악이 플레이리스트에 성공적으로 추가되었습니다.";
     }
 
@@ -461,9 +538,12 @@ public class PlaylistServiceImpl implements PlaylistService {
         User user = getCurrentUser();
 
         // Optional로 플레이리스트 조회
-        List<PlayList> playLists = Optional.ofNullable(playListRepository.findByUser(user))
-                .filter(list -> !list.isEmpty())
-                .orElseThrow(() -> new IllegalArgumentException("플레이리스트를 찾을 수 없습니다."));
+        List<PlayList> playLists = playListRepository.findByUser(user);
+
+        if(playLists.isEmpty()){
+            return null;
+        }
+
 
         List<SelectPlayListsDto.PlayListDto> dtoList = playLists.stream()
                 .map(playList -> SelectPlayListsDto.PlayListDto.builder()
@@ -472,6 +552,7 @@ public class PlaylistServiceImpl implements PlaylistService {
                         .youtubePlaylistId(playList.getYoutubePlaylistId())
                         .youtubeLink(playList.getYoutubeLink())
                         .description(playList.getDescription())
+                        .thumbnailUrl(playList.getThumbnail())
                         .build())
                 .toList();
 
@@ -562,7 +643,7 @@ public class PlaylistServiceImpl implements PlaylistService {
         return "❌ 예상치 못한 오류가 발생했습니다. 다시 시도해주세요.";
     }
 
-    private List<String> fetchAllPlaylistVideos(String playlistId, String playlistTitle, String thumbnailUrl) {
+    private List<String> fetchAllPlaylistVideos(String playlistId) {
         List<String> videoUrls = new ArrayList<>();
         String nextPageToken = null;
 
@@ -659,6 +740,25 @@ public class PlaylistServiceImpl implements PlaylistService {
     private Boolean checkPlayList(String url){
 
         return playListRepository.existsByYoutubePlaylistId(url);
+    }
+    private static String extractAbChannel(String url) {
+        if (url == null) return "Unknown";
+        try {
+            URL parsedUrl = new URL(url);
+            String query = parsedUrl.getQuery();
+            if (query == null) return "Unknown";
+
+            String[] params = query.split("&");
+            for (String param : params) {
+                String[] keyValue = param.split("=", 2);
+                if (keyValue.length == 2 && keyValue[0].equals("ab_channel")) {
+                    return keyValue[1];
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "Unknown";
     }
 }
 

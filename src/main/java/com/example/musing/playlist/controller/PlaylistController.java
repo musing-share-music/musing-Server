@@ -59,6 +59,15 @@ public class PlaylistController {
         return ResponseDto.of(null, "플레이리스트를 수정했습니다.");
     }
 
+
+    @PostMapping("/addNewPlaylist")
+    public ResponseDto<String> addNewPlaylist(
+                                              @RequestParam String listName,
+                                              @RequestParam String description) {
+        playlistService.addNewPlaylist(listName,description);
+        return ResponseDto.of(null, "플레이리스트를 추가 및 저장했습니다.");
+    }
+
     @Operation(
             summary = "플레이리스트 저장",
             description = """
@@ -92,6 +101,18 @@ public class PlaylistController {
 
         return playlistService.getPlayTime(url);
 
+    }
+
+    @Operation(
+            summary = "DB상에 있는 플레이리스트 정보 조회하기 ",
+            description = "사용자가 선택한 플레이리스트에 대한 정보조회" +
+                    "DB에 등록되어있는 플레이리스트만 조회 가능  "
+    )
+    @GetMapping("/SelectMyDBPlaylist")
+    public ResponseDto<PlaylistResponse> SelectMyDBPlaylist(@RequestParam String listId){
+
+     PlaylistResponse dto = playlistService.SelectMyDBPlaylist(listId);
+     return ResponseDto.of(dto,"불러오기에 성공했습니다.");
     }
 
 
@@ -135,7 +156,8 @@ public class PlaylistController {
 
     @Operation(
             summary = "플레이리스트 불러오기 및 저장",
-            description = "입력된 플레이리스트 URL을 통해 플레이리스트를 불러오고, 중복 여부를 확인하여 최대 3개까지 저장합니다."
+            description = "입력된 플레이리스트 URL을 통해 플레이리스트를 불러오고, 중복 여부를 확인하여 최대 3개까지 저장합니다." +
+                    "* 추가 이슈사항: 플레이리스트 제목을 못 불러오는 문제(현재로써는 첫 영상의 제목이 불러와지는 이슈가 있음)"
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "성공적으로 플레이리스트를 받아왔습니다."),
@@ -163,6 +185,10 @@ public class PlaylistController {
     @GetMapping("/selectMyPlayLists")
     public ResponseDto<SelectPlayListsDto> selectMyPlayLists() {
         SelectPlayListsDto dto = playlistService.selectMyPlayList();
+        if(dto == null)
+        {
+            return ResponseDto.of(null, "플레이리스트 목록 가져오기 성공");
+        }
         return ResponseDto.of(dto, "플레이리스트 목록 가져오기 성공");
     }
 

@@ -39,6 +39,9 @@ public class PlayList {
     @Column(nullable = false)
     private String youtubeLink;
 
+    @Column(nullable = true)
+    private String thumbnail;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "userid", nullable = false)
     private User user; // 작성자
@@ -47,13 +50,14 @@ public class PlayList {
     private List<PlaylistMusic> playlistMusicList = new ArrayList<>();
 
     @Builder
-    public PlayList(String youtubeLink, String listname, Long itemCount, String youtubePlaylistId, User user,String description) {
+    public PlayList(String youtubeLink, String listname, Long itemCount, String youtubePlaylistId, User user,String description,String thumbnail) {
         this.listname = listname;
         this.itemCount = itemCount;
         this.youtubePlaylistId = youtubePlaylistId;
         this.youtubeLink = youtubeLink;
         this.user = user;
         this.description = description == null ? "N/A" : description;
+        this.thumbnail = thumbnail == null ? "N/A" : thumbnail;
     }
 
     // 플레이리스트 제목 및 내용 수정

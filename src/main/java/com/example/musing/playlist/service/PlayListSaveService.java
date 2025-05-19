@@ -42,8 +42,12 @@ public class PlayListSaveService {
         User user = getCurrentUser();
 
         long userPlaylistCount = playListRepository.countByUser(user);
-        if (userPlaylistCount >= 3) {
-            throw new IllegalArgumentException("사용자는 최대 3개의 플레이리스트만 가질 수 있습니다. 보유 플레이리스트를 정리해주세요");
+//        if (userPlaylistCount > 3) {
+//            throw new IllegalArgumentException("사용자는 최대 3개의 플레이리스트만 가질 수 있습니다. 보유 플레이리스트를 정리해주세요");
+//        }
+        if (playListRepository.existsByYoutubePlaylistIdAndUserId(dto.getRepresentative().getYoutubePlaylistId(),user.getId())) {
+
+            throw new IllegalArgumentException("이미 등록된 플레이리스트 id입니다.");
         }
 
         PlaylistRepresentativeDto representative = dto.getRepresentative();
@@ -52,8 +56,9 @@ public class PlayListSaveService {
                 .listname(representative.getListName())
                 .itemCount((long) dto.getVideoList().size())
                 .youtubePlaylistId(representative.getYoutubePlaylistId())
-                .youtubeLink(representative.getThumbnailUrl())
+                .youtubeLink(representative.getYoutubePlaylistUrl())
                 .description(representative.getDescription())
+                .thumbnail(representative.getThumbnailUrl())
                 .user(user)
                 .build();
 
