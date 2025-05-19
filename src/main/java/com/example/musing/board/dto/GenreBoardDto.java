@@ -17,7 +17,9 @@ public record GenreBoardDto(
         @Schema(description = "아티스트 Id 및 이름")
         List<ArtistDto> artists,
         @Schema(description = "유튜브 썸네일 사진 링크", example = "https://img.youtube.com/vi/pAgnJDJN4VA/maxresdefault.jpg")
-        String thumbNailLink) { //메인 페이지 장르 추천에 쓰임
+        String thumbNailLink,
+        @Schema(description = "유튜브 링크", example = "https://www.youtube.com/watch?v=gdZLi9oWNZg")
+        String musicLink) {
     public static GenreBoardDto toDto(Board board){
         return GenreBoardDto.builder()
                 .id(board.getId())
@@ -26,6 +28,7 @@ public record GenreBoardDto(
                         .map(Artist_Music::getArtist)
                         .map(ArtistDto::toDto).toList())
                 .thumbNailLink(board.getMusic().getThumbNailLink())
+                .musicLink(board.getMusic().getSongLink())
                 .build();
     }
 }
