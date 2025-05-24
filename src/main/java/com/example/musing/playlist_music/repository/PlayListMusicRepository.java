@@ -23,4 +23,5 @@ public interface PlayListMusicRepository extends JpaRepository<PlaylistMusic, Lo
     boolean existsByMusicUrlAndPlaylistId(@Param("songLink") String songLink,
                                           @Param("playlistId") String playlistId);
 
+    List<PlaylistMusic> findByPlayListId(Long playlistId);
 }

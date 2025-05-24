@@ -22,7 +22,7 @@ public interface PlaylistService {
 
     String checkUrl(String url);
 
-     PlaylistResponse getUserPlaylist(String url);
+    PlaylistResponse getUserPlaylist(String url);
     String getPlayTime(String url);
     String getThumailLink(String url);
 
@@ -31,5 +31,6 @@ public interface PlaylistService {
     String addMusicToPlaylist(String url,String playlistId);
     void addNewPlaylist(String listName,String description);
     PlaylistResponse SelectMyDBPlaylist(String listId);
+    List<PlaylistResponse> selectMyAllPlayListInfo();
 
 }

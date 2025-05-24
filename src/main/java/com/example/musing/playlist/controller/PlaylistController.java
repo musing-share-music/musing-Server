@@ -187,7 +187,17 @@ public class PlaylistController {
         SelectPlayListsDto dto = playlistService.selectMyPlayList();
         if(dto == null)
         {
-            return ResponseDto.of(null, "플레이리스트 목록 가져오기 성공");
+            return ResponseDto.of(null, "플레이리스트 목록 가져오기 실패");
+        }
+        return ResponseDto.of(dto, "플레이리스트 목록 가져오기 성공");
+    }
+
+    @GetMapping("/selectMyAllPlayListInfo")
+    public ResponseDto<List<PlaylistResponse>> selectMyAllPlayListInfo() {
+        List<PlaylistResponse> dto = playlistService.selectMyAllPlayListInfo();
+        if(dto == null)
+        {
+            return ResponseDto.of(null, "플레이리스트 목록 가져오기 실패");
         }
         return ResponseDto.of(dto, "플레이리스트 목록 가져오기 성공");
     }

@@ -459,6 +459,7 @@ public class PlaylistServiceImpl implements PlaylistService {
         return dto;
     }
 
+    @Transactional
     @Override
     public PlaylistResponse SelectMyDBPlaylist(String listId){
 
@@ -476,17 +477,21 @@ public class PlaylistServiceImpl implements PlaylistService {
         representativeDto.setYoutubePlaylistUrl(playlist.getYoutubeLink());
         representativeDto.setThumbnailUrl(playlist.getThumbnail());
 
+        Long playlistId = playlist.getId();
+
+        List<PlaylistMusic> playlistMusicList = playlistMusicRepository.findByPlayListId(playlistId);
+
         // PlaylistListResponse 생성
-        List<PlaylistListResponse> videoList = playlist.getPlaylistMusicList().stream()
-                .map(playlistMusic -> {
-                    Music music = playlistMusic.getMusic();
-                    PlaylistListResponse response = new PlaylistListResponse();
-                    response.setName(music.getName());
-                    response.setPlaytime(music.getPlaytime());
-                    response.setAlbumName(music.getAlbumName());
-                    response.setSongLink(music.getSongLink());
-                    response.setThumbNailLink(music.getThumbNailLink());
-                    return response;
+        List<PlaylistListResponse> videoList = playlistMusicList.stream()
+                .map(pm -> {
+                    Music music = pm.getMusic();
+                    return PlaylistListResponse.builder()
+                            .name(music.getName())
+                            .playtime(music.getPlaytime())
+                            .albumName(music.getAlbumName())
+                            .songLink(music.getSongLink())
+                            .thumbNailLink(music.getThumbNailLink())
+                            .build();
                 })
                 .collect(Collectors.toList());
 
@@ -497,6 +502,55 @@ public class PlaylistServiceImpl implements PlaylistService {
 
         return playlistResponse;
     }
+
+    @Transactional
+    @Override
+    public List<PlaylistResponse> selectMyAllPlayListInfo(){
+        User user = getCurrentUser();
+
+        // 1. 사용자 ID로 모든 PlayList 조회
+        List<PlayList> allPlaylists = playListRepository.findAllByUserId(user.getId());
+
+        // 2. PlayList 각각에 대해 PlaylistResponse 생성
+        return allPlaylists.stream().map(playlist -> {
+
+            // 대표 정보 구성
+            PlaylistRepresentativeDto representativeDto = PlaylistRepresentativeDto.builder()
+                    .listName(playlist.getListname())
+                    .description(playlist.getDescription())
+                    .itemCount(playlist.getItemCount())
+                    .youtubePlaylistId(playlist.getYoutubePlaylistId())
+                    .youtubePlaylistUrl(playlist.getYoutubeLink())
+                    .thumbnailUrl(playlist.getThumbnail())
+                    .build();
+
+            // 해당 playlistId에 해당하는 PlaylistMusic 조회
+            List<PlaylistMusic> playlistMusicList = playlistMusicRepository.findByPlayListId(playlist.getId());
+
+            // 음악 정보 구성
+            List<PlaylistListResponse> videoList = playlistMusicList.stream()
+                    .map(pm -> {
+                        Music music = pm.getMusic();
+                        return PlaylistListResponse.builder()
+                                .name(music.getName())
+                                .playtime(music.getPlaytime())
+                                .albumName(music.getAlbumName())
+                                .songLink(music.getSongLink())
+                                .thumbNailLink(music.getThumbNailLink())
+                                .build();
+                    })
+                    .collect(Collectors.toList());
+
+            // 하나의 PlaylistResponse 구성
+            return PlaylistResponse.builder()
+                    .representative(representativeDto)
+                    .videoList(videoList)
+                    .build();
+
+        }).collect(Collectors.toList());
+
+    }
+
     @Override
     public void addNewPlaylist(String listName,String description){
         User user = getCurrentUser();
