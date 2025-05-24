@@ -24,4 +24,6 @@ public interface PlayListMusicRepository extends JpaRepository<PlaylistMusic, Lo
                                           @Param("playlistId") String playlistId);
 
     List<PlaylistMusic> findByPlayListId(Long playlistId);
+
+    boolean existsByPlayListIdAndMusicId(Long playListId, Long musicId);
 }

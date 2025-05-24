@@ -192,6 +192,11 @@ public class PlaylistController {
         return ResponseDto.of(dto, "플레이리스트 목록 가져오기 성공");
     }
 
+    @Operation(
+            summary = "플레이리스트 정보와 포함된 음악정보들",
+            description = "플레이리스트 목록과 각 플레이리스트에 대한 음악 정보를 전부 조회 하는 로직입니다." +
+                    "ex) 플레이리스트 A, 플레이리스트 B에 대한 정보와 구성요소들을 리스트 형태로 반환"
+    )
     @GetMapping("/selectMyAllPlayListInfo")
     public ResponseDto<List<PlaylistResponse>> selectMyAllPlayListInfo() {
         List<PlaylistResponse> dto = playlistService.selectMyAllPlayListInfo();
