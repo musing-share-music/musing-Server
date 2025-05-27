@@ -59,12 +59,19 @@ public class PlaylistController {
         return ResponseDto.of(null, "플레이리스트를 수정했습니다.");
     }
 
-
+    @Operation(
+            summary = "플레이리스트 유튜브계정에 생성 + DB 저장 ",
+            description = """
+                사용자로부터 제셍목록명과 재생목록 설명값을 받아 유튜브에 저장합니다.
+                1. 유저가 이미 DB내에서 3개 이상의 플레이리스트를 보유중이거나
+                중복된 리스트이름이 존재할시엔 예외처리 
+                """)
     @PostMapping("/addNewPlaylist")
     public ResponseDto<String> addNewPlaylist(
                                               @RequestParam String listName,
-                                              @RequestParam String description) {
-        playlistService.addNewPlaylist(listName,description);
+                                              @RequestParam String description)
+            throws IOException, GeneralSecurityException, InterruptedException {
+        playlistService.addNewPlaylist(listName,description) ;
         return ResponseDto.of(null, "플레이리스트를 추가 및 저장했습니다.");
     }
 

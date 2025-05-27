@@ -29,7 +29,7 @@ public interface PlaylistService {
     String addVideoToPlaylist(String accessToken, YoutubeVideoRequestDto dto);
     SelectPlayListsDto selectMyPlayList();
     String addMusicToPlaylist(String url,String playlistId);
-    void addNewPlaylist(String listName,String description);
+    void addNewPlaylist(String listName,String description) throws IOException, GeneralSecurityException, InterruptedException ;
     PlaylistResponse SelectMyDBPlaylist(String listId);
     List<PlaylistResponse> selectMyAllPlayListInfo();
 

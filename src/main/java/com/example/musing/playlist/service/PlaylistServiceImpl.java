@@ -7,6 +7,7 @@ import com.example.musing.exception.ErrorCode;
 import com.example.musing.music.entity.Music;
 import com.example.musing.music.repository.MusicRepository;
 import com.example.musing.playlist.dto.*;
+import com.example.musing.playlist.dto.PlaylistListResponse;
 import com.example.musing.playlist.entity.PlayList;
 import com.example.musing.playlist.event.DeleteVideoEvent;
 import com.example.musing.playlist.event.ModifyPlaylistEvent;
@@ -19,10 +20,7 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.youtube.YouTube;
-import com.google.api.services.youtube.model.Playlist;
-import com.google.api.services.youtube.model.PlaylistItem;
-import com.google.api.services.youtube.model.PlaylistItemListResponse;
-import com.google.api.services.youtube.model.PlaylistSnippet;
+import com.google.api.services.youtube.model.*;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -550,24 +548,76 @@ public class PlaylistServiceImpl implements PlaylistService {
         }).collect(Collectors.toList());
 
     }
-
+    @Transactional
     @Override
-    public void addNewPlaylist(String listName,String description){
+    public void addNewPlaylist(String listName, String description)
+            throws IOException, GeneralSecurityException, InterruptedException {
 
-//        // 1. 사용자 인증 정보 획득
-//        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-//        String accessToken = oauth2ProviderTokenService.getGoogleProviderAccessToken(userId);
-//
-//        GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);
-//
-//        // 2. 인증된 YouTube 객체 생성
-//        YouTube youtubeService = new YouTube.Builder(
-//                GoogleNetHttpTransport.newTrustedTransport(),
-//                JacksonFactory.getDefaultInstance(),
-//                credential
-//        ).setApplicationName("musing").build();
+        // 현재 사용자 ID 가져오기
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = getCurrentUser();
 
+        // 유저의 플레이리스트 개수 확인
+        List<PlayList> userPlaylists = playListRepository.findAllByUser(user);
 
+        // 조건 1: 최대 3개까지만 허용
+        if (userPlaylists.size() >= 3) {
+            throw new IllegalStateException("플레이리스트는 최대 3개까지만 생성할 수 있습니다.");
+        }
+
+        // 조건 2: 같은 이름의 플레이리스트가 이미 존재하는지 확인
+        boolean nameExists = userPlaylists.stream()
+                .anyMatch(p -> p.getListname().equalsIgnoreCase(listName));
+
+        if (nameExists) {
+            throw new IllegalStateException("이미 동일한 이름의 플레이리스트가 존재합니다.");
+        }
+
+        // Google OAuth2 AccessToken 가져오기
+        String accessToken = oauth2ProviderTokenService.getGoogleProviderAccessToken(userId);
+        GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);
+
+        // YouTube 서비스 생성
+        YouTube youtubeService = new YouTube.Builder(
+                GoogleNetHttpTransport.newTrustedTransport(),
+                JacksonFactory.getDefaultInstance(),
+                credential
+        ).setApplicationName("musing").build();
+
+        // 유튜브용 snippet 생성
+        PlaylistSnippet snippet = new PlaylistSnippet();
+        snippet.setTitle(listName);
+        snippet.setDescription(description);
+
+        // playlistStatus 설정
+        PlaylistStatus status = new PlaylistStatus();
+        status.setPrivacyStatus("public");
+
+        // playlist 객체 생성
+        com.google.api.services.youtube.model.Playlist newPlaylist = new com.google.api.services.youtube.model.Playlist();
+        newPlaylist.setSnippet(snippet);
+        newPlaylist.setStatus(status);
+
+        // 유튜브 API로 playlist 생성
+        YouTube.Playlists.Insert insertRequest = youtubeService.playlists()
+                .insert(List.of("snippet", "status"), newPlaylist);
+        com.google.api.services.youtube.model.Playlist createdPlaylist = insertRequest.execute();
+
+        String youtubePlaylistId = createdPlaylist.getId();
+        String youtubeLink = "https://www.youtube.com/playlist?list=" + youtubePlaylistId;
+
+        // DB 저장
+        PlayList playlistEntity = PlayList.builder()
+                .youtubePlaylistId(youtubePlaylistId)
+                .listname(listName)
+                .description(description)
+                .itemCount(0L)
+                .thumbnail("N/A")
+                .youtubeLink(youtubeLink)
+                .user(user)
+                .build();
+
+        playListRepository.save(playlistEntity);
     }
 
     @Transactional
