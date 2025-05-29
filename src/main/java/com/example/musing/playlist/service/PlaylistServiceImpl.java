@@ -1,7 +1,6 @@
 package com.example.musing.playlist.service;
 
 import com.example.musing.auth.oauth2.service.Oauth2ProviderTokenService;
-import com.example.musing.common.dto.ResponseDto;
 import com.example.musing.exception.CustomException;
 import com.example.musing.exception.ErrorCode;
 import com.example.musing.music.entity.Music;
@@ -30,7 +29,6 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import net.minidev.json.JSONObject;
-import org.hibernate.validator.internal.util.stereotypes.Lazy;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,8 +47,6 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import org.springframework.aop.framework.AopContext;
 
 import static com.example.musing.exception.ErrorCode.ERROR;
 
@@ -277,8 +273,7 @@ public class PlaylistServiceImpl implements PlaylistService {
         return null;
     }
 
-
-    public String getThumailLink(String url){
+    public String getThumbnailLink(String url){
         String videoId = extractVideoId(url);
         return "https://img.youtube.com/vi/" + videoId + "/hqdefault.jpg";
     }
@@ -430,7 +425,7 @@ public class PlaylistServiceImpl implements PlaylistService {
                     .albumName("Unknown Album")  // 앨범명 (필요시 변경)
                     .songLink(videoUrl)
                     .playtime(getPlayTime(videoUrl))
-                    .thumbNailLink(getThumailLink(videoUrl)) // 썸네일 URL (필요시 변경)
+                    .thumbNailLink(getThumbnailLink(videoUrl)) // 썸네일 URL (필요시 변경)
                     .genres(new ArrayList<>())   // 장르 (필요시 추가)
                     .build();
             videoList.add(videoResponse);
@@ -439,7 +434,7 @@ public class PlaylistServiceImpl implements PlaylistService {
         // 8. 대표 플레이리스트 정보 설정 (PlaylistRepresentativeDto)
         PlaylistRepresentativeDto representative = PlaylistRepresentativeDto.builder()
                 .listName(getTitle(url))                        // 플레이리스트 이름
-                .thumbnailUrl(getThumailLink(url)) // 대표 썸네일 (필요시 변경)
+                .thumbnailUrl(getThumbnailLink(url)) // 대표 썸네일 (필요시 변경)
                 .youtubePlaylistUrl(url)
                 .youtubePlaylistId(playlistId)                        // 유튜브 플레이리스트 ID
                 .build();

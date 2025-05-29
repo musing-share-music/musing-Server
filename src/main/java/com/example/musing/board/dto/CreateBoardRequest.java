@@ -19,7 +19,5 @@ public class CreateBoardRequest {
     private String content;
     private String playtime;
     private String AlbumName;
-    private String songLink;
     private String thumbNailLink;
-
 }

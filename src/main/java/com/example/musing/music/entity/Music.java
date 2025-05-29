@@ -78,12 +78,12 @@ public class Music {
         this.albumName = (albumName != null) ? albumName : "정보 없음";
     }
 
-    public static Music of(CreateBoardRequest request) {
+    public static Music of(CreateBoardRequest request, String playtime, String thumbNailLink) {
         return Music.builder()
                 .name(request.getMusicTitle())
-                .playtime(request.getPlaytime())
-                .songLink(request.getSongLink())
-                .thumbNailLink(request.getThumbNailLink())
+                .playtime(playtime)
+                .songLink(request.getYoutubeLink())
+                .thumbNailLink(thumbNailLink)
                 .build();
     }
 

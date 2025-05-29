@@ -30,7 +30,10 @@ import com.example.musing.reply.dto.ReplyResponseDto;
 import com.example.musing.reply.service.ReplyService;
 import com.example.musing.user.entity.User;
 import com.example.musing.user.repository.UserRepository;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -41,9 +44,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.example.musing.exception.ErrorCode.*;
@@ -59,6 +65,10 @@ public class BoardServiceImpl implements BoardService {
     private static int PAGESIZE = 8;
     private static int MAX_RETRY_COUNT =3;
     private static String S3BUCKETURL = "board";
+
+    @Value("${youtube.api.key}")
+    private String apiKey;
+    private final RestTemplate restTemplate = new RestTemplate();
 
     private final UserRepository userRepository;
     private final BoardRepository boardRepository;
@@ -160,7 +170,11 @@ public class BoardServiceImpl implements BoardService {
     @Transactional
     public void createBoard(CreateBoardRequest request, List<MultipartFile> images) {
         // Music 저장
-        Music music = Music.of(request);
+        String videoId = extractYoutubeId(request.getYoutubeLink());
+        String playtime = getPlayTime(videoId);
+        String thumbnailLink = getThumbnailLink(videoId);
+
+        Music music = Music.of(request, playtime, thumbnailLink);
         musicRepository.save(music);
 
         // Artist 확인 및 저장, 중간 테이블 저장
@@ -417,6 +431,51 @@ public class BoardServiceImpl implements BoardService {
 
         return BoardAndReplyPageDto.of(boardDto, replyDtos);
     }
+
+    private String getThumbnailLink(String videoId) {
+        return "https://img.youtube.com/vi/" + videoId + "/hqdefault.jpg";
+    }
+
+    private String getPlayTime(String videoId) {
+        if (videoId == null) {
+            return "Invalid YouTube URL";
+        }
+
+        String apiUrl = "https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=" + videoId + "&key=" + apiKey;
+
+        try {
+            String response = restTemplate.getForObject(apiUrl, String.class);
+            JsonObject jsonObject = JsonParser.parseString(response).getAsJsonObject();
+            String duration = jsonObject.getAsJsonArray("items")
+                    .get(0)
+                    .getAsJsonObject()
+                    .getAsJsonObject("contentDetails")
+                    .get("duration")
+                    .getAsString();
+
+            return convertDuration(duration);
+        } catch (Exception e) {
+            return "Error fetching video duration: " + e.getMessage();
+        }
+    }
+
+    private String convertDuration(String isoDuration) {
+        return isoDuration.replace("PT", "")
+                .replace("H", "h ")
+                .replace("M", "m ")
+                .replace("S", "s");
+    }
+
+    private String extractYoutubeId(String url) {
+        String regex = ".*(?:youtu.be/|v/|u/\\w/|embed/|watch\\?v=|\\&v=)([^#\\&\\?]*).*";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(url);
+        if (matcher.matches()) {
+            return matcher.group(1);
+        }
+        return null;
+    }
+
 
     private void incrementBoardViewCount(long boardId) {
         boardRepository.incrementBoardViewCount(boardId);
