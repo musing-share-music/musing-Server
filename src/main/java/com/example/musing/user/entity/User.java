@@ -100,4 +100,15 @@ public class User { //https://developers.google.com/identity/openid-connect/open
     public void updateactivated(boolean activated) {
         this.activated = activated;
     }
+
+    public void withDraw(){
+        String text = "탈퇴한 사용자";
+
+        this.status = Status.WITHDRAW;
+        // 유저 정보 변경하기
+        this.username = text + id;
+        this.email = text + id; //개인정보 파기를 하지만 유니크 설정이기에 id를 붙이기로 함
+        this.profile = text;
+        this.youtubeId = null;
+    }
 }

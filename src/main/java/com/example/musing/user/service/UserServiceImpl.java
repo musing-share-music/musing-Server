@@ -3,6 +3,7 @@ package com.example.musing.user.service;
 import com.example.musing.artist.dto.ArtistDto;
 import com.example.musing.artist.entity.Artist;
 import com.example.musing.artist.repository.ArtistRepository;
+import com.example.musing.auth.oauth2.service.Oauth2ProviderTokenService;
 import com.example.musing.board.dto.BoardListResponseDto;
 import com.example.musing.board.entity.Board;
 import com.example.musing.board.repository.BoardRepository;
@@ -29,9 +30,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -55,6 +59,16 @@ public class UserServiceImpl implements UserService {
     private final User_LikeArtistRepository userLikeArtistRepository;
     private final BoardRepository boardRepository;
     private final ReplyRepository replyRepository;
+    private final Oauth2ProviderTokenService oauth2ProviderTokenService;
+
+    @Transactional
+    @Override
+    public void withdraw() throws IOException, InterruptedException {
+        User user = getUser();
+        oauth2ProviderTokenService.disconnectThirdPartyService(user.getId()); //서드파티 연동 해제
+
+        user.withDraw(); //유저 정보 softDelete방식으로 변경
+    }
     @Override
     public Page<ReplyResponseDto.MyReplyDto> getMyReplySearch(User user, int page, String sort, String searchType, String keyword) {
         String userId = user.getId();
@@ -217,6 +231,18 @@ public class UserServiceImpl implements UserService {
     public UserResponseDto.UserInfoDto getUserInfo(String userId) {
         User user = findById(userId);
         return UserResponseDto.UserInfoDto.of(user, likeMusicCount(user), 0); //playList아직 없어서 0 임시값
+    }
+
+    private User getUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        //유저 정보 확인 및 로그인 상태 여부 확인
+        if (authentication == null || authentication.getName().equals("anonymousUser")) {
+            throw new CustomException(NOT_FOUND_USER);
+        }
+
+        return userRepository.findById(authentication.getName())
+                .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
     }
 
     private Page<Reply> searchReplys(String userId, String searchType, String keyword, Pageable pageable) {

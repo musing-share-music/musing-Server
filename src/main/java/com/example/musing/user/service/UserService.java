@@ -9,9 +9,11 @@ import com.example.musing.user.dto.UserResponseDto;
 import com.example.musing.user.entity.User;
 import org.springframework.data.domain.Page;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface UserService {
+    void withdraw() throws IOException, InterruptedException;
     String checkInputTags(String userId);
     User findById(String userId);
     void saveGenres(String userid, List<Long> genres);
