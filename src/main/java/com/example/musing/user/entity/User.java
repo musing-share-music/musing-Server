@@ -44,9 +44,13 @@ public class User { //https://developers.google.com/identity/openid-connect/open
     @Enumerated(value = EnumType.STRING)
     private Role role; //사용자, 관리자 구분
 
-    // true면 사용가능 false면 정지상태, null일 경우 장르 및 분위기 선택 안한 상태
+    // true면 사용가능 false면 모달 선택을 안한 상태
     @Column
-    private Boolean activated; //null허용을 위해 웨퍼클래스 타입 적용
+    private boolean activated;
+
+    @Column(nullable = false)
+    @Enumerated(value = EnumType.STRING)
+    private Status status;
 
     //게시판 일대다 매핑
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -84,6 +88,7 @@ public class User { //https://developers.google.com/identity/openid-connect/open
         this.profile = profile;
         this.youtubeId = youtubeId;
         this.role = Role.USER;
+        this.status = Status.ACTIVE;
     }
 
     public void updateGoogleInfo(String username, String profile, String youtubeId) {
@@ -92,7 +97,7 @@ public class User { //https://developers.google.com/identity/openid-connect/open
         this.youtubeId = youtubeId;
     }
 
-    public void updateactivated(Boolean activated) {
+    public void updateactivated(boolean activated) {
         this.activated = activated;
     }
 }

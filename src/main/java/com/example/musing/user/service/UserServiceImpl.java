@@ -195,8 +195,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public String checkInputTags(String userId) {
         User user = findById(userId);
-        System.out.println("check: " + user.getActivated());
-        if (user.getActivated() != null) {
+        if (user.isActivated()) {
             return "pass";
         }
         //장르, 분위기 ,아티스트 순서로 갈 예정
