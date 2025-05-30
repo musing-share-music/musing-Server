@@ -320,11 +320,22 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     // 영상 ID 추출 (URL에서 ?v= 뒤의 값을 추출)
     private String extractVideoId(String url) {
-        String[] urlParts = url.split("v=");
-        if (urlParts.length > 1) {
-            return urlParts[1].split("&")[0];  // ?v=VIDEO_ID
-        }
-        return null;
+
+            // 1. 먼저 "v=" 파라미터를 기준으로 시도
+            String[] urlParts = url.split("v=");
+            if (urlParts.length > 1) {
+                return urlParts[1].split("&")[0]; // ?v=VIDEO_ID
+            }
+
+            // 2. "v="가 없으면 "list=" 파라미터를 기준으로 시도
+            urlParts = url.split("list=");
+            if (urlParts.length > 1) {
+                return urlParts[1].split("&")[0]; // ?list=LIST_ID
+            }
+
+            // 3. 해당 파라미터가 없다면 null 반환
+            return null;
+
     }
 
 
