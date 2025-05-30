@@ -33,6 +33,9 @@ public class UserController {
     private final GenreService genreService;
     private final MoodService moodService;
 
+    @Operation(summary = "회원 탈퇴",
+            description = "회원 탈퇴를 진행하며, 회원정보를 수정하여 '탈퇴한 사용자'라는 이름으로 게시글이 남도록 변경합니다." +
+                    "서드파티 관련 연동과 해당 사이트 내의 플레이리스트 정보(유튜브는 제외), 구글 Oauth2 토큰정보는 hardDelete합니다.")
     @GetMapping("/withdraw")
     public ResponseDto<String> deactivateUser(HttpServletResponse response) {
         userService.withdraw(response);
