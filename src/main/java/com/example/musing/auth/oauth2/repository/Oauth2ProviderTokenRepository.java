@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface Oauth2ProviderTokenRepository extends JpaRepository<Oauth2ProviderToken, Long> {
     Optional<Oauth2ProviderToken> findByGoogleId(String googleId);
+    void deleteAllByGoogleId(String googleId);
 }

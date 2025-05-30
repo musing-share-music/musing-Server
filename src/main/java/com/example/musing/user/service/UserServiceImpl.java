@@ -3,6 +3,8 @@ package com.example.musing.user.service;
 import com.example.musing.artist.dto.ArtistDto;
 import com.example.musing.artist.entity.Artist;
 import com.example.musing.artist.repository.ArtistRepository;
+import com.example.musing.auth.oauth2.repository.Oauth2ProviderTokenRepository;
+import com.example.musing.auth.oauth2.service.Oauth2ProviderTokenService;
 import com.example.musing.board.dto.BoardListResponseDto;
 import com.example.musing.board.entity.Board;
 import com.example.musing.board.repository.BoardRepository;
@@ -12,6 +14,7 @@ import com.example.musing.genre.repository.GenreRepository;
 import com.example.musing.like_music.repository.Like_MusicRepository;
 import com.example.musing.mood.dto.MoodDto;
 import com.example.musing.mood.repository.MoodRepository;
+import com.example.musing.playlist.repository.PlayListRepository;
 import com.example.musing.reply.dto.ReplyResponseDto;
 import com.example.musing.reply.entity.Reply;
 import com.example.musing.reply.repository.ReplyRepository;
@@ -24,14 +27,19 @@ import com.example.musing.user.repository.UserRepository;
 import com.example.musing.user.repository.User_LikeArtistRepository;
 import com.example.musing.user.repository.User_LikeGenreRepository;
 import com.example.musing.user.repository.User_LikeMoodRepository;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -55,6 +63,19 @@ public class UserServiceImpl implements UserService {
     private final User_LikeArtistRepository userLikeArtistRepository;
     private final BoardRepository boardRepository;
     private final ReplyRepository replyRepository;
+    private final Oauth2ProviderTokenService oauth2ProviderTokenService;
+    private final PlayListRepository playListRepository;
+    @Transactional
+    @Override
+    public void withdraw(HttpServletResponse response) throws IOException, InterruptedException {
+        User user = getUser();
+        oauth2ProviderTokenService.disconnectThirdPartyService(user.getId()); //서드파티 연동 해제
+        oauth2ProviderTokenService.deleteOauth2ProviderToken(user.getId()); //구글이 제공하는 토큰 정보 삭제
+        playListRepository.deleteAllByUser(user); //플레이리스트 정보 삭제
+
+        deleteCookie(response);
+        user.withDraw(); //유저 정보 softDelete방식으로 변경
+    }
     @Override
     public Page<ReplyResponseDto.MyReplyDto> getMyReplySearch(User user, int page, String sort, String searchType, String keyword) {
         String userId = user.getId();
@@ -195,8 +216,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public String checkInputTags(String userId) {
         User user = findById(userId);
-        System.out.println("check: " + user.getActivated());
-        if (user.getActivated() != null) {
+        if (user.isActivated()) {
             return "pass";
         }
         //장르, 분위기 ,아티스트 순서로 갈 예정
@@ -218,6 +238,25 @@ public class UserServiceImpl implements UserService {
     public UserResponseDto.UserInfoDto getUserInfo(String userId) {
         User user = findById(userId);
         return UserResponseDto.UserInfoDto.of(user, likeMusicCount(user), 0); //playList아직 없어서 0 임시값
+    }
+
+    private void deleteCookie(HttpServletResponse response) {
+        Cookie cookie = new Cookie("accessToken", null);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
+    }
+
+    private User getUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        //유저 정보 확인 및 로그인 상태 여부 확인
+        if (authentication == null || authentication.getName().equals("anonymousUser")) {
+            throw new CustomException(NOT_FOUND_USER);
+        }
+
+        return userRepository.findById(authentication.getName())
+                .orElseThrow(() -> new CustomException(NOT_FOUND_USER));
     }
 
     private Page<Reply> searchReplys(String userId, String searchType, String keyword, Pageable pageable) {
