@@ -27,6 +27,8 @@ import com.example.musing.user.repository.UserRepository;
 import com.example.musing.user.repository.User_LikeArtistRepository;
 import com.example.musing.user.repository.User_LikeGenreRepository;
 import com.example.musing.user.repository.User_LikeMoodRepository;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -65,12 +67,13 @@ public class UserServiceImpl implements UserService {
     private final PlayListRepository playListRepository;
     @Transactional
     @Override
-    public void withdraw() throws IOException, InterruptedException {
+    public void withdraw(HttpServletResponse response) throws IOException, InterruptedException {
         User user = getUser();
         oauth2ProviderTokenService.disconnectThirdPartyService(user.getId()); //서드파티 연동 해제
         oauth2ProviderTokenService.deleteOauth2ProviderToken(user.getId()); //구글이 제공하는 토큰 정보 삭제
         playListRepository.deleteAllByUser(user); //플레이리스트 정보 삭제
 
+        deleteCookie(response);
         user.withDraw(); //유저 정보 softDelete방식으로 변경
     }
     @Override
@@ -235,6 +238,13 @@ public class UserServiceImpl implements UserService {
     public UserResponseDto.UserInfoDto getUserInfo(String userId) {
         User user = findById(userId);
         return UserResponseDto.UserInfoDto.of(user, likeMusicCount(user), 0); //playList아직 없어서 0 임시값
+    }
+
+    private void deleteCookie(HttpServletResponse response) {
+        Cookie cookie = new Cookie("accessToken", null);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
     }
 
     private User getUser() {
