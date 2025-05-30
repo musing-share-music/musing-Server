@@ -3,6 +3,7 @@ package com.example.musing.user.service;
 import com.example.musing.artist.dto.ArtistDto;
 import com.example.musing.artist.entity.Artist;
 import com.example.musing.artist.repository.ArtistRepository;
+import com.example.musing.auth.oauth2.repository.Oauth2ProviderTokenRepository;
 import com.example.musing.auth.oauth2.service.Oauth2ProviderTokenService;
 import com.example.musing.board.dto.BoardListResponseDto;
 import com.example.musing.board.entity.Board;
@@ -13,6 +14,7 @@ import com.example.musing.genre.repository.GenreRepository;
 import com.example.musing.like_music.repository.Like_MusicRepository;
 import com.example.musing.mood.dto.MoodDto;
 import com.example.musing.mood.repository.MoodRepository;
+import com.example.musing.playlist.repository.PlayListRepository;
 import com.example.musing.reply.dto.ReplyResponseDto;
 import com.example.musing.reply.entity.Reply;
 import com.example.musing.reply.repository.ReplyRepository;
@@ -60,12 +62,14 @@ public class UserServiceImpl implements UserService {
     private final BoardRepository boardRepository;
     private final ReplyRepository replyRepository;
     private final Oauth2ProviderTokenService oauth2ProviderTokenService;
-
+    private final PlayListRepository playListRepository;
     @Transactional
     @Override
     public void withdraw() throws IOException, InterruptedException {
         User user = getUser();
         oauth2ProviderTokenService.disconnectThirdPartyService(user.getId()); //서드파티 연동 해제
+        oauth2ProviderTokenService.deleteOauth2ProviderToken(user.getId()); //구글이 제공하는 토큰 정보 삭제
+        playListRepository.deleteAllByUser(user); //플레이리스트 정보 삭제
 
         user.withDraw(); //유저 정보 softDelete방식으로 변경
     }

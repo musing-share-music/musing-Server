@@ -34,6 +34,10 @@ public class Oauth2ProviderTokenService {
     private final Oauth2ProviderTokenRepository oauth2ProviderTokenRepository;
     private final Oauth2ProviderTokenInfo oauth2ProviderTokenInfo;
 
+    public void deleteOauth2ProviderToken(String userId) {
+        oauth2ProviderTokenRepository.deleteAllByGoogleId(userId);
+    }
+
     public void disconnectThirdPartyService(String userId)
             throws IOException, InterruptedException {
 
