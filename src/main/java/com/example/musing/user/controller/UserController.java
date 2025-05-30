@@ -11,12 +11,14 @@ import com.example.musing.reply.dto.ReplyResponseDto;
 import com.example.musing.user.dto.UserResponseDto;
 import com.example.musing.user.entity.User;
 import com.example.musing.user.service.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @RequestMapping("/musing/user")
@@ -27,6 +29,12 @@ public class UserController {
     private final UserService userService;
     private final GenreService genreService;
     private final MoodService moodService;
+
+    @GetMapping("/withdraw")
+    public ResponseDto<String> deactivateUser(HttpServletResponse response) throws IOException, InterruptedException {
+        userService.withdraw(response);
+        return ResponseDto.of("회원 탈퇴에 성공했습니다.");
+    }
 
     @GetMapping("/my-reply")
     public ResponseDto<Page<ReplyResponseDto.MyReplyDto>> selectMyReply(

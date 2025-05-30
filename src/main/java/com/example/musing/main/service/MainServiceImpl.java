@@ -91,7 +91,7 @@ public class MainServiceImpl implements MainService {
 
     private String getFirstLikeGenre(String userId) {
         User user = userService.findById(userId);
-        if (user.getActivated() == null || !user.getActivated()) {
+        if (!user.isActivated()) {
             throw new CustomException(NOT_FOUND_USER);
         }
 

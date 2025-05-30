@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PlayListRepository extends JpaRepository<PlayList, Long> {
+    void deleteAllByUser(User user);
     boolean existsByYoutubePlaylistIdAndUserId(String youtubePlaylistId,String userId);
     void deleteByYoutubePlaylistId(String playlistId);
     long countByUser(User user);

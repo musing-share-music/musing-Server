@@ -7,11 +7,14 @@ import com.example.musing.mood.dto.MoodDto;
 import com.example.musing.reply.dto.ReplyResponseDto;
 import com.example.musing.user.dto.UserResponseDto;
 import com.example.musing.user.entity.User;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.data.domain.Page;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface UserService {
+    void withdraw(HttpServletResponse response) throws IOException, InterruptedException;
     String checkInputTags(String userId);
     User findById(String userId);
     void saveGenres(String userid, List<Long> genres);

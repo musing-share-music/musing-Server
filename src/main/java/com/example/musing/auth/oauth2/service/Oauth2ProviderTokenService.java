@@ -4,11 +4,13 @@ import com.example.musing.auth.oauth2.component.Oauth2ProviderTokenInfo;
 import com.example.musing.auth.oauth2.entity.Oauth2ProviderToken;
 import com.example.musing.auth.oauth2.repository.Oauth2ProviderTokenRepository;
 import com.example.musing.exception.CustomException;
+import com.example.musing.user.entity.User;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +20,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import static com.example.musing.exception.ErrorCode.ERROR;
 import static com.example.musing.exception.ErrorCode.UNAUTHORIZED_OAUTH2_PROVIDER_TOKEN;
@@ -25,8 +28,32 @@ import static com.example.musing.exception.ErrorCode.UNAUTHORIZED_OAUTH2_PROVIDE
 @RequiredArgsConstructor
 @Service
 public class Oauth2ProviderTokenService {
+    @Value("${spring.security.oauth2.client.provider.google.disconnect-uri}")
+    private String googleDisConnectUri;
+
     private final Oauth2ProviderTokenRepository oauth2ProviderTokenRepository;
     private final Oauth2ProviderTokenInfo oauth2ProviderTokenInfo;
+
+    public void deleteOauth2ProviderToken(String userId) {
+        oauth2ProviderTokenRepository.deleteAllByGoogleId(userId);
+    }
+
+    public void disconnectThirdPartyService(String userId)
+            throws IOException, InterruptedException {
+
+        String accessToken = getGoogleProviderAccessToken(userId);
+
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(googleDisConnectUri + accessToken))
+                .header("Authorization", "Bearer " + accessToken)
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        checkHttpStatusOk(response);
+    }
 
     // 최초 로그인 시 구글의 Oauth2 리프레쉬 토큰(자체 토큰아님)을 저장하기 위한 로직
     @Transactional
