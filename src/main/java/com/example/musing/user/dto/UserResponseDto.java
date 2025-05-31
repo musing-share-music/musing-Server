@@ -14,11 +14,13 @@ public class UserResponseDto {
     @Builder
     public record UserProfileDto(
             String name,
+            String email,
             String profileUrl
     ) {
         public static UserProfileDto of(User user) {
             return UserProfileDto.builder()
                     .name(user.getUsername())
+                    .email(user.getEmail())
                     .profileUrl(user.getProfile())
                     .build();
         }
