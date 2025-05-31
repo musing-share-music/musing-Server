@@ -8,7 +8,7 @@ import java.util.List;
 
 
 public interface PlaylistService {
-    void removePlaylist(String playlistId) throws IOException, GeneralSecurityException, InterruptedException;
+    void removePlaylist(String playlistId);
     void removeVideoFromYoutubePlaylist(String playlistId, List<String> deleteVideoLinks)
             throws IOException, GeneralSecurityException, InterruptedException;
     void modifyPlaylist(YoutubePlaylistRequestDto dto, String playlistId, List<String> deleteVideoLinks);
