@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.util.List;
 
 public interface UserService {
-    void withdraw(HttpServletResponse response) throws IOException, InterruptedException;
+    void withdraw(HttpServletResponse response);
     String checkInputTags(String userId);
     User findById(String userId);
     void saveGenres(String userid, List<Long> genres);

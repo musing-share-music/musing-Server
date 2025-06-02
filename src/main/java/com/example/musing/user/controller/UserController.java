@@ -31,7 +31,7 @@ public class UserController {
     private final MoodService moodService;
 
     @GetMapping("/withdraw")
-    public ResponseDto<String> deactivateUser(HttpServletResponse response) throws IOException, InterruptedException {
+    public ResponseDto<String> deactivateUser(HttpServletResponse response) {
         userService.withdraw(response);
         return ResponseDto.of("회원 탈퇴에 성공했습니다.");
     }
