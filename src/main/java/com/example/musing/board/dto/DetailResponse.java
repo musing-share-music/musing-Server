@@ -15,6 +15,7 @@ public record DetailResponse(
         String title,
         String musicTitle,
         String username,
+        String email,
         LocalDateTime createdAt,
         LocalDateTime updatedAt,
         List<String> artist,
@@ -34,6 +35,7 @@ public record DetailResponse(
                 .title(board.getTitle())
                 .musicTitle(board.getMusic().getName())
                 .username(board.getUser().getUsername())
+                .email(board.getUser().getEmail())
                 .createdAt(board.getCreatedAt())
                 .updatedAt(board.getUpdatedAt())
                 .artist(artistsName)
