@@ -15,7 +15,6 @@ public class PlaylistListResponse {
 
     private String name;            // 음악 이름 (곡 제목)
     private String playtime;        // 재생 시간
-    private String albumName;       // 앨범명
     private String songLink;        // 곡 URL
     private String thumbNailLink;   // 썸네일 URL
     private List<GenreDto> genres;  // 장르 정보 (필요 시)

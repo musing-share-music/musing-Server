@@ -70,7 +70,7 @@ public class PlayListSaveService {
                     .orElseGet(() -> musicRepository.save(
                             Music.builder()
                                     .name(video.getName())
-                                    .albumName(video.getAlbumName())
+                                    .albumName("N/A")
                                     .songLink(video.getSongLink())
                                     .thumbNailLink(video.getThumbNailLink())
                                     .build()

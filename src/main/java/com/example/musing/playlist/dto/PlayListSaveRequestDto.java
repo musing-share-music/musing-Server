@@ -34,9 +34,6 @@ public class PlayListSaveRequestDto {
         @Schema(description = "재생 시간", example = "04:12")
         private String playtime;
 
-        @Schema(description = "앨범명", example = "YOU NEVER WALK ALONE")
-        private String albumName;
-
         @Schema(description = "곡 유튜브 링크", example = "https://youtube.com/watch?v=abcd1234")
         private String songLink;
 

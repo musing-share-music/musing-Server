@@ -433,7 +433,6 @@ public class PlaylistServiceImpl implements PlaylistService {
         for (String videoUrl : videoUrls) {
             PlaylistListResponse videoResponse = PlaylistListResponse.builder()
                     .name(getTitle(videoUrl))                 // 영상 제목 (기본적으로 플레이리스트 제목 사용)
-                    .albumName("Unknown Album")  // 앨범명 (필요시 변경)
                     .songLink(videoUrl)
                     .playtime(getPlayTime(videoUrl))
                     .thumbNailLink(getThumbnailLink(videoUrl)) // 썸네일 URL (필요시 변경)
@@ -492,7 +491,6 @@ public class PlaylistServiceImpl implements PlaylistService {
                     return PlaylistListResponse.builder()
                             .name(music.getName())
                             .playtime(music.getPlaytime())
-                            .albumName(music.getAlbumName())
                             .songLink(music.getSongLink())
                             .thumbNailLink(music.getThumbNailLink())
                             .build();
@@ -538,7 +536,6 @@ public class PlaylistServiceImpl implements PlaylistService {
                         return PlaylistListResponse.builder()
                                 .name(music.getName())
                                 .playtime(music.getPlaytime())
-                                .albumName(music.getAlbumName())
                                 .songLink(music.getSongLink())
                                 .thumbNailLink(music.getThumbNailLink())
                                 .build();
