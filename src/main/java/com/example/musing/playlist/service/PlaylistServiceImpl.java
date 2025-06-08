@@ -370,6 +370,29 @@ public class PlaylistServiceImpl implements PlaylistService {
         }
     }
 
+    public String getPlaylistTitle(String playlistUrl) {
+        String playlistId = extractPlaylistId(playlistUrl);
+        if (playlistId == null) {
+            return "Invalid Playlist URL";
+        }
+
+        String apiUrl = "https://www.googleapis.com/youtube/v3/playlists?part=snippet&id=" + playlistId + "&key=" + apiKey;
+
+        try {
+            String response = restTemplate.getForObject(apiUrl, String.class);
+            JsonObject jsonObject = JsonParser.parseString(response).getAsJsonObject();
+            String title = jsonObject.getAsJsonArray("items")
+                    .get(0)
+                    .getAsJsonObject()
+                    .getAsJsonObject("snippet")
+                    .get("title")
+                    .getAsString();
+            return title != null ? title : "Undefined";
+        } catch (Exception e) {
+            return "Error fetching playlist title: " + e.getMessage();
+        }
+    }
+
     // ISO 8601 형식(PTHMS)을 HH:mm:ss 형식으로 변환
     private String convertDuration(String isoDuration) {
         return isoDuration.replace("PT", "")
@@ -426,7 +449,7 @@ public class PlaylistServiceImpl implements PlaylistService {
 
         // 8. 대표 플레이리스트 정보 설정 (PlaylistRepresentativeDto)
         PlaylistRepresentativeDto representative = PlaylistRepresentativeDto.builder()
-                .listName(getTitle(url))                        // 플레이리스트 이름
+                .listName(getPlaylistTitle(url))                        // 플레이리스트 이름
                 .thumbnailUrl(getThumbnailLink(url)) // 대표 썸네일 (필요시 변경)
                 .youtubePlaylistUrl(url)
                 .youtubePlaylistId(playlistId)                        // 유튜브 플레이리스트 ID
@@ -698,53 +721,7 @@ public class PlaylistServiceImpl implements PlaylistService {
         return response.getBody();
     }
 
-    private JSONObject createRequestBody(YoutubePlaylistRequestDto dto) {
-        JSONObject body = new JSONObject();
-
-        // snippet 객체 생성
-        JSONObject snippet = new JSONObject();
-        snippet.put("title", dto.getTitle()); // 플레이리스트 제목
-        snippet.put("description", dto.getDescription()); // 플레이리스트 설명
-
-        // status 객체 생성
-        JSONObject status = new JSONObject();
-        status.put("privacyStatus", "private"); // 기본은 비공개로 생성
-
-        // 최종 body 구성
-        body.put("snippet", snippet);
-        body.put("status", status);
-
-        return body;
-    }
-
-    private HttpHeaders createHeaders(String accessToken) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(accessToken);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        return headers;
-    }
-
-    private String handleResponse(ResponseEntity<String> response) {
-        HttpStatus statusCode = (HttpStatus) response.getStatusCode();
-
-        // 성공적인 응답 (200 OK)
-        if (statusCode.is2xxSuccessful()) {
-            // 성공 시에는 API에서 제공한 데이터를 반환
-            return "✅ 유튜브 플레이리스트 생성 완료!";
-        }
-
-        // 오류 응답 처리
-        if (statusCode.is4xxClientError()) {
-            // 클라이언트 오류: 예를 들어, 잘못된 요청
-            return "❌ 잘못된 요청입니다. 입력값을 확인해주세요.";
-        } else if (statusCode.is5xxServerError()) {
-            // 서버 오류: 유튜브 API 서버에서 발생한 문제
-            return "❌ 유튜브 서버에 문제가 발생했습니다. 잠시 후 다시 시도해주세요.";
-        }
-
-        // 기타 오류 응답
-        return "❌ 예상치 못한 오류가 발생했습니다. 다시 시도해주세요.";
-    }
+    
 
     private List<String> fetchAllPlaylistVideos(String playlistId) {
         List<String> videoUrls = new ArrayList<>();
