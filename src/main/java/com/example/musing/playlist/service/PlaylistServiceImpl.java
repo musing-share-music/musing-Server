@@ -366,7 +366,7 @@ public class PlaylistServiceImpl implements PlaylistService {
             }
             return title;
         } catch (Exception e) {
-            return "Error fetching video title: " + e.getMessage();
+            return "제목을 찾을 수 없는 플레이리스트";
         }
     }
 
@@ -721,7 +721,7 @@ public class PlaylistServiceImpl implements PlaylistService {
         return response.getBody();
     }
 
-    
+
 
     private List<String> fetchAllPlaylistVideos(String playlistId) {
         List<String> videoUrls = new ArrayList<>();
