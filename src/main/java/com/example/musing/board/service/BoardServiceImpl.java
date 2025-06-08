@@ -405,7 +405,11 @@ public class BoardServiceImpl implements BoardService {
                 .map(Genre_Music::getGenre)
                 .map(genre -> genre.getGenreName().getKey()).toList();
 
-        return DetailResponse.of(board, artistNames, extractHashtags(board.getContent()), genreNames);
+        // 로그인한 유저 정보를 가져와서
+
+        boolean isLike = likeMusicService.isLike(board.getMusic());
+
+        return DetailResponse.of(board, artistNames, extractHashtags(board.getContent()), genreNames, isLike);
     }
 
     @Override

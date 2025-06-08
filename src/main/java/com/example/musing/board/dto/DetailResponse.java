@@ -28,9 +28,12 @@ public record DetailResponse(
         String songLink,
         String thumbNailLink,
         int viewCount,
-        int recommendCount,
+        int likeCount,
+        float rating,
+        boolean isLike,
         String permitRegister) {
-    public static DetailResponse of(Board board, List<String> artistsName, List<String> hashtags, List<String> genreName) {
+    public static DetailResponse of(Board board, List<String> artistsName, List<String> hashtags,
+                                    List<String> genreName, boolean isLike) {
         return DetailResponse.builder()
                 .title(board.getTitle())
                 .musicTitle(board.getMusic().getName())
@@ -48,7 +51,9 @@ public record DetailResponse(
                 .songLink(board.getMusic().getSongLink())
                 .thumbNailLink(board.getMusic().getThumbNailLink())
                 .viewCount(board.getViewCount())
-                .recommendCount(board.getRecommendCount())
+                .likeCount(board.getRecommendCount())
+                .rating(board.getRating())
+                .isLike(isLike)
                 .permitRegister(board.getPermitRegister().name())
                 .build();
     }
