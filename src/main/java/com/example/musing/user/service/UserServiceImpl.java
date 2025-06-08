@@ -30,6 +30,7 @@ import com.example.musing.user.repository.User_LikeMoodRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -65,17 +66,20 @@ public class UserServiceImpl implements UserService {
     private final ReplyRepository replyRepository;
     private final Oauth2ProviderTokenService oauth2ProviderTokenService;
     private final PlayListRepository playListRepository;
+    private final ApplicationEventPublisher publisher;
+
     @Transactional
     @Override
-    public void withdraw(HttpServletResponse response) throws IOException, InterruptedException {
+    public void withdraw(HttpServletResponse response){
         User user = getUser();
-        oauth2ProviderTokenService.disconnectThirdPartyService(user.getId()); //서드파티 연동 해제
         oauth2ProviderTokenService.deleteOauth2ProviderToken(user.getId()); //구글이 제공하는 토큰 정보 삭제
         playListRepository.deleteAllByUser(user); //플레이리스트 정보 삭제
-
-        deleteCookie(response);
         user.withDraw(); //유저 정보 softDelete방식으로 변경
+
+        deleteCookie(response); //유저의 aceessToken삭제
+        publisher.publishEvent(user.getId());
     }
+
     @Override
     public Page<ReplyResponseDto.MyReplyDto> getMyReplySearch(User user, int page, String sort, String searchType, String keyword) {
         String userId = user.getId();

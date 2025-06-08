@@ -100,26 +100,9 @@ public class PlaylistServiceImpl implements PlaylistService {
     }
 
     @Transactional
-    public void removePlaylist(String playlistId) throws IOException, GeneralSecurityException, InterruptedException {
-        // DB를 우선삭제하여 롤백상황일때 유튜브 내에서의 플레이리스트만 삭제되는 경우를 막음
+    public void removePlaylist(String playlistId) {
         // 고아 객체를 이용하여 중간 매핑 테이블 삭제 처리
         deletePlaylistInDB(playlistId);
-
-        // 1. 사용자 인증 정보 획득
-        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-        String accessToken = oauth2ProviderTokenService.getGoogleProviderAccessToken(userId);
-
-        GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);
-
-        // 2. 인증된 YouTube 객체 생성
-        YouTube youtubeService = new YouTube.Builder(
-                GoogleNetHttpTransport.newTrustedTransport(),
-                JacksonFactory.getDefaultInstance(),
-                credential
-        ).setApplicationName("musing").build();
-
-        // 3. 플레이리스트 삭제 요청
-        youtubeService.playlists().delete(playlistId).execute();
     }
 
     private void deletePlaylistInDB(String youtubePlId) {

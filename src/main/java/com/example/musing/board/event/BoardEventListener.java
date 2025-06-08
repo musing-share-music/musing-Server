@@ -14,7 +14,7 @@ import static com.example.musing.exception.ErrorCode.ERROR;
 @RequiredArgsConstructor
 @Component
 public class BoardEventListener {
-    private BoardService boardService;
+    private final BoardService boardService;
 
     // 리뷰 작성 트랜잭션 커밋이 되기전에 업데이트 되도록
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
