@@ -1,6 +1,7 @@
 package com.example.musing.playlist.service;
 
 import com.example.musing.playlist.dto.*;
+import com.example.musing.playlist.entity.PlayList;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -12,7 +13,7 @@ public interface PlaylistService {
     void removeVideoFromYoutubePlaylist(String playlistId, List<String> deleteVideoLinks)
             throws IOException, GeneralSecurityException, InterruptedException;
     void modifyPlaylist(YoutubePlaylistRequestDto dto, String playlistId, List<String> deleteVideoLinks);
-    void modifyYoutubePlaylistInfo(YoutubePlaylistRequestDto dto, String playlistId)
+    void modifyYoutubePlaylistInfo(YoutubePlaylistRequestDto dto, PlayList playlist)
             throws IOException, InterruptedException, GeneralSecurityException;
     YouTubeVideoResponse getVideoInfo(String videoId);
 

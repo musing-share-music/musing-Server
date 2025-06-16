@@ -113,8 +113,21 @@ public class PlaylistServiceImpl implements PlaylistService {
     @Transactional
     public void modifyPlaylist(YoutubePlaylistRequestDto dto, String playlistId, List<String> deleteVideoLinks) {
         removeVideoFromDbPlaylist(deleteVideoLinks);
+        PlayList playlist = modifyPlaylistFromDb(dto, playlistId);
         publisher.publishEvent(DeleteVideoEvent.of(playlistId, deleteVideoLinks));
-        publisher.publishEvent(ModifyPlaylistEvent.of(dto, playlistId));
+        publisher.publishEvent(ModifyPlaylistEvent.of(dto, playlist));
+    }
+
+    private PlayList modifyPlaylistFromDb(YoutubePlaylistRequestDto dto, String playlistId) {
+        PlayList playlist = playListRepository.findByYoutubePlaylistId(playlistId)
+                .orElseThrow(() -> new CustomException(ERROR));
+
+        if(!playlist.getListname().equals(dto.getTitle()) ||
+                !playlist.getDescription().equals(dto.getDescription())) {
+            playlist.modifyTitleAndDescription(dto.getTitle(), dto.getDescription());
+        }
+
+        return playlist;
     }
 
     private void removeVideoFromDbPlaylist(List<String> deleteVideoLinks) {
@@ -123,49 +136,40 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     // 스프링 이벤트를 사용해서 트랜잭션 분리 및 비동기로 작업되도록 함
     @Override
-    public void modifyYoutubePlaylistInfo(YoutubePlaylistRequestDto dto, String playlistId)
+    public void modifyYoutubePlaylistInfo(YoutubePlaylistRequestDto dto, PlayList playlist)
             throws IOException, InterruptedException, GeneralSecurityException {
 
-        PlayList playlist = playListRepository.findByYoutubePlaylistId(playlistId)
-                .orElseThrow(() -> new CustomException(ERROR));
+        // 1. 플레이리스트 아이템 목록 조회
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        String accessToken = oauth2ProviderTokenService.getGoogleProviderAccessToken(userId);
+        GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);
 
-        if(!playlist.getListname().equals(dto.getTitle()) ||
-                !playlist.getDescription().equals(dto.getDescription())) {
+        // 인증된 YouTube 객체 생성
+        YouTube youtubeService = new YouTube.Builder(
+                GoogleNetHttpTransport.newTrustedTransport(),
+                JacksonFactory.getDefaultInstance(),
+                credential
+        ).setApplicationName("musing").build();
 
-            playlist.modifyTitleAndDescription(dto.getTitle(), dto.getDescription());
+        YouTube.Playlists.List getRequest = youtubeService.playlists()
+                .list(List.of("snippet"))
+                .setId(Collections.singletonList(playlist.getYoutubePlaylistId()));
 
-            // 1. 플레이리스트 아이템 목록 조회
-            String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-            String accessToken = oauth2ProviderTokenService.getGoogleProviderAccessToken(userId);
-            GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);
+        com.google.api.services.youtube.model.PlaylistListResponse getResponse = getRequest.execute();
+        Playlist youtubePlaylist = getResponse.getItems().get(0);
 
-            // 인증된 YouTube 객체 생성
-            YouTube youtubeService = new YouTube.Builder(
-                    GoogleNetHttpTransport.newTrustedTransport(),
-                    JacksonFactory.getDefaultInstance(),
-                    credential
-            ).setApplicationName("musing").build();
+        // snippet 객체 수정
+        PlaylistSnippet snippet = youtubePlaylist.getSnippet();
+        snippet.setTitle(dto.getTitle()); // 변경할 제목
+        snippet.setDescription(dto.getDescription()); // 변경할 설명
 
-            YouTube.Playlists.List getRequest = youtubeService.playlists()
-                    .list(List.of("snippet"))
-                    .setId(Collections.singletonList(playlistId));
+        // 변경된 snippet을 playlist에 다시 세팅
+        youtubePlaylist.setSnippet(snippet);
 
-            com.google.api.services.youtube.model.PlaylistListResponse getResponse = getRequest.execute();
-            Playlist youtubePlaylist = getResponse.getItems().get(0);
-
-            // snippet 객체 수정
-            PlaylistSnippet snippet = youtubePlaylist.getSnippet();
-            snippet.setTitle(dto.getTitle()); // 변경할 제목
-            snippet.setDescription(dto.getDescription()); // 변경할 설명
-
-            // 변경된 snippet을 playlist에 다시 세팅
-            youtubePlaylist.setSnippet(snippet);
-
-            // update 요청 실행
-            YouTube.Playlists.Update updateRequest = youtubeService.playlists()
-                    .update(List.of("snippet"), youtubePlaylist);
-            Playlist updateResponse = updateRequest.execute();
-        }
+        // update 요청 실행
+        YouTube.Playlists.Update updateRequest = youtubeService.playlists()
+                .update(List.of("snippet"), youtubePlaylist);
+        Playlist updateResponse = updateRequest.execute();
     }
 
     // 스프링 이벤트를 사용해서 트랜잭션 분리 및 비동기로 작업되도록 함

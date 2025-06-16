@@ -30,6 +30,6 @@ public class PlaylistEventListener {
     public void modifyPlaylist(ModifyPlaylistEvent modifyPlaylistEvent)
             throws GeneralSecurityException, IOException, InterruptedException {
         playlistService.modifyYoutubePlaylistInfo(modifyPlaylistEvent.getPlaylistRequestDto(),
-                modifyPlaylistEvent.getPlaylistId());
+                modifyPlaylistEvent.getPlayList());
     }
 }
