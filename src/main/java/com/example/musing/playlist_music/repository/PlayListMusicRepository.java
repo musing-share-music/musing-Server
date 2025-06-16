@@ -11,7 +11,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface PlayListMusicRepository extends JpaRepository<PlaylistMusic, Long> {
-    @EntityGraph("music")
+    @EntityGraph(attributePaths = {"music"})
     void deleteAllByMusic_SongLinkIn(List<String> deleteVideoUrl);
 
     @Query("SELECT COUNT(pm) > 0 " +
