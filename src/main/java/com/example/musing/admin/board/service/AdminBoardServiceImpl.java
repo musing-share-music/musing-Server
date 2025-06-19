@@ -7,6 +7,7 @@ import com.example.musing.board.dto.DetailResponse;
 import com.example.musing.board.entity.Board;
 import com.example.musing.exception.CustomException;
 import com.example.musing.genre.entity.Genre_Music;
+import com.example.musing.like_music.service.Like_MusicService;
 import com.example.musing.music.entity.Music;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEvent;
@@ -32,6 +33,7 @@ import static com.example.musing.exception.ErrorCode.*;
 @Service
 public class AdminBoardServiceImpl implements AdminBoardService {
 
+    private final Like_MusicService likeMusicService;
     private final AdminBoardRepository boardRepository;
     private final ApplicationEventPublisher publisher;
 
@@ -58,7 +60,9 @@ public class AdminBoardServiceImpl implements AdminBoardService {
                 .map(Genre_Music::getGenre)
                 .map(genre -> genre.getGenreName().getKey()).toList();
 
-        return DetailResponse.of(board, artistNames, extractHashtags(board.getContent()), genreNames);
+        boolean isLike = likeMusicService.isLike(board.getMusic());
+
+        return DetailResponse.of(board, artistNames, extractHashtags(board.getContent()), genreNames, isLike);
     }
     @Override
     public Page<AdminBoardResponseDto.AdminBoardListDto> getRegisterPermitSearchPage(int page, String searchType,

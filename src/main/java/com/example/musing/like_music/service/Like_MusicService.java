@@ -5,4 +5,6 @@ import com.example.musing.user.entity.User;
 
 public interface Like_MusicService {
     boolean toggleRecommend(User user, Music music);
+
+    boolean isLike(Music music);
 }
