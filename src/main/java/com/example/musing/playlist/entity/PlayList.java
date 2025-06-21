@@ -57,7 +57,7 @@ public class PlayList {
         this.youtubeLink = youtubeLink;
         this.user = user;
         this.description = (description == null || description.isEmpty())
-                ? "https://img.youtube.com/vi/fLi0EJfi_vg/default.jpg"
+                ? "https://img.youtube.com/vi/default.jpg"
                 : description;
         this.thumbnail = thumbnail == null ? "N/A" : thumbnail;
     }
