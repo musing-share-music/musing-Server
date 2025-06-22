@@ -13,7 +13,7 @@ import java.util.Optional;
 public interface NoticeRepository extends JpaRepository<Notice, Long> {
     Optional<Notice> findFirstByActiveCheckTrueOrderByCreatedAtDesc(); //삭제처리 확인 및 최신글 가져오기
     @EntityGraph(attributePaths = {"user"})
-    Page<Notice> findAllByActiveCheckTrue(Pageable pageable);
+    Page<Notice> findAllByActiveCheckTrueOrderByCreatedAtDesc(Pageable pageable);
 
     @EntityGraph(attributePaths = {"user"})
     @Query("SELECT n FROM Notice n WHERE n.title LIKE %:keyword% AND n.activeCheck = true")
