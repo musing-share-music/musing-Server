@@ -79,11 +79,11 @@ public class ReplyServiceImpl implements ReplyService {
         Reply reply = replyRepository.findByIdAndUser(replyId, getUser())
                 .orElseThrow(() -> new CustomException(NOT_FOUND_REPLY));
 
-        reply.updateReply(replyDto.starScore(), replyDto.content());
-
         publisher.publishEvent(UpdateReplyStateEvent
                 .of(reply.getBoard(), (float) reply.getStarScore(), (float) replyDto.starScore(), UPDATE));
 
+        reply.updateReply(replyDto.starScore(), replyDto.content());
+        
         // 이벤트 내에서 변경된 데이터를 다시 갱신하기 위해 한번 더 조회를 시도
         Board updatedBoard = boardRepository.findById(reply.getBoard().getId())
                 .orElseThrow(() -> new CustomException(NOT_FOUND_BOARD));
