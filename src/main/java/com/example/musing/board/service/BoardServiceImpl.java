@@ -86,7 +86,7 @@ public class BoardServiceImpl implements BoardService {
     public void updateReplyState(Board board, Float oldRating, Float newRating, CommitState state) {
         switch (state) {
             case CREATE -> board.updateReplyStatsOnCreate(newRating);
-            case DELETE -> board.updateReplyStatsOnDelete(newRating); // 삭제 시 newRating = deletedRating
+            case DELETE -> board.updateReplyStatsOnDelete(oldRating); // 삭제 시 newRating = deletedRating
             case UPDATE -> board.updateReplyStatsOnUpdate(oldRating, newRating);
             default -> throw new CustomException(ERROR);
         }
