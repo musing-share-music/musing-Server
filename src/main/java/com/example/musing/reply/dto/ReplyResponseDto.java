@@ -57,7 +57,7 @@ public class ReplyResponseDto {
     ) {
         public static ReplyResponseDto.MyReplyDto from(Reply reply) {
             return ReplyResponseDto.MyReplyDto.builder()
-                    .id(reply.getId())
+                    .id(reply.getBoard().getId())
                     .starScore(reply.getStarScore())
                     .content(reply.getContent())
                     .musicDto(MusicDto.toDto(reply.getBoard().getMusic()))
