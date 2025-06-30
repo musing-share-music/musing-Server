@@ -370,7 +370,7 @@ public class PlaylistServiceImpl implements PlaylistService {
             }
             return title;
         } catch (Exception e) {
-            return "제목을 찾을 수 없는 플레이리스트";
+            return "제목을 찾을 수 없음";
         }
     }
 
@@ -393,7 +393,7 @@ public class PlaylistServiceImpl implements PlaylistService {
                     .getAsString();
             return title != null ? title : "Undefined";
         } catch (Exception e) {
-            return "Error fetching playlist title: " + e.getMessage();
+            return "제목을 찾을 수 없는 플레이리스트: " + e.getMessage();
         }
     }
 

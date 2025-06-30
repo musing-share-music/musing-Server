@@ -48,7 +48,7 @@ public class NoticeServiceImpl implements NoticeService {
         }
 
         Pageable pageable = PageRequest.of(page - 1, PAGESIZE);
-        Page<Notice> notices = noticeRepository.findAllByActiveCheckTrue(pageable);
+        Page<Notice> notices = noticeRepository.findAllByActiveCheckTrueOrderByCreatedAtDesc(pageable);
 
         int totalPages = notices.getTotalPages();
         if (page - 1 > totalPages) {
