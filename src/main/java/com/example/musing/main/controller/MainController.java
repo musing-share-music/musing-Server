@@ -23,10 +23,10 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.util.List;
 
-@Tag(name = "메인 페이지 API", description = "메인 페이지 및 모달 창")
 @RestController
 @RequestMapping("/musing")
 @RequiredArgsConstructor
+@Tag(name = "메인 페이지 관련 도메인", description = "메인 페이지 및 모달 창")
 public class MainController {
     //http://localhost:8090/oauth2/authorization/google //구글 로그인
     //http://localhost:8090/swagger-ui/index.html //스웨거
@@ -34,8 +34,9 @@ public class MainController {
     private final MainService mainService;
     private final GenreService genreService;
     private final MoodService moodService;
-    
-    @Operation(summary = "메인 페이지", description = "메인페이지로 이동할 때 접근한 사용자의 로그인 정보에 따라 전송하는 DTO 다르게 할 예정<br>" +
+
+
+    @Operation(summary = "메인 페이지 이동", description = "메인페이지로 이동할 때 접근한 사용자의 로그인 정보에 따라 전송하는 DTO 다르게 할 예정<br>" +
             "비로그인 : 음악 추천 게시판 및 공지사항 정보<br>" +
             "로그인 : 음악 추천 게시판 및 공지사항, 곡 추천, 좋아요한 음악, 자신의 태그 정보<br>" +
             "<b>반환 타입이 두가지 이니 Example Value 말고 schema도 확인해주세요</b>", responses = {
@@ -65,23 +66,22 @@ public class MainController {
     }
 
     @GetMapping("main/genre")
-    @Operation(summary = "유저가 좋아하는 장르 클릭 시 해당 게시글 조회",
+    @Operation(summary = "유저가 좋아하는 장르 부분의 버튼을 클릭 시 해당 장르 최신 5개이하 게시글",
             description = "우선 최신순으로 해두고 데이터 형식 그대로 추천식으로 바꿀 예정")
     public ResponseDto<List<GenreBoardDto>> genreForm(@RequestParam(name = "genre") String genre) {
         return ResponseDto.of(mainService.selcetGenre(genre));
     }
 
     @GetMapping("/modal/like/genres")
-    @Operation(summary = "유저가 좋아하는 장르를 고르는 모달창",
-            description = "클라이언트에서 Post 요청을 보낼 때 장르의 ID를 List로 보내주면 됩니다.")
     public ResponseDto<List<GenreDto>> selectGenreForm() {
         return ResponseDto.of(genreService.getGenreDtos(), "");
     }
 
     @PostMapping("/modal/like/genres")
-    @Operation(summary = "유저가 좋아하는 장르 선택 Post요청",
-            description = "장르의 ID를 List로 보내주면 됩니다.<br>" +
+    @Operation(summary = "최초 로그인 이후 선호하는 장르 및 분위기, 아티스트를 입력하지 않았을 때 : 장르 선택",
+            description = "클라이언트에서 버튼 클릭으로 선택하는 부분을 ex:['락','블루스','힙합']같이 리스트 형태의 문자열로 저장하여 보내주면 됩니다.<br>" +
                     "적어도 1개 이상의 버튼을 클릭하여 저장하여야 합니다." +
+                    "DB에 그대로 저장했다가 백엔드에서 클라이언트로 보내줄 때 특정 기호및 띄어쓰기부분 제거 후 리스트로 만들어 반환할 예정입니다.<br>" +
                     "해당 도메인 다음 musing/modal/like/moods로 이동하면 됩니다.")
     public ResponseDto<String> selectGenre(@RequestBody List<Long> selectGenres) { //로그인 접속한 유저의 장르선택 저장
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -90,17 +90,16 @@ public class MainController {
     }
 
     @GetMapping("/modal/like/moods")
-    @Operation(summary = "유저가 좋아하는 분위기를 고르는 모달창",
-            description = "클라이언트에서 Post요청으로 분위기의 Id를 List로 보내주면 됩니다.")
     public ResponseDto<List<MoodDto>> selectMoodForm() {
         return ResponseDto.of(moodService.getMoodDtos(), "");
     }
 
     @PostMapping("/modal/like/moods")
-    @Operation(summary = "유저가 좋아하는 분위기 선택 Post요청",
-            description = "분위기의 ID를 List로 보내주면 됩니다.<br>" +
+    @Operation(summary = "최초 로그인 이후 선호하는 장르 및 분위기, 아티스트를 입력하지 않았을 때 : 분위기 선택",
+            description = "클라이언트에서 버튼 클릭으로 선택하는 부분을 ex:['신나는','조용한','슬픈']같이 리스트 형태의 문자열로 저장하여 보내주면 됩니다.<br>" +
                     "적어도 1개 이상의 버튼을 클릭하여 저장하여야 합니다." +
-                    "해당 도메인 다음 musing/modal/like/artists로 이동하면 됩니다.")
+                    "DB에 그대로 저장했다가 백엔드에서 클라이언트로 보내줄 때 특정 기호및 띄어쓰기부분 제거 후 리스트로 만들어 반환할 예정입니다.<br>" +
+                    "해당 도메인 다음 musing/modal/like/artists 이동하면 됩니다.")
     public ResponseDto<String> selectMood(@RequestBody List<Long> selectMoods) { //로그인 접속한 유저의 장르선택 저장
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         userService.saveMoods(userId, selectMoods);
@@ -108,9 +107,10 @@ public class MainController {
     }
 
     @PostMapping("/modal/like/artists")
-    @Operation(summary = "유저가 좋아하는 아티스트 입력",
-            description = "클라이언트에서 입력하는 부분을 ex:['블랙핑크','AC/DC','Eric Clapton']같이 리스트로 저장하여 보내주면 됩니다.<br>" +
-                    "아무것도 입력하지 않았을 때에는 null 값으로 보내주어야하며, 하나의 단어로 리스트 형태의 문자열로 저장하여 보내주면 됩니다.<br>" +
+    @Operation(summary = "최초 로그인 이후 선호하는 장르 및 분위기, 아티스트를 입력하지 않았을 때 : 아티스트 입력",
+            description = "클라이언트에서 입력하는 부분을 ex:['블랙핑크','AC/DC','EricClapton']같이 리스트로 저장하여 보내주면 됩니다.<br>" +
+                    "아무것도 입력하지 않았을 때에는 null 값으로 보내주어야하며, 하나의 아티스트 작성 이후는 띄어쓰기를 제외한 하나의 단어로 리스트 형태의 문자열로 저장하여 보내주면 됩니다.<br>" +
+                    "DB에 그대로 저장했다가 백엔드에서 클라이언트로 보내줄 때 특정 기호및 띄어쓰기부분 제거 후 리스트로 만들어 반환할 예정입니다.<br>" +
                     "해당 도메인 다음 musing/main을 다시 이동하면 됩니다.")
     public ResponseDto<String> selectArtists(@RequestBody(required = false) List<String> selectArtists) {
         //null값 허용을 위해 required 설정 false
@@ -125,7 +125,7 @@ public class MainController {
         System.out.println("checkRole:" + auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_USER")));
         System.out.println("유저 등급 확인: "+ auth.getAuthorities().stream().findFirst());
 
-        return auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_USER"));
+        return auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_USER"));
     }
 
 }

@@ -111,7 +111,4 @@ public class User { //https://developers.google.com/identity/openid-connect/open
         this.profile = text;
         this.youtubeId = null;
     }
-    public void updateactivated(Boolean activated){
-        this.activated = activated;
-    }
 }
