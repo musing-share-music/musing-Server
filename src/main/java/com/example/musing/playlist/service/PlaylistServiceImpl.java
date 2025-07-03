@@ -49,6 +49,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.example.musing.exception.ErrorCode.ERROR;
+import static com.example.musing.exception.ErrorCode.FAILED_TO_FETCH_PLAYLIST;
 
 
 @RequiredArgsConstructor
@@ -99,6 +100,110 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     }
 
+    @Transactional
+    @Override
+    public PlaylistResponse syncAndSelectMyDBPlaylist(String url) {
+        // 1. 동기화 (DB 갱신)
+        syncPlaylistWithDB(url);
+
+        // 2. 최신 DB 데이터 반환
+        String playlistId = extractPlaylistId(url);
+        return SelectMyDBPlaylist(playlistId);
+    }
+
+    private void syncPlaylistWithDB(String url) {
+        String playlistId = extractPlaylistId(url);
+        if (playlistId == null || playlistId.isEmpty()) {
+            throw new IllegalArgumentException("잘못된 playlistId입니다.");
+        }
+
+        JsonObject playlistInfo = fetchPlaylistInfo(playlistId);
+        if (playlistInfo == null) {
+            throw new IllegalArgumentException("플레이리스트 정보를 가져올 수 없습니다.");
+        }
+
+        List<String> videoUrls = fetchAllPlaylistVideos(playlistId);
+
+        List<PlaylistListResponse> videoList = new ArrayList<>();
+        for (String videoUrl : videoUrls) {
+            PlaylistListResponse videoResponse = PlaylistListResponse.builder()
+                    .name(getTitle(videoUrl))
+                    .songLink(videoUrl)
+                    .playtime(getPlayTime(videoUrl))
+                    .thumbNailLink(getThumbnailLink(videoUrl))
+                    .genres(new ArrayList<>())
+                    .build();
+            videoList.add(videoResponse);
+        }
+
+        // 대표 플레이리스트 정보 설정
+        PlaylistRepresentativeDto representative = PlaylistRepresentativeDto.builder()
+                .listName(getPlaylistTitle(url))
+                .thumbnailUrl(getThumbnailLink(url))
+                .youtubePlaylistUrl(url)
+                .youtubePlaylistId(playlistId)
+                .build();
+
+        PlaylistResponse dto = PlaylistResponse.builder()
+                .videoList(videoList)
+                .representative(representative)
+                .build();
+
+        User user = getCurrentUser();
+
+        // DB에서 기존 플레이리스트 조회
+        PlayList playList = playListRepository.findByYoutubePlaylistIdAndUserId(playlistId, user.getId())
+                .orElseThrow(() -> new CustomException(FAILED_TO_FETCH_PLAYLIST));
+
+        // DB에서 현재 곡 리스트 조회
+        List<PlaylistMusic> dbPlaylistMusics = playlistMusicRepository.findByPlayList(playList);
+        Set<String> dbSongLinks = dbPlaylistMusics.stream()
+                .map(pm -> pm.getMusic().getSongLink())
+                .collect(Collectors.toSet());
+
+        // API에서 받아온 곡 리스트
+        Set<String> apiSongLinks = dto.getVideoList().stream()
+                .map(PlaylistListResponse::getSongLink)
+                .collect(Collectors.toSet());
+
+        // 추가/삭제 곡 구하기
+        Set<String> songsToAdd = new HashSet<>(apiSongLinks);
+        songsToAdd.removeAll(dbSongLinks);
+
+        Set<String> songsToRemove = new HashSet<>(dbSongLinks);
+        songsToRemove.removeAll(apiSongLinks);
+
+        // 삭제
+        for (PlaylistMusic pm : dbPlaylistMusics) {
+            if (songsToRemove.contains(pm.getMusic().getSongLink())) {
+                playlistMusicRepository.delete(pm);
+            }
+        }
+
+        // 추가
+        for (PlaylistListResponse video : dto.getVideoList()) {
+            if (songsToAdd.contains(video.getSongLink())) {
+                Music music = musicRepository.findByNameAndSongLink(video.getName(), video.getSongLink())
+                        .orElseGet(() -> musicRepository.save(
+                                Music.builder()
+                                        .name(video.getName())
+                                        .albumName("N/A")
+                                        .songLink(video.getSongLink())
+                                        .thumbNailLink(video.getThumbNailLink())
+                                        .build()
+                        ));
+
+                PlaylistMusic playlistMusic = PlaylistMusic.builder()
+                        .playList(playList)
+                        .music(music)
+                        .build();
+
+                playlistMusicRepository.save(playlistMusic);
+            }
+        }
+    }
+
+    @Override
     @Transactional
     public void removePlaylist(String playlistId) {
         // 고아 객체를 이용하여 중간 매핑 테이블 삭제 처리

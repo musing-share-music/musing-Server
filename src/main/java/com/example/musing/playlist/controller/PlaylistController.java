@@ -44,6 +44,15 @@ public class PlaylistController {
         this.playListSaveService = playListSaveService;
     }
 
+    @GetMapping("/playlist/sync")
+    public ResponseDto<PlaylistResponse> syncPlaylist(@RequestParam("url") String url) {
+        PlaylistResponse playlistResponse = playlistService.syncAndSelectMyDBPlaylist(url);
+        if(playlistResponse.getVideoList() == null || playlistResponse.getVideoList().isEmpty()) {
+            return ResponseDto.of(null,"플레이 리스트를 갱신하지 못했습니다.");
+        }
+        return ResponseDto.of(playlistResponse,"성공적으로 플레이 리스트를 갱신했습니다.");
+    }
+
     @PostMapping("/remove")
     public ResponseDto<String> modifyPlaylist(@RequestParam String playlistId)
             throws IOException, GeneralSecurityException, InterruptedException {
