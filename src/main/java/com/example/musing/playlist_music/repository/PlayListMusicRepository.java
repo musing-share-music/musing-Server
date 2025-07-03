@@ -26,4 +26,6 @@ public interface PlayListMusicRepository extends JpaRepository<PlaylistMusic, Lo
     List<PlaylistMusic> findByPlayListId(Long playlistId);
 
     boolean existsByPlayListIdAndMusicId(Long playListId, Long musicId);
+
+    List<PlaylistMusic> findByPlayList(PlayList playList);
 }

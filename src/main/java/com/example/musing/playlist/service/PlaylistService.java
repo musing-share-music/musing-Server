@@ -9,6 +9,7 @@ import java.util.List;
 
 
 public interface PlaylistService {
+    PlaylistResponse syncAndSelectMyDBPlaylist(String url);
     void removePlaylist(String playlistId);
     void removeVideoFromYoutubePlaylist(String playlistId, List<String> deleteVideoLinks)
             throws IOException, GeneralSecurityException, InterruptedException;
