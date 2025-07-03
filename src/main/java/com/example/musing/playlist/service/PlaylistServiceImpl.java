@@ -625,7 +625,7 @@ public class PlaylistServiceImpl implements PlaylistService {
                 .listname(listName)
                 .description(description)
                 .itemCount(0L)
-                .thumbnail("N/A")
+                .thumbnail(null)
                 .youtubeLink(youtubeLink)
                 .user(user)
                 .build();
