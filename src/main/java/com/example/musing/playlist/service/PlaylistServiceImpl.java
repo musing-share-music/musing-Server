@@ -26,7 +26,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import net.minidev.json.JSONObject;
 import org.slf4j.LoggerFactory;
@@ -36,6 +35,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.*;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.slf4j.Logger;
 import java.io.IOException;
@@ -577,7 +577,7 @@ public class PlaylistServiceImpl implements PlaylistService {
         return dto;
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public PlaylistResponse SelectMyDBPlaylist(String listId){
 
@@ -620,7 +620,7 @@ public class PlaylistServiceImpl implements PlaylistService {
         return playlistResponse;
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public List<PlaylistResponse> selectMyAllPlayListInfo(){
         User user = getCurrentUser();
@@ -768,7 +768,7 @@ public class PlaylistServiceImpl implements PlaylistService {
 
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public SelectPlayListsDto selectMyPlayList(){
         User user = getCurrentUser();
 
@@ -778,7 +778,6 @@ public class PlaylistServiceImpl implements PlaylistService {
         if(playLists.isEmpty()){
             return null;
         }
-
 
         List<SelectPlayListsDto.PlayListDto> dtoList = playLists.stream()
                 .map(playList -> SelectPlayListsDto.PlayListDto.builder()
@@ -797,8 +796,6 @@ public class PlaylistServiceImpl implements PlaylistService {
                 .build();
 
     }
-
-
 
     public String addVideoToPlaylist(String accessToken, YoutubeVideoRequestDto dto) {
         RestTemplate restTemplate = new RestTemplate();
