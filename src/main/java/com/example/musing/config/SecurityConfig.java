@@ -77,6 +77,7 @@ public class SecurityConfig {
                         .requestMatchers("/musing/auth/**").permitAll()
                         .requestMatchers("/musing/notice/**").permitAll()
                         .requestMatchers("/musing/board/**").permitAll()
+                        .requestMatchers("/musing/reply/myReply").permitAll()
                         //관리자 전용 도메인 허용
                         .requestMatchers("/musing/admin/**").hasRole("ADMIN")
                         //나머지 도메인 허용 필요(회원,관리자)
