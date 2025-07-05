@@ -27,5 +27,6 @@ public interface PlayListMusicRepository extends JpaRepository<PlaylistMusic, Lo
 
     boolean existsByPlayListIdAndMusicId(Long playListId, Long musicId);
 
+    @EntityGraph(attributePaths = {"music"})
     List<PlaylistMusic> findByPlayList(PlayList playList);
 }

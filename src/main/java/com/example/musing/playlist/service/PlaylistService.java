@@ -9,6 +9,7 @@ import java.util.List;
 
 
 public interface PlaylistService {
+    void addMusicToYoutubePlaylist(String musicUrl, String playlistId) throws Exception;
     void syncPlaylistWithDB(String url);
     void removePlaylist(String playlistId);
     void removeVideoFromYoutubePlaylist(String playlistId, List<String> deleteVideoLinks)
@@ -24,7 +25,6 @@ public interface PlaylistService {
     String getPlayTime(String url);
     String getThumbnailLink(String url);
 
-    String addVideoToPlaylist(String accessToken, YoutubeVideoRequestDto dto);
     SelectPlayListsDto selectMyPlayList();
     String addMusicToPlaylist(String url,String playlistId);
     void addNewPlaylist(String listName,String description) throws IOException, GeneralSecurityException, InterruptedException ;

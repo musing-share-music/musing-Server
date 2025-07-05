@@ -8,6 +8,7 @@ import com.example.musing.music.repository.MusicRepository;
 import com.example.musing.playlist.dto.*;
 import com.example.musing.playlist.dto.PlaylistListResponse;
 import com.example.musing.playlist.entity.PlayList;
+import com.example.musing.playlist.event.AddMusicVideoEvent;
 import com.example.musing.playlist.event.DeleteVideoEvent;
 import com.example.musing.playlist.event.ModifyPlaylistEvent;
 import com.example.musing.playlist.repository.PlayListRepository;
@@ -231,6 +232,49 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     private void removeVideoFromDbPlaylist(List<String> deleteVideoLinks) {
          playlistMusicRepository.deleteAllByMusic_SongLinkIn(deleteVideoLinks);
+    }
+
+    // 스프링 이벤트를 사용해서 트랜잭션 분리 및 비동기로 작업되도록 함
+    @Override
+    public void addMusicToYoutubePlaylist(String musicUrl, String playlistId) throws Exception {
+        // 1. 현재 로그인한 사용자 ID
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        // 2. Google OAuth2 AccessToken 가져오기
+        String accessToken = oauth2ProviderTokenService.getGoogleProviderAccessToken(userId);
+
+        // 3. GoogleCredential 생성
+        GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);
+
+        // 4. YouTube 서비스 생성
+        YouTube youtubeService = new YouTube.Builder(
+                GoogleNetHttpTransport.newTrustedTransport(),
+                JacksonFactory.getDefaultInstance(),
+                credential
+        ).setApplicationName("musing").build();
+
+        // 5. musicUrl에서 videoId 추출
+        String videoId = extractVideoId(musicUrl);
+        if (videoId == null || videoId.isEmpty()) {
+            throw new IllegalArgumentException("유효하지 않은 유튜브 영상 URL입니다.");
+        }
+
+        // 6. PlaylistItem 객체 생성
+        PlaylistItemSnippet snippet = new PlaylistItemSnippet();
+        snippet.setPlaylistId(playlistId);
+
+        ResourceId resourceId = new ResourceId();
+        resourceId.setKind("youtube#video");
+        resourceId.setVideoId(videoId);
+        snippet.setResourceId(resourceId);
+
+        PlaylistItem playlistItem = new PlaylistItem();
+        playlistItem.setSnippet(snippet);
+
+        // 7. 플레이리스트에 영상 추가
+        YouTube.PlaylistItems.Insert request = youtubeService.playlistItems()
+                .insert(Collections.singletonList("snippet"), playlistItem);
+        PlaylistItem response = request.execute();
     }
 
     // 스프링 이벤트를 사용해서 트랜잭션 분리 및 비동기로 작업되도록 함
@@ -732,6 +776,8 @@ public class PlaylistServiceImpl implements PlaylistService {
         playListRepository.save(playlistEntity);
     }
 
+
+
     @Transactional
     @Override
     public String addMusicToPlaylist(String url, String playlistId) {
@@ -756,6 +802,8 @@ public class PlaylistServiceImpl implements PlaylistService {
         // 카운트 증가 및 저장
         playList.setItemCount(playList.getItemCount() + 1);
         playListRepository.save(playList);
+
+        publisher.publishEvent(AddMusicVideoEvent.of(url, playlistId));
 
         return "음악이 플레이리스트에 성공적으로 추가되었습니다.";
     }
@@ -790,37 +838,6 @@ public class PlaylistServiceImpl implements PlaylistService {
                 .build();
 
     }
-
-    public String addVideoToPlaylist(String accessToken, YoutubeVideoRequestDto dto) {
-        RestTemplate restTemplate = new RestTemplate();
-
-        JSONObject snippet = new JSONObject();
-        snippet.put("playlistId", dto.getPlaylistId());
-
-        JSONObject resourceId = new JSONObject();
-        resourceId.put("kind", "youtube#video");
-        resourceId.put("videoId", dto.getVideoId());
-
-        snippet.put("resourceId", resourceId);
-
-        JSONObject body = new JSONObject();
-        body.put("snippet", snippet);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(accessToken);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        HttpEntity<String> entity = new HttpEntity<>(body.toString(), headers);
-
-        ResponseEntity<String> response = restTemplate.postForEntity(
-                API_BASE_URL + "/playlistItems?part=snippet",
-                entity,
-                String.class
-        );
-
-        return response.getBody();
-    }
-
 
 
     private List<String> fetchAllPlaylistVideos(String playlistId) {
