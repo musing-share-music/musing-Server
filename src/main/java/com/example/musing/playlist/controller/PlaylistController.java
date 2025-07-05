@@ -103,12 +103,7 @@ public class PlaylistController {
     }
 
 
-    @GetMapping("/testGetPlayTime")
-    public String testGetPlayTime(@RequestParam String url) {
 
-        return playlistService.getPlayTime(url);
-
-    }
 
     @Operation(
             summary = "DB상에 있는 플레이리스트 정보 조회하기 ",

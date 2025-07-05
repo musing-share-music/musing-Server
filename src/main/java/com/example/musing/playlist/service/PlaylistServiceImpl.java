@@ -249,16 +249,7 @@ public class PlaylistServiceImpl implements PlaylistService {
         }
     }
 
-    public String getAlbumName(String url) {
-        String VIDEO_ID = extractVideoId(url);
-        String API_URL = "https://www.googleapis.com/youtube/v3/videos"
-                + "?part=snippet"
-                + "&id=" + VIDEO_ID
-                + "&key=" + apiKey;
 
-
-        return null;
-    }
 
     public String getThumbnailLink(String url){
         String videoId = extractVideoId(url);
@@ -821,10 +812,6 @@ public class PlaylistServiceImpl implements PlaylistService {
         return fetchJsonResponse(url);
     }
 
-    private Boolean checkPlayList(String url){
-
-        return playListRepository.existsByYoutubePlaylistId(url);
-    }
     private static String extractAbChannel(String url) {
         if (url == null) return "Unknown";
         try {
