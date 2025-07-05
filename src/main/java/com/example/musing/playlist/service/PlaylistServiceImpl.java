@@ -1,8 +1,10 @@
 package com.example.musing.playlist.service;
 
+import com.example.musing.artist.dto.ArtistDto;
 import com.example.musing.auth.oauth2.service.Oauth2ProviderTokenService;
 import com.example.musing.exception.CustomException;
 import com.example.musing.exception.ErrorCode;
+import com.example.musing.genre.dto.GenreDto;
 import com.example.musing.music.entity.Music;
 import com.example.musing.music.repository.MusicRepository;
 import com.example.musing.playlist.dto.*;
@@ -602,6 +604,15 @@ public class PlaylistServiceImpl implements PlaylistService {
                             .playtime(music.getPlaytime())
                             .songLink(music.getSongLink())
                             .thumbNailLink(music.getThumbNailLink())
+                            .genres(music.getGenreMusics()
+                                    .stream()
+                                    .map(gm -> GenreDto.toDto(gm.getGenre()))
+                                    .toList())
+
+                            .artists(music.getArtists()
+                                    .stream()
+                                    .map(a -> ArtistDto.toDto(a.getArtist()))
+                                    .toList())
                             .build();
                 })
                 .collect(Collectors.toList());
@@ -647,6 +658,10 @@ public class PlaylistServiceImpl implements PlaylistService {
                                 .playtime(music.getPlaytime())
                                 .songLink(music.getSongLink())
                                 .thumbNailLink(music.getThumbNailLink())
+                                .artists(music.getArtists()
+                                        .stream()
+                                        .map(a -> ArtistDto.toDto(a.getArtist()))
+                                        .toList())
                                 .build();
                     })
                     .collect(Collectors.toList());

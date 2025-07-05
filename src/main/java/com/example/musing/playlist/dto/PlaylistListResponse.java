@@ -1,6 +1,7 @@
 package com.example.musing.playlist.dto;
 
 
+import com.example.musing.artist.dto.ArtistDto;
 import com.example.musing.genre.dto.GenreDto;
 import lombok.*;
 
@@ -18,5 +19,6 @@ public class PlaylistListResponse {
     private String songLink;        // 곡 URL
     private String thumbNailLink;   // 썸네일 URL
     private List<GenreDto> genres;  // 장르 정보 (필요 시)
+    private List<ArtistDto> artists; // 가수명
 
 }
