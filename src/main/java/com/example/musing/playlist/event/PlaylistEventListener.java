@@ -32,4 +32,12 @@ public class PlaylistEventListener {
         playlistService.modifyYoutubePlaylistInfo(modifyPlaylistEvent.getPlaylistRequestDto(),
                 modifyPlaylistEvent.getPlayList());
     }
+
+    @EventListener
+    @Async
+    public void addMusicVideo(AddMusicVideoEvent addMusicVideoEvent) throws Exception {
+        playlistService.addMusicToYoutubePlaylist
+                (addMusicVideoEvent.getMusicUrl(),
+                addMusicVideoEvent.getPlaylistId());
+    }
 }
