@@ -1,13 +1,16 @@
 package com.example.musing.playlist.service;
 
+import com.example.musing.artist.dto.ArtistDto;
 import com.example.musing.auth.oauth2.service.Oauth2ProviderTokenService;
 import com.example.musing.exception.CustomException;
 import com.example.musing.exception.ErrorCode;
+import com.example.musing.genre.dto.GenreDto;
 import com.example.musing.music.entity.Music;
 import com.example.musing.music.repository.MusicRepository;
 import com.example.musing.playlist.dto.*;
 import com.example.musing.playlist.dto.PlaylistListResponse;
 import com.example.musing.playlist.entity.PlayList;
+import com.example.musing.playlist.event.AddMusicVideoEvent;
 import com.example.musing.playlist.event.DeleteVideoEvent;
 import com.example.musing.playlist.event.ModifyPlaylistEvent;
 import com.example.musing.playlist.repository.PlayListRepository;
@@ -26,7 +29,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import net.minidev.json.JSONObject;
 import org.slf4j.LoggerFactory;
@@ -36,6 +38,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.*;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.slf4j.Logger;
 import java.io.IOException;
@@ -49,6 +52,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.example.musing.exception.ErrorCode.ERROR;
+import static com.example.musing.exception.ErrorCode.FAILED_TO_FETCH_PLAYLIST;
 
 
 @RequiredArgsConstructor
@@ -99,6 +103,104 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     }
 
+    @Override
+    public void syncPlaylistWithDB(String url) {
+        String playlistId = extractPlaylistId(url);
+        if (playlistId == null || playlistId.isEmpty()) {
+            throw new IllegalArgumentException("잘못된 playlistId입니다.");
+        }
+
+        // 1. 외부 API 호출 및 데이터 가공 (트랜잭션 X)
+        JsonObject playlistInfo = fetchPlaylistInfo(playlistId);
+        if (playlistInfo == null) {
+            throw new IllegalArgumentException("플레이리스트 정보를 가져올 수 없습니다.");
+        }
+
+        List<String> videoUrls = fetchAllPlaylistVideos(playlistId);
+
+        List<PlaylistListResponse> videoList = new ArrayList<>();
+        for (String videoUrl : videoUrls) {
+            PlaylistListResponse videoResponse = PlaylistListResponse.builder()
+                    .name(getTitle(videoUrl))
+                    .songLink(videoUrl)
+                    .playtime(getPlayTime(videoUrl))
+                    .thumbNailLink(getThumbnailLink(videoUrl))
+                    .genres(new ArrayList<>())
+                    .build();
+            videoList.add(videoResponse);
+        }
+
+        PlaylistRepresentativeDto representative = PlaylistRepresentativeDto.builder()
+                .listName(getPlaylistTitle(url))
+                .thumbnailUrl(getThumbnailLink(url))
+                .youtubePlaylistUrl(url)
+                .youtubePlaylistId(playlistId)
+                .build();
+
+        PlaylistResponse dto = PlaylistResponse.builder()
+                .videoList(videoList)
+                .representative(representative)
+                .build();
+
+        User user = getCurrentUser();
+
+        // 2. DB 반영은 트랜잭션 메소드에서 처리
+        updatePlaylistInDB(dto, user);
+    }
+
+    @Transactional
+    public void updatePlaylistInDB(PlaylistResponse dto, User user) {
+        String playlistId = dto.getRepresentative().getYoutubePlaylistId();
+
+        PlayList playList = playListRepository.findByYoutubePlaylistIdAndUserId(playlistId, user.getId())
+                .orElseThrow(() -> new CustomException(FAILED_TO_FETCH_PLAYLIST));
+
+        List<PlaylistMusic> dbPlaylistMusics = playlistMusicRepository.findByPlayList(playList);
+        Set<String> dbSongLinks = dbPlaylistMusics.stream()
+                .map(pm -> pm.getMusic().getSongLink())
+                .collect(Collectors.toSet());
+
+        Set<String> apiSongLinks = dto.getVideoList().stream()
+                .map(PlaylistListResponse::getSongLink)
+                .collect(Collectors.toSet());
+
+        Set<String> songsToAdd = new HashSet<>(apiSongLinks);
+        songsToAdd.removeAll(dbSongLinks);
+
+        Set<String> songsToRemove = new HashSet<>(dbSongLinks);
+        songsToRemove.removeAll(apiSongLinks);
+
+        // 삭제
+        for (PlaylistMusic pm : dbPlaylistMusics) {
+            if (songsToRemove.contains(pm.getMusic().getSongLink())) {
+                playlistMusicRepository.delete(pm);
+            }
+        }
+
+        // 추가
+        for (PlaylistListResponse video : dto.getVideoList()) {
+            if (songsToAdd.contains(video.getSongLink())) {
+                Music music = musicRepository.findByNameAndSongLink(video.getName(), video.getSongLink())
+                        .orElseGet(() -> musicRepository.save(
+                                Music.builder()
+                                        .name(video.getName())
+                                        .albumName("N/A")
+                                        .songLink(video.getSongLink())
+                                        .thumbNailLink(video.getThumbNailLink())
+                                        .build()
+                        ));
+
+                PlaylistMusic playlistMusic = PlaylistMusic.builder()
+                        .playList(playList)
+                        .music(music)
+                        .build();
+
+                playlistMusicRepository.save(playlistMusic);
+            }
+        }
+    }
+
+    @Override
     @Transactional
     public void removePlaylist(String playlistId) {
         // 고아 객체를 이용하여 중간 매핑 테이블 삭제 처리
@@ -132,6 +234,49 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     private void removeVideoFromDbPlaylist(List<String> deleteVideoLinks) {
          playlistMusicRepository.deleteAllByMusic_SongLinkIn(deleteVideoLinks);
+    }
+
+    // 스프링 이벤트를 사용해서 트랜잭션 분리 및 비동기로 작업되도록 함
+    @Override
+    public void addMusicToYoutubePlaylist(String musicUrl, String playlistId) throws Exception {
+        // 1. 현재 로그인한 사용자 ID
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        // 2. Google OAuth2 AccessToken 가져오기
+        String accessToken = oauth2ProviderTokenService.getGoogleProviderAccessToken(userId);
+
+        // 3. GoogleCredential 생성
+        GoogleCredential credential = new GoogleCredential().setAccessToken(accessToken);
+
+        // 4. YouTube 서비스 생성
+        YouTube youtubeService = new YouTube.Builder(
+                GoogleNetHttpTransport.newTrustedTransport(),
+                JacksonFactory.getDefaultInstance(),
+                credential
+        ).setApplicationName("musing").build();
+
+        // 5. musicUrl에서 videoId 추출
+        String videoId = extractVideoId(musicUrl);
+        if (videoId == null || videoId.isEmpty()) {
+            throw new IllegalArgumentException("유효하지 않은 유튜브 영상 URL입니다.");
+        }
+
+        // 6. PlaylistItem 객체 생성
+        PlaylistItemSnippet snippet = new PlaylistItemSnippet();
+        snippet.setPlaylistId(playlistId);
+
+        ResourceId resourceId = new ResourceId();
+        resourceId.setKind("youtube#video");
+        resourceId.setVideoId(videoId);
+        snippet.setResourceId(resourceId);
+
+        PlaylistItem playlistItem = new PlaylistItem();
+        playlistItem.setSnippet(snippet);
+
+        // 7. 플레이리스트에 영상 추가
+        YouTube.PlaylistItems.Insert request = youtubeService.playlistItems()
+                .insert(Collections.singletonList("snippet"), playlistItem);
+        PlaylistItem response = request.execute();
     }
 
     // 스프링 이벤트를 사용해서 트랜잭션 분리 및 비동기로 작업되도록 함
@@ -463,7 +608,7 @@ public class PlaylistServiceImpl implements PlaylistService {
         return dto;
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public PlaylistResponse SelectMyDBPlaylist(String listId){
 
@@ -494,6 +639,15 @@ public class PlaylistServiceImpl implements PlaylistService {
                             .playtime(music.getPlaytime())
                             .songLink(music.getSongLink())
                             .thumbNailLink(music.getThumbNailLink())
+                            .genres(music.getGenreMusics()
+                                    .stream()
+                                    .map(gm -> GenreDto.toDto(gm.getGenre()))
+                                    .toList())
+
+                            .artists(music.getArtists()
+                                    .stream()
+                                    .map(a -> ArtistDto.toDto(a.getArtist()))
+                                    .toList())
                             .build();
                 })
                 .collect(Collectors.toList());
@@ -506,7 +660,7 @@ public class PlaylistServiceImpl implements PlaylistService {
         return playlistResponse;
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public List<PlaylistResponse> selectMyAllPlayListInfo(){
         User user = getCurrentUser();
@@ -539,6 +693,10 @@ public class PlaylistServiceImpl implements PlaylistService {
                                 .playtime(music.getPlaytime())
                                 .songLink(music.getSongLink())
                                 .thumbNailLink(music.getThumbNailLink())
+                                .artists(music.getArtists()
+                                        .stream()
+                                        .map(a -> ArtistDto.toDto(a.getArtist()))
+                                        .toList())
                                 .build();
                     })
                     .collect(Collectors.toList());
@@ -616,13 +774,15 @@ public class PlaylistServiceImpl implements PlaylistService {
                 .listname(listName)
                 .description(description)
                 .itemCount(0L)
-                .thumbnail("N/A")
+                .thumbnail(null)
                 .youtubeLink(youtubeLink)
                 .user(user)
                 .build();
 
         playListRepository.save(playlistEntity);
     }
+
+
 
     @Transactional
     @Override
@@ -649,12 +809,14 @@ public class PlaylistServiceImpl implements PlaylistService {
         playList.setItemCount(playList.getItemCount() + 1);
         playListRepository.save(playList);
 
+        publisher.publishEvent(AddMusicVideoEvent.of(url, playlistId));
+
         return "음악이 플레이리스트에 성공적으로 추가되었습니다.";
     }
 
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public SelectPlayListsDto selectMyPlayList(){
         User user = getCurrentUser();
 
@@ -664,7 +826,6 @@ public class PlaylistServiceImpl implements PlaylistService {
         if(playLists.isEmpty()){
             return null;
         }
-
 
         List<SelectPlayListsDto.PlayListDto> dtoList = playLists.stream()
                 .map(playList -> SelectPlayListsDto.PlayListDto.builder()
@@ -683,39 +844,6 @@ public class PlaylistServiceImpl implements PlaylistService {
                 .build();
 
     }
-
-
-
-    public String addVideoToPlaylist(String accessToken, YoutubeVideoRequestDto dto) {
-        RestTemplate restTemplate = new RestTemplate();
-
-        JSONObject snippet = new JSONObject();
-        snippet.put("playlistId", dto.getPlaylistId());
-
-        JSONObject resourceId = new JSONObject();
-        resourceId.put("kind", "youtube#video");
-        resourceId.put("videoId", dto.getVideoId());
-
-        snippet.put("resourceId", resourceId);
-
-        JSONObject body = new JSONObject();
-        body.put("snippet", snippet);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(accessToken);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        HttpEntity<String> entity = new HttpEntity<>(body.toString(), headers);
-
-        ResponseEntity<String> response = restTemplate.postForEntity(
-                API_BASE_URL + "/playlistItems?part=snippet",
-                entity,
-                String.class
-        );
-
-        return response.getBody();
-    }
-
 
 
     private List<String> fetchAllPlaylistVideos(String playlistId) {

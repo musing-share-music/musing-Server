@@ -57,9 +57,9 @@ public class PlayList {
         this.youtubeLink = youtubeLink;
         this.user = user;
         this.description = (description == null || description.isEmpty())
-                ? "https://img.youtube.com/vi/default.jpg"
+                ? "N/A"
                 : description;
-        this.thumbnail = thumbnail == null ? "N/A" : thumbnail;
+        this.thumbnail = thumbnail == null ? "https://img.youtube.com/vi/default.jpg" : thumbnail;
     }
 
     // 플레이리스트 제목 및 내용 수정

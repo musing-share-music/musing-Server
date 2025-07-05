@@ -44,6 +44,12 @@ public class PlaylistController {
         this.playListSaveService = playListSaveService;
     }
 
+    @PostMapping("/sync")
+    public ResponseDto<String> syncPlaylist(@RequestParam("url") String url) {
+        playlistService.syncPlaylistWithDB(url);
+        return ResponseDto.of(null,"성공적으로 플레이 리스트를 갱신했습니다.");
+    }
+
     @PostMapping("/remove")
     public ResponseDto<String> modifyPlaylist(@RequestParam String playlistId)
             throws IOException, GeneralSecurityException, InterruptedException {
