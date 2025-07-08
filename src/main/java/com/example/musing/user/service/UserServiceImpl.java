@@ -241,7 +241,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponseDto.UserInfoDto getUserInfo(String userId) {
         User user = findById(userId);
-        return UserResponseDto.UserInfoDto.of(user, likeMusicCount(user), 0); //playList아직 없어서 0 임시값
+        return UserResponseDto.UserInfoDto.of(user, likeMusicCount(user), myPlaylistCount(user));
+    }
+
+    private int myPlaylistCount(User user) {
+        return (int) playListRepository.countByUser(user);
     }
 
     private void deleteCookie(HttpServletResponse response) {
