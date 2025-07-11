@@ -60,6 +60,7 @@ public class BoardListResponseDto {
 
     @Builder
     public record BoardDto(
+        long id,
         String title,
         String musicName,
         List<ArtistDto> artists,
@@ -71,6 +72,7 @@ public class BoardListResponseDto {
     ) {
         public static BoardDto toDto(Board board , List<GenreDto> genreList, List<MoodDto> moodList, List<ArtistDto> artists) {
             return BoardDto.builder()
+                .id(board.getId())
                 .title(board.getTitle())
                 .musicName(board.getMusic().getName())
                 .artists(artists)
